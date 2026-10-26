@@ -1,0 +1,118 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// MatchDataService fetches players' matches (HenrikDev in development, Riot's
+// API in production), stores them, and hands out game-neutral stats.
+// It is the only service that reads or writes the `matchdata` tables.
+// It only ever holds data for players who linked their account (opted in).
+//
+// Callers: AccountService (SyncPlayer, DeletePlayerData),
+//          RoomService (GetSyncStatus),
+//          QuizService (GetPlayerMatchStats),
+//          Gateway (GetSyncStatus, for the "syncing your matches" screen).
+syntax = "proto3";
+
+package friendlyfire.matchdata.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service MatchDataService {
+  // Starts fetching a player's matches in the background and returns right
+  // away. The first sync fetches the last 30 days; later syncs only fetch
+  // matches newer than the last one stored. Calling it while a sync is
+  // already running does nothing.
+  rpc SyncPlayer(SyncPlayerRequest) returns (SyncPlayerResponse);
+
+  // Sync status for one or more players. Players we know nothing about come
+  // back as SYNC_STATUS_NOT_LINKED.
+  rpc GetSyncStatus(GetSyncStatusRequest) returns (GetSyncStatusResponse);
+
+  // Stored match stats for the given players, newest first. A match that
+  // several of the players played together appears once per player, with
+  // the same match_id.
+  rpc GetPlayerMatchStats(GetPlayerMatchStatsRequest) returns (GetPlayerMatchStatsResponse);
+
+  // Deletes everything stored for a player. Used when they unlink or
+  // delete their account.
+  rpc DeletePlayerData(DeletePlayerDataRequest) returns (DeletePlayerDataResponse);
+}
+
+enum SyncStatus {
+  SYNC_STATUS_UNSPECIFIED = 0;
+  // No linked account for this player.
+  SYNC_STATUS_NOT_LINKED = 1;
+  // A sync is queued or running.
+  SYNC_STATUS_IN_PROGRESS = 2;
+  // The last sync finished. The player's data can be used in a quiz.
+  SYNC_STATUS_COMPLETE = 3;
+  // The last sync failed. Previously stored matches can still be used.
+  SYNC_STATUS_FAILED = 4;
+}
+
+message SyncPlayerRequest {
+  string user_id = 1;
+  // Which game to sync. "valorant" for now.
+  string game = 2;
+  // The player's ID in that game. For VALORANT this is the PUUID.
+  string external_player_id = 3;
+  // The player's region in that game, e.g. "na".
+  string region = 4;
+}
+
+message SyncPlayerResponse {
+  SyncStatus status = 1;
+}
+
+message GetSyncStatusRequest {
+  repeated string user_ids = 1;
+}
+
+message GetSyncStatusResponse {
+  repeated PlayerSyncStatus statuses = 1;
+}
+
+message PlayerSyncStatus {
+  string user_id = 1;
+  SyncStatus status = 2;
+  int32 matches_stored = 3;
+  // Not set if the player has never finished a sync.
+  google.protobuf.Timestamp last_synced_at = 4;
+  // Short, safe-to-show reason when status is FAILED.
+  string error_message = 5;
+}
+
+message GetPlayerMatchStatsRequest {
+  repeated string user_ids = 1;
+  // Only matches played at or after this time.
+  google.protobuf.Timestamp since = 2;
+  // Cap per player, newest first. 0 means the server default (50).
+  int32 max_matches_per_player = 3;
+}
+
+message GetPlayerMatchStatsResponse {
+  repeated PlayerMatchStats stats = 1;
+}
+
+// One player's performance in one match, in a shape that works for any game.
+message PlayerMatchStats {
+  string match_id = 1;
+  string user_id = 2;
+  string game = 3;  // "valorant"
+  google.protobuf.Timestamp played_at = 4;
+  bool won = 5;
+  int32 kills = 6;
+  int32 deaths = 7;
+  int32 assists = 8;
+  // Text facts specific to the game.
+  // VALORANT: "agent" -> "Jett", "map" -> "Ascent", "mode" -> "Competitive".
+  map<string, string> labels = 9;
+  // Number facts specific to the game.
+  // VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
+  // "damage_received", "combat_score", "rounds_won", "rounds_lost".
+  map<string, double> numbers = 10;
+}
+
+message DeletePlayerDataRequest {
+  string user_id = 1;
+}
+
+message DeletePlayerDataResponse {}

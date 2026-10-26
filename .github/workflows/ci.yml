@@ -1,0 +1,316 @@
+# Every pull request to main. The one check to require on main is `ci-ok`.
+# Toolchains come from mise.toml (jdx/mise-action), the single source of truth for versions.
+# No secrets are needed, so pull requests from forks work too.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  MISE_VERSION: "2026.10.19"
+
+jobs:
+  changes:
+    name: Decide what to check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      java: ${{ steps.filter.outputs.java }}
+      python: ${{ steps.filter.outputs.python }}
+      go: ${{ steps.filter.outputs.go }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      proto: ${{ steps.filter.outputs.proto }}
+      docker: ${{ steps.filter.outputs.docker }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            java:
+              - "services/gateway-service/**"
+              - "services/account-service/**"
+              - "services/room-service/**"
+              - "gen/java/**"
+              - "mise.toml"
+            python:
+              - "services/quiz-engine-service/**"
+              - "services/scoring-service/**"
+              - "gen/python/**"
+              - "mise.toml"
+            go:
+              - "services/match-data-service/**"
+              - "services/mock-rso-service/**"
+              - "gen/go/**"
+              - "go.work"
+              - "mise.toml"
+            frontend:
+              - "frontend/**"
+              - "mise.toml"
+            proto:
+              - "proto/**"
+              - "gen/**"
+              - "buf.gen.yaml"
+              - "Makefile"
+              - "mise.toml"
+            docker:
+              - "**/Dockerfile"
+              - ".dockerignore"
+              - "compose.yaml"
+              - ".env.example"
+              - "infra/docker/**"
+              - "mise.toml"
+              - "**/pom.xml"
+              - "**/.mvn/**"
+              - "**/pyproject.toml"
+              - "**/uv.lock"
+              - "**/go.mod"
+              - "**/go.sum"
+              - "**/package.json"
+              - "**/package-lock.json"
+
+  versions:
+    name: Versions match mise.toml
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - run: ./scripts/check-versions.sh
+
+  java:
+    name: Java (${{ matrix.service }})
+    needs: changes
+    if: needs.changes.outputs.java == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [gateway-service, account-service, room-service]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          version: ${{ env.MISE_VERSION }}
+          install_args: java
+          cache_key_prefix: mise-java
+      - uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ matrix.service }}-${{ hashFiles(format('services/{0}/pom.xml', matrix.service)) }}
+          restore-keys: maven-${{ matrix.service }}-
+      - name: Unit and integration tests, JaCoCo
+        run: ./mvnw -B -ntp verify
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-${{ matrix.service }}
+          path: services/${{ matrix.service }}/target/site/jacoco
+          if-no-files-found: ignore
+
+  python:
+    name: Python (${{ matrix.service }})
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [quiz-engine-service, scoring-service]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    env:
+      UV_PYTHON_DOWNLOADS: never
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          version: ${{ env.MISE_VERSION }}
+          install_args: python uv
+          cache_key_prefix: mise-python
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/uv
+          key: uv-${{ matrix.service }}-${{ hashFiles(format('services/{0}/uv.lock', matrix.service)) }}
+          restore-keys: uv-${{ matrix.service }}-
+      - run: uv sync --frozen
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+      - run: uv run mypy src
+      - name: Unit tests with coverage
+        run: uv run pytest --cov --cov-report=term --cov-report=html
+      - name: Integration tests
+        run: uv run pytest -m integration
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-${{ matrix.service }}
+          path: services/${{ matrix.service }}/htmlcov
+          if-no-files-found: ignore
+
+  go:
+    name: Go (${{ matrix.service }})
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [match-data-service, mock-rso-service]
+    defaults:
+      run:
+        working-directory: services/${{ matrix.service }}
+    env:
+      # Each module on its own, like in Docker (match-data-service's go.mod points at gen/go).
+      GOWORK: "off"
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          version: ${{ env.MISE_VERSION }}
+          install_args: go golangci-lint
+          cache_key_prefix: mise-go
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: go-${{ matrix.service }}-${{ hashFiles(format('services/{0}/go.sum', matrix.service)) }}
+          restore-keys: go-${{ matrix.service }}-
+      - run: go vet ./...
+      - name: golangci-lint (the version from mise.toml)
+        uses: golangci/golangci-lint-action@v9
+        with:
+          install-mode: none
+          working-directory: services/${{ matrix.service }}
+      - name: Unit tests with coverage
+        run: go test -race -coverprofile=coverage.out ./...
+      - name: Integration tests
+        run: go test -race -tags integration ./...
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-${{ matrix.service }}
+          path: services/${{ matrix.service }}/coverage.out
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+        with:
+          version: ${{ env.MISE_VERSION }}
+          install_args: node
+          cache_key_prefix: mise-node
+      - uses: actions/cache@v6
+        with:
+          path: ~/.npm
+          key: npm-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: npm-
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Tests with coverage (npm test plus a v8 coverage report)
+        run: npm run coverage
+      - run: npm run build
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-frontend
+          path: frontend/coverage
+          if-no-files-found: ignore
+
+  proto:
+    name: Protobuf contracts
+    needs: changes
+    if: needs.changes.outputs.proto == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: jdx/mise-action@v5
+        with:
+          version: ${{ env.MISE_VERSION }}
+          install_args: buf
+          cache_key_prefix: mise-buf
+      - name: gen/ matches the contracts (make proto changes nothing)
+        run: |
+          make proto
+          git add --intent-to-add gen/
+          git diff --exit-code gen/
+      - name: No breaking changes against main
+        run: |
+          if git ls-tree -d --name-only origin/main proto | grep -qx proto; then
+            git fetch --no-tags origin main:main
+            buf breaking proto --against '.git#branch=main,subdir=proto'
+          else
+            echo "main has no proto/ yet: skipping buf breaking."
+          fi
+
+  docker:
+    name: Docker images (${{ matrix.runner }})
+    needs: changes
+    if: needs.changes.outputs.docker == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # amd64 and arm64 (Apple Silicon): catches Dockerfiles that only work on one chip.
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - run: cp .env.example .env
+      - uses: docker/setup-buildx-action@v4
+      - name: Every dev image (what `docker compose build` builds)
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          files: compose.yaml
+          set: |
+            *.cache-from=type=gha,scope=dev-${{ matrix.runner }}
+            *.cache-to=type=gha,mode=max,scope=dev-${{ matrix.runner }}
+      - name: Every prod image (docker build --target prod)
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          files: compose.yaml
+          set: |
+            *.target=prod
+            *.cache-from=type=gha,scope=prod-${{ matrix.runner }}
+            *.cache-to=type=gha,mode=max,scope=prod-${{ matrix.runner }}
+
+  ci-ok:
+    name: ci-ok
+    if: always()
+    needs: [changes, versions, java, python, go, frontend, proto, docker]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Every job passed (jobs skipped by the paths filter count as passed)
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "Some jobs failed or were cancelled: ${{ toJSON(needs) }}"
+          exit 1
+      - run: echo "CI passed."

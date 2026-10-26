@@ -1,0 +1,50 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// Every FriendlyFire gRPC service implements DependencyHealthService next to
+// the standard grpc.health.v1 service:
+//   - grpc.health.v1 answers "am I running?" (used by Docker healthchecks).
+//   - DependencyHealthService answers "am I running AND can I reach
+//     everything I call?". Each service checks its database, HTTP
+//     dependencies, and calls CheckDependencies on every gRPC service it
+//     calls, using the same clients the real features will use.
+//     The result is a tree, so the Gateway can show the whole system.
+//
+// Callers: Gateway (for /api/health/deep) and every service that calls
+// another service.
+syntax = "proto3";
+
+package friendlyfire.health.v1;
+
+service DependencyHealthService {
+  // Checks this service and everything below it. Never returns an error
+  // for an unhealthy dependency; it reports it in the tree instead.
+  // Each dependency check gets a 1-second deadline.
+  rpc CheckDependencies(CheckDependenciesRequest) returns (CheckDependenciesResponse);
+}
+
+enum ComponentStatus {
+  COMPONENT_STATUS_UNSPECIFIED = 0;
+  // This component and everything below it are working.
+  COMPONENT_STATUS_UP = 1;
+  // This component works, but something below it doesn't.
+  COMPONENT_STATUS_DEGRADED = 2;
+  // This component can't be reached or doesn't work.
+  COMPONENT_STATUS_DOWN = 3;
+}
+
+message ComponentHealth {
+  // e.g. "room-service", "postgres", "mock-rso-service"
+  string name = 1;
+  ComponentStatus status = 2;
+  // How long the check took, as seen by the caller.
+  int32 latency_ms = 3;
+  // Short reason when DOWN, e.g. "connection refused" or "deadline exceeded".
+  string error = 4;
+  repeated ComponentHealth dependencies = 5;
+}
+
+message CheckDependenciesRequest {}
+
+message CheckDependenciesResponse {
+  ComponentHealth component = 1;
+}

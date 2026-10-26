@@ -1,0 +1,228 @@
+# LOCAL DEVELOPMENT ONLY. Not for deployment.
+#
+# `make up` starts everything; `make up s="room-service"` starts one service plus what
+# it depends on. Source folders are mounted under /workspace with the repo's layout, so
+# ../../gen/... paths work inside the containers. Healthchecks only ask "is it running?";
+# /api/health/deep (the Gateway) checks the connections between services.
+name: friendlyfire
+
+x-dev: &dev
+  env_file: .env
+  init: true
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+x-healthcheck: &healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+  start_interval: 2s
+
+services:
+  postgres:
+    image: postgres:16.15-alpine
+    env_file: .env
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/local/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+      start_interval: 1s
+
+  mock-rso-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/mock-rso-service/Dockerfile
+      target: dev
+    environment:
+      HTTP_PORT: "8090"
+    ports:
+      - "8090:8090"
+    volumes:
+      - ./services/mock-rso-service:/workspace/services/mock-rso-service
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/go/build-cache
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-fsS", "localhost:8090/healthz"]
+
+  match-data-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/match-data-service/Dockerfile
+      target: dev
+    environment:
+      GRPC_PORT: "9095"
+    ports:
+      - "9095:9095"
+    volumes:
+      - ./services/match-data-service:/workspace/services/match-data-service
+      - ./gen/go:/workspace/gen/go
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/go/build-cache
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "grpc_health_probe", "-addr=:9095"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  quiz-engine-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/quiz-engine-service/Dockerfile
+      target: dev
+    environment:
+      GRPC_PORT: "9093"
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./services/quiz-engine-service:/workspace/services/quiz-engine-service
+      - ./gen/python:/workspace/gen/python
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "grpc_health_probe", "-addr=:9093"]
+    depends_on:
+      match-data-service:
+        condition: service_healthy
+
+  scoring-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/scoring-service/Dockerfile
+      target: dev
+    environment:
+      GRPC_PORT: "9094"
+    ports:
+      - "9094:9094"
+    volumes:
+      - ./services/scoring-service:/workspace/services/scoring-service
+      - ./gen/python:/workspace/gen/python
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "grpc_health_probe", "-addr=:9094"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  account-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/account-service/Dockerfile
+      target: dev
+    environment:
+      GRPC_PORT: "9091"
+      JAVA_TOOL_OPTIONS: "-Xmx384m"
+      SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: .reloadtrigger
+    ports:
+      - "9091:9091"
+    volumes:
+      - ./services/account-service:/workspace/services/account-service
+      - ./gen/java:/workspace/gen/java
+      - maven_repo:/home/dev/.m2
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "grpc_health_probe", "-addr=:9091"]
+      start_period: 120s
+    depends_on:
+      match-data-service:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      mock-rso-service:
+        condition: service_healthy
+
+  room-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/room-service/Dockerfile
+      target: dev
+    environment:
+      GRPC_PORT: "9092"
+      JAVA_TOOL_OPTIONS: "-Xmx384m"
+      SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: .reloadtrigger
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./services/room-service:/workspace/services/room-service
+      - ./gen/java:/workspace/gen/java
+      - maven_repo:/home/dev/.m2
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "grpc_health_probe", "-addr=:9092"]
+      start_period: 120s
+    depends_on:
+      quiz-engine-service:
+        condition: service_healthy
+      scoring-service:
+        condition: service_healthy
+      match-data-service:
+        condition: service_healthy
+
+  gateway-service:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: services/gateway-service/Dockerfile
+      target: dev
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx384m"
+      SPRING_DEVTOOLS_RESTART_TRIGGER_FILE: .reloadtrigger
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./services/gateway-service:/workspace/services/gateway-service
+      - ./gen/java:/workspace/gen/java
+      - maven_repo:/home/dev/.m2
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "curl", "-fsS", "localhost:8080/api/health"]
+      start_period: 120s
+    depends_on:
+      account-service:
+        condition: service_healthy
+      room-service:
+        condition: service_healthy
+      scoring-service:
+        condition: service_healthy
+      match-data-service:
+        condition: service_healthy
+
+  frontend:
+    <<: *dev
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/workspace/frontend
+      - frontend_node_modules:/workspace/frontend/node_modules
+    healthcheck:
+      <<: *healthcheck
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      start_period: 60s
+    depends_on:
+      gateway-service:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  maven_repo:
+  frontend_node_modules:
+  go_mod_cache:
+  go_build_cache:

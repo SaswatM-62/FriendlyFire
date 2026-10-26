@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "charliermarsh.ruff",
+    "golang.go",
+    "dbaeumer.vscode-eslint",
+    "bradlc.vscode-tailwindcss",
+    "bufbuild.vscode-buf",
+    "hverlin.mise-vscode"
+  ]
+}

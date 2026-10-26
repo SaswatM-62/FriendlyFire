@@ -1,0 +1,18 @@
+# Every image builds with the repo root as its context; keep it small and secret-free.
+.git
+**/.env
+**/node_modules
+**/.next
+**/coverage
+**/target
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.hypothesis
+**/htmlcov
+**/tmp
+**/bin
+e2e/playwright-report
+e2e/test-results

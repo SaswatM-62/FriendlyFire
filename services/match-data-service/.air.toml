@@ -1,0 +1,15 @@
+# Hot reload for `make up`: air rebuilds and restarts the service when a .go file
+# changes here or in gen/go (root is the repo root inside Docker). Paths are relative to root.
+root = "../.."
+tmp_dir = "services/match-data-service/tmp"
+
+[build]
+cmd = "go build -o tmp/match-data-service ./cmd/match-data-service" # runs in the service folder
+entrypoint = ["services/match-data-service/tmp/match-data-service"]
+include_ext = ["go", "mod"]
+include_dir = ["services/match-data-service", "gen/go"]
+exclude_dir = ["services/match-data-service/tmp"]
+delay = 500
+# Stop the old process with SIGINT, like Ctrl+C, so it shuts down cleanly.
+send_interrupt = true
+kill_delay = 2_000_000_000 # 2 seconds, in nanoseconds

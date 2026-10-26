@@ -1,0 +1,26 @@
+# Everything comes from environment variables (see .env.example at the repo root).
+# The defaults let you run the service outside Docker against `make up`.
+spring:
+  application:
+    name: room-service
+  threads:
+    virtual:
+      enabled: true
+  grpc:
+    server:
+      port: ${GRPC_PORT:9092}
+      health:
+        # grpc.health.v1 only answers "am I running?" (Docker's liveness check).
+        schedule:
+          enabled: false
+    client:
+      channel:
+        quiz:
+          target: ${QUIZ_GRPC_ADDR:localhost:9093}
+        scoring:
+          target: ${SCORING_GRPC_ADDR:localhost:9094}
+        matchdata:
+          target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
+  devtools:
+    livereload:
+      enabled: false

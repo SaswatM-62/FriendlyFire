@@ -1,0 +1,38 @@
+# Everything comes from environment variables (see .env.example at the repo root).
+# The defaults let you run the service outside Docker against `make up`.
+spring:
+  application:
+    name: gateway-service
+  threads:
+    virtual:
+      enabled: true
+  grpc:
+    client:
+      channel:
+        account:
+          target: ${ACCOUNT_GRPC_ADDR:localhost:9091}
+        room:
+          target: ${ROOM_GRPC_ADDR:localhost:9092}
+        scoring:
+          target: ${SCORING_GRPC_ADDR:localhost:9094}
+        matchdata:
+          target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
+  devtools:
+    livereload:
+      enabled: false
+
+server:
+  port: 8080
+
+management:
+  endpoint:
+    health:
+      group:
+        # GET /api/health (forwarded here by WebConfig) -> {"status":"UP"} while the
+        # Gateway runs; Docker's healthcheck uses it. GET /api/health/deep
+        # (DeepHealthController) checks everything behind the Gateway.
+        simple:
+          include: ping
+
+friendlyfire:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}

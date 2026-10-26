@@ -1,0 +1,20 @@
+# The generated Python code from proto/, as an installable package.
+# Services depend on it as an editable path dependency (../../gen/python).
+# `make proto` rewrites everything under friendlyfire/; this file is kept.
+[project]
+name = "friendlyfire-proto"
+version = "0.1.0"
+description = "Generated Protobuf and gRPC code for FriendlyFire (make proto)."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # Must match the Buf plugins in buf.gen.yaml.
+    "protobuf==7.36.2",
+    "grpcio==1.84.1",
+]
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["friendlyfire"]

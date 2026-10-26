@@ -1,0 +1,38 @@
+# Generates gen/ from proto/. Run `make proto`; never edit gen/ by hand.
+#
+# Plugin versions are pinned, and each language's runtime library must match them:
+#   protocolbuffers/java v36.2 -> protobuf-java 4.36.2 (managed by Spring Boot 4.1.2)
+#   grpc/java v1.84.1          -> grpc-java 1.84.1 (managed by Spring Boot 4.1.2)
+#   protocolbuffers/python, protocolbuffers/pyi v36.2 -> protobuf 7.36.2 (PyPI)
+#   grpc/python v1.84.1        -> grpcio 1.84.1
+#   protocolbuffers/go v1.36.12 -> google.golang.org/protobuf v1.36.12
+#   grpc/go v1.6.2             -> google.golang.org/grpc v1.84.0 (needs >= v1.64.0)
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: java_package_prefix
+      value: com.friendlyfire.proto
+    - file_option: java_multiple_files
+      value: true
+    - file_option: go_package_prefix
+      value: github.com/SaswatM-62/FriendlyFire/gen/go
+plugins:
+  - remote: buf.build/protocolbuffers/java:v36.2
+    out: gen/java
+  - remote: buf.build/grpc/java:v1.84.1
+    out: gen/java
+  - remote: buf.build/protocolbuffers/python:v36.2
+    out: gen/python
+  - remote: buf.build/protocolbuffers/pyi:v36.2
+    out: gen/python
+  - remote: buf.build/grpc/python:v1.84.1
+    out: gen/python
+  - remote: buf.build/protocolbuffers/go:v1.36.12
+    out: gen/go
+    opt: paths=source_relative
+  - remote: buf.build/grpc/go:v1.6.2
+    out: gen/go
+    opt: paths=source_relative
+inputs:
+  - directory: proto

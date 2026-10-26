@@ -1,0 +1,9 @@
+// For editors and running Go tools from the repo root. Docker builds use each
+// module on its own (GOWORK=off) with match-data-service's replace directive.
+go 1.27.3
+
+use (
+	./gen/go
+	./services/match-data-service
+	./services/mock-rso-service
+)

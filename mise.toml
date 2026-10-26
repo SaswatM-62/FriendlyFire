@@ -1,0 +1,25 @@
+# Local toolchains, for editor autocomplete and running checks outside Docker.
+# The app itself and the integration/e2e tests always run in Docker.
+#
+# This file is the single source of truth for tool versions. When you bump one,
+# also bump:
+#   java   -> services/*/Dockerfile (eclipse-temurin tag), <java.version> in each pom.xml
+#   go     -> services/*/Dockerfile (golang tag), the `go` line in every go.mod
+#   python -> services/*/Dockerfile (python tag)
+#   uv     -> services/*/Dockerfile (pip install uv==...)
+#   node   -> frontend/Dockerfile (node tag), .github/workflows/e2e.yml
+#   buf    -> Makefile (BUF_IMAGE)
+#   golangci-lint -> services/*/Dockerfile (Go services)
+# CI installs these with jdx/mise-action. Maven comes from ./mvnw, not mise.
+#
+# See README.md "Local tools with mise" for setup and isolation rules.
+
+[tools]
+# Adoptium writes jdk-21.0.12.1+1 as 21.0.12+101 (Docker tag 21.0.12.1_1).
+java = "temurin-21.0.12+101.0.LTS"
+go = "1.27.3"
+python = "3.12.15"
+uv = "0.13.5"
+node = "24.22.1"
+buf = "1.75.0"
+golangci-lint = "2.15.0"
