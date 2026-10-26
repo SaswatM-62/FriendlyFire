@@ -1,0 +1,35 @@
+# Everything comes from environment variables (see .env.example at the repo root).
+# The defaults let you run the service outside Docker against `make up`.
+spring:
+  application:
+    name: account-service
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:friendlyfire}?currentSchema=account
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:}
+    hikari:
+      # Start, and serve health, even when Postgres is down.
+      initialization-fail-timeout: -1
+      # Give up on a connection quickly, inside the 1-second health deadline.
+      connection-timeout: 750
+  grpc:
+    server:
+      port: ${GRPC_PORT:9091}
+      health:
+        # grpc.health.v1 only answers "am I running?" (Docker's liveness check), so it
+        # must not follow Actuator's health, which includes Postgres.
+        schedule:
+          enabled: false
+    client:
+      channel:
+        matchdata:
+          target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
+  devtools:
+    livereload:
+      enabled: false
+
+friendlyfire:
+  mock-rso-url: ${MOCK_RSO_URL:http://localhost:8090}

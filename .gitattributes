@@ -1,0 +1,6 @@
+# LF everywhere, so Windows checkouts don't break mvnw or .sh files.
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+gen/** linguist-generated=true

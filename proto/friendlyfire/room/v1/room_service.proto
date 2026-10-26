@@ -1,0 +1,372 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// RoomService runs rooms and quizzes from start to finish: lobby, settings,
+// timers, collecting and grading answers, disconnects and votes.
+// Rooms live in memory (behind a RoomRepository interface), so a restart of
+// this service ends the rooms in progress.
+//
+// Callers: Gateway, for every player action.
+// Calls out to: QuizService (GenerateQuiz),
+//               ScoringService (StartQuiz, RecordRound, FinalizeQuiz),
+//               MatchDataService (GetSyncStatus, to know who is ready).
+//
+// Rules every RPC follows:
+//   - The user_id comes from the Gateway (from the checked Auth0 token),
+//     never from the browser's message body.
+//   - NOT_FOUND if the room doesn't exist.
+//   - PERMISSION_DENIED if the user isn't in the room, or isn't the host
+//     for host-only actions.
+//
+// Room limits: 2–8 players.
+// Settings: 5–20 questions (default 10), 10–45 seconds each (default 20).
+syntax = "proto3";
+
+package friendlyfire.room.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service RoomService {
+  // Creates a room with the caller as host and returns it.
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+
+  // Adds the user to a room. If they're already in it (after a page
+  // refresh or dropped connection), marks them connected again instead.
+  // Errors:
+  //   RESOURCE_EXHAUSTED   the room already has 8 players
+  //   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+
+  // The user leaves for good. If the host leaves, the player who joined
+  // next becomes host. The room closes when the last player leaves.
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+
+  // Host only. Removes another player. Only allowed in the lobby.
+  rpc KickPlayer(KickPlayerRequest) returns (KickPlayerResponse);
+
+  // Host only. Only allowed in the lobby.
+  // INVALID_ARGUMENT if a value is outside the allowed range.
+  rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse);
+
+  // Host only. Allowed in the lobby, or after a quiz finishes to play again.
+  // Generates all questions, then starts a short countdown.
+  // FAILED_PRECONDITION (with a message for the host) if there are fewer
+  // than 2 players, someone's matches haven't finished syncing, or there
+  // isn't enough match data for the chosen number of questions.
+  rpc StartQuiz(StartQuizRequest) returns (StartQuizResponse);
+
+  // Records a player's answer to the current question, using the time it
+  // arrives here (not a time sent by the browser).
+  // Errors:
+  //   FAILED_PRECONDITION  no question is open, the question_id isn't the
+  //                        current one, or time is up
+  //   ALREADY_EXISTS       the player already answered this question
+  //   INVALID_ARGUMENT     option_id isn't one of the question's options
+  rpc SubmitAnswer(SubmitAnswerRequest) returns (SubmitAnswerResponse);
+
+  // Called by the Gateway when a player's WebSocket connection drops.
+  // During a quiz, if they don't come back within 15 seconds, the room
+  // pauses and the others vote on what to do.
+  rpc ReportDisconnected(ReportDisconnectedRequest) returns (ReportDisconnectedResponse);
+
+  // Called by the Gateway with a player's latest connection quality (from
+  // the ping messages behind the network bar). Room events are only sent
+  // when the quality level actually changes.
+  rpc ReportConnectionQuality(ReportConnectionQualityRequest) returns (ReportConnectionQualityResponse);
+
+  // A connected player's vote while the room is in ROOM_PHASE_VOTE.
+  // The vote ends when everyone has voted or its deadline passes.
+  // The option with the most votes wins; a tie means WAIT.
+  rpc CastVote(CastVoteRequest) returns (CastVoteResponse);
+
+  // The current state of the room.
+  rpc GetRoomSnapshot(GetRoomSnapshotRequest) returns (GetRoomSnapshotResponse);
+
+  // A live feed of everything that happens in a room. The first message is
+  // always ROOM_EVENT_TYPE_SNAPSHOT. The stream ends when the room closes.
+  // The Gateway opens one stream per room and forwards each event to the
+  // STOMP topic /topic/room/{room_code}.
+  rpc StreamRoomEvents(StreamRoomEventsRequest) returns (stream StreamRoomEventsResponse);
+}
+
+// ---------- Enums ----------
+
+enum RoomPhase {
+  ROOM_PHASE_UNSPECIFIED = 0;
+  // Waiting for players. The host can change settings and start.
+  ROOM_PHASE_LOBBY = 1;
+  // Questions are ready; a short countdown before question 1.
+  ROOM_PHASE_STARTING = 2;
+  // A question is open and the timer is running.
+  ROOM_PHASE_QUESTION = 3;
+  // The answer and updated scores are showing for a few seconds.
+  ROOM_PHASE_REVEAL = 4;
+  // The quiz is paused while players vote about someone who disconnected.
+  ROOM_PHASE_VOTE = 5;
+  // The quiz is over and the final standings are showing.
+  ROOM_PHASE_FINISHED = 6;
+}
+
+enum PlayerStatus {
+  PLAYER_STATUS_UNSPECIFIED = 0;
+  PLAYER_STATUS_CONNECTED = 1;
+  // Connection dropped; they can come back by joining again.
+  PLAYER_STATUS_DISCONNECTED = 2;
+  // The room voted to continue without them. They can still rejoin.
+  PLAYER_STATUS_SITTING_OUT = 3;
+}
+
+enum ConnectionQuality {
+  CONNECTION_QUALITY_UNSPECIFIED = 0;
+  CONNECTION_QUALITY_GOOD = 1;  // under 150 ms round trip
+  CONNECTION_QUALITY_FAIR = 2;  // 150–300 ms
+  CONNECTION_QUALITY_POOR = 3;  // over 300 ms or missed pings
+}
+
+enum VoteOption {
+  VOTE_OPTION_UNSPECIFIED = 0;
+  // Wait another 30 seconds for the player to come back.
+  VOTE_OPTION_WAIT = 1;
+  // Keep playing without them.
+  VOTE_OPTION_CONTINUE_WITHOUT_PLAYER = 2;
+  // End the quiz now; scores so far are final.
+  VOTE_OPTION_END_QUIZ = 3;
+}
+
+enum RoomEventType {
+  ROOM_EVENT_TYPE_UNSPECIFIED = 0;
+  // First message on every stream: the current state.
+  ROOM_EVENT_TYPE_SNAPSHOT = 1;
+  ROOM_EVENT_TYPE_PLAYER_JOINED = 2;
+  ROOM_EVENT_TYPE_PLAYER_LEFT = 3;
+  ROOM_EVENT_TYPE_PLAYER_KICKED = 4;
+  ROOM_EVENT_TYPE_PLAYER_DISCONNECTED = 5;
+  ROOM_EVENT_TYPE_PLAYER_RECONNECTED = 6;
+  ROOM_EVENT_TYPE_HOST_CHANGED = 7;
+  ROOM_EVENT_TYPE_SETTINGS_CHANGED = 8;
+  // A player's match sync finished, so they're ready to play.
+  ROOM_EVENT_TYPE_PLAYER_DATA_READY = 9;
+  ROOM_EVENT_TYPE_CONNECTION_QUALITY_CHANGED = 10;
+  ROOM_EVENT_TYPE_QUIZ_STARTING = 11;
+  ROOM_EVENT_TYPE_QUESTION_STARTED = 12;
+  // Someone answered. Shows THAT they answered, never WHAT they picked.
+  ROOM_EVENT_TYPE_PLAYER_ANSWERED = 13;
+  ROOM_EVENT_TYPE_QUESTION_REVEALED = 14;
+  ROOM_EVENT_TYPE_VOTE_STARTED = 15;
+  ROOM_EVENT_TYPE_VOTE_RESOLVED = 16;
+  ROOM_EVENT_TYPE_QUIZ_FINISHED = 17;
+  // Last message before the stream ends.
+  ROOM_EVENT_TYPE_ROOM_CLOSED = 18;
+}
+
+// ---------- Shared messages ----------
+
+// Everything a browser needs to draw the room. Every event carries a full
+// snapshot, so the frontend can simply replace its state each time.
+message RoomSnapshot {
+  // 6 characters, e.g. "K7QM2X".
+  string room_code = 1;
+  string host_user_id = 2;
+  RoomPhase phase = 3;
+  RoomSettings settings = 4;
+  // In the order they joined.
+  repeated Player players = 5;
+  // Set once a quiz has started; matches the quiz_id in ScoringService.
+  string quiz_id = 6;
+  // 1-based. 0 in the lobby.
+  int32 round_number = 7;
+  // Set during QUESTION and REVEAL.
+  QuestionView current_question = 8;
+  // When the current phase ends: the countdown, the question timer, the
+  // reveal, or the vote. Not set in LOBBY and FINISHED.
+  google.protobuf.Timestamp phase_deadline = 9;
+  // Empty in the lobby.
+  repeated ScoreEntry scoreboard = 10;
+  // Set during VOTE.
+  Vote active_vote = 11;
+}
+
+message RoomSettings {
+  int32 question_count = 1;        // 5–20, default 10
+  int32 seconds_per_question = 2;  // 10–45, default 20
+}
+
+message Player {
+  string user_id = 1;
+  string display_name = 2;
+  PlayerStatus status = 3;
+  // True once Match Data reports this player's sync as COMPLETE.
+  bool match_data_ready = 4;
+  ConnectionQuality connection_quality = 5;
+  // True if they've answered the current question. Reset each question.
+  bool answered_current_question = 6;
+}
+
+// A question as browsers see it. During ROOM_PHASE_QUESTION the `reveal`
+// field is NOT set, so the correct answer never reaches a browser early.
+message QuestionView {
+  string question_id = 1;
+  string text = 2;
+  repeated QuestionOption options = 3;
+  // Set only during ROOM_PHASE_REVEAL.
+  Reveal reveal = 4;
+}
+
+message QuestionOption {
+  string option_id = 1;
+  string label = 2;
+}
+
+message Reveal {
+  string correct_option_id = 1;
+  string explanation = 2;
+  repeated PlayerResult results = 3;
+}
+
+message PlayerResult {
+  string user_id = 1;
+  // Empty if they didn't answer.
+  string chosen_option_id = 2;
+  bool correct = 3;
+  int32 points = 4;
+}
+
+message ScoreEntry {
+  string user_id = 1;
+  string display_name = 2;
+  int32 total_points = 3;
+  // 1 = first place. Equal points share a rank.
+  int32 rank = 4;
+  int32 points_last_round = 5;
+}
+
+message Vote {
+  // The disconnected player the vote is about.
+  string about_user_id = 1;
+  google.protobuf.Timestamp deadline = 2;
+  int32 wait_votes = 3;
+  int32 continue_votes = 4;
+  int32 end_votes = 5;
+  // Who has voted so far (not what they voted).
+  repeated string voted_user_ids = 6;
+}
+
+message RoomEvent {
+  RoomEventType type = 1;
+  // The player the event is about, if any (who joined, who answered...).
+  string subject_user_id = 2;
+  google.protobuf.Timestamp occurred_at = 3;
+  // The room's state right after the event.
+  RoomSnapshot snapshot = 4;
+}
+
+// ---------- Requests and responses ----------
+
+message CreateRoomRequest {
+  string host_user_id = 1;
+  string host_display_name = 2;
+}
+
+message CreateRoomResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message JoinRoomRequest {
+  string room_code = 1;
+  string user_id = 2;
+  string display_name = 3;
+}
+
+message JoinRoomResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message LeaveRoomRequest {
+  string room_code = 1;
+  string user_id = 2;
+}
+
+message LeaveRoomResponse {}
+
+message KickPlayerRequest {
+  string room_code = 1;
+  // Must be the host.
+  string user_id = 2;
+  string target_user_id = 3;
+}
+
+message KickPlayerResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message UpdateSettingsRequest {
+  string room_code = 1;
+  // Must be the host.
+  string user_id = 2;
+  RoomSettings settings = 3;
+}
+
+message UpdateSettingsResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message StartQuizRequest {
+  string room_code = 1;
+  // Must be the host.
+  string user_id = 2;
+}
+
+message StartQuizResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message SubmitAnswerRequest {
+  string room_code = 1;
+  string user_id = 2;
+  string question_id = 3;
+  string option_id = 4;
+}
+
+// Deliberately empty: whether the answer was right is only shown at the
+// reveal, to everyone at once.
+message SubmitAnswerResponse {}
+
+message ReportDisconnectedRequest {
+  string room_code = 1;
+  string user_id = 2;
+}
+
+message ReportDisconnectedResponse {}
+
+message ReportConnectionQualityRequest {
+  string room_code = 1;
+  string user_id = 2;
+  ConnectionQuality quality = 3;
+}
+
+message ReportConnectionQualityResponse {}
+
+message CastVoteRequest {
+  string room_code = 1;
+  string user_id = 2;
+  VoteOption option = 3;
+}
+
+message CastVoteResponse {}
+
+message GetRoomSnapshotRequest {
+  string room_code = 1;
+  // Must be in the room.
+  string user_id = 2;
+}
+
+message GetRoomSnapshotResponse {
+  RoomSnapshot snapshot = 1;
+}
+
+message StreamRoomEventsRequest {
+  string room_code = 1;
+}
+
+message StreamRoomEventsResponse {
+  RoomEvent event = 1;
+}

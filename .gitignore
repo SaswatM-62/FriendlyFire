@@ -1,0 +1,46 @@
+# Java
+target/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Go
+bin/
+tmp/
+coverage.out
+coverage.html
+
+# Node / Next.js
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
+# IDE and OS files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+
+# Secrets: never commit these. Copy .env.example to .env instead.
+.env
+**/.env
+.env*.local
+
+# gen/ is NOT ignored: generated code is committed on purpose.

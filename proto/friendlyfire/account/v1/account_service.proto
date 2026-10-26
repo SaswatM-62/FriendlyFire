@@ -1,0 +1,135 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// AccountService owns FriendlyFire users and their linked game accounts.
+// Sign-in itself is handled by Auth0: the Gateway checks the Auth0 token and
+// then calls EnsureUser to get our own user_id.
+//
+// Callers: Gateway.
+// Calls out to: MatchDataService (SyncPlayer after linking or sign-in,
+// DeletePlayerData after unlinking or deleting an account).
+syntax = "proto3";
+
+package friendlyfire.account.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service AccountService {
+  // Finds the user for an Auth0 subject, or creates one on their first visit.
+  // If the user has a linked Riot account, this also asks Match Data to
+  // fetch any new matches.
+  rpc EnsureUser(EnsureUserRequest) returns (EnsureUserResponse);
+
+  // Returns one user. NOT_FOUND if the user doesn't exist.
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+
+  // Changes the name other players see. INVALID_ARGUMENT if the name is
+  // empty or longer than 24 characters.
+  rpc UpdateDisplayName(UpdateDisplayNameRequest) returns (UpdateDisplayNameResponse);
+
+  // Step 1 of linking a Riot account: returns the Riot Sign-On URL to send
+  // the browser to. The one-time `state` value is stored here and is
+  // already inside the URL.
+  rpc StartRiotLink(StartRiotLinkRequest) returns (StartRiotLinkResponse);
+
+  // Step 2, after Riot redirects back with a code. Checks `state`, swaps the
+  // code for a token, looks up the player's PUUID and Riot ID, saves the
+  // link, starts a match sync, and then throws the Riot token away.
+  // Errors:
+  //   INVALID_ARGUMENT  `state` is missing, expired, or belongs to another user
+  //   ALREADY_EXISTS    this Riot account is linked to a different user
+  //   UNAVAILABLE       Riot Sign-On could not be reached
+  rpc CompleteRiotLink(CompleteRiotLinkRequest) returns (CompleteRiotLinkResponse);
+
+  // Removes the Riot link and deletes all of that player's match data.
+  rpc UnlinkRiot(UnlinkRiotRequest) returns (UnlinkRiotResponse);
+
+  // Deletes the user, their Riot link and their match data.
+  rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+}
+
+message User {
+  // Our own ID (a UUID). Use this everywhere, never the Auth0 subject.
+  string user_id = 1;
+  string display_name = 2;
+  string email = 3;
+  google.protobuf.Timestamp created_at = 4;
+  // Not set if the user hasn't linked a Riot account yet.
+  RiotLink riot_link = 5;
+}
+
+// What the app may show about a linked Riot account. The PUUID is
+// deliberately left out: it stays inside AccountService and MatchDataService
+// and is never sent to browsers.
+message RiotLink {
+  string game_name = 1;  // "Sam" in "Sam#NA1"
+  string tag_line = 2;   // "NA1" in "Sam#NA1"
+  string region = 3;     // VALORANT region, e.g. "na", "eu", "ap"
+  google.protobuf.Timestamp linked_at = 4;
+}
+
+message EnsureUserRequest {
+  // The `sub` claim from the Auth0 token, e.g. "google-oauth2|1234".
+  string auth_subject = 1;
+  // From the Auth0 token. Used only when creating the user.
+  string email = 2;
+  string suggested_display_name = 3;
+}
+
+message EnsureUserResponse {
+  User user = 1;
+  // True if the user was created by this call.
+  bool created = 2;
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message UpdateDisplayNameRequest {
+  string user_id = 1;
+  string display_name = 2;
+}
+
+message UpdateDisplayNameResponse {
+  User user = 1;
+}
+
+message StartRiotLinkRequest {
+  string user_id = 1;
+  // Where Riot sends the browser back to, e.g.
+  // "https://app.example.com/api/link/riot/callback".
+  // Must be one of the redirect URIs registered with Riot (or the mock).
+  string redirect_uri = 2;
+}
+
+message StartRiotLinkResponse {
+  string authorize_url = 1;
+}
+
+message CompleteRiotLinkRequest {
+  string user_id = 1;
+  string code = 2;
+  string state = 3;
+  // Same value that was passed to StartRiotLink.
+  string redirect_uri = 4;
+}
+
+message CompleteRiotLinkResponse {
+  RiotLink riot_link = 1;
+}
+
+message UnlinkRiotRequest {
+  string user_id = 1;
+}
+
+message UnlinkRiotResponse {}
+
+message DeleteAccountRequest {
+  string user_id = 1;
+}
+
+message DeleteAccountResponse {}

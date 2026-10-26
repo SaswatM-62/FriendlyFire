@@ -1,0 +1,138 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// ScoringService turns answers into points, keeps the scoreboard, and stores
+// finished quizzes for the history page. It owns the `scoring` tables.
+//
+// Callers: RoomService (StartQuiz, RecordRound, FinalizeQuiz),
+//          Gateway (GetQuizResult, GetPlayerHistory).
+syntax = "proto3";
+
+package friendlyfire.scoring.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service ScoringService {
+  // Registers a quiz before its first question. ALREADY_EXISTS if the
+  // quiz_id was already registered.
+  rpc StartQuiz(StartQuizRequest) returns (StartQuizResponse);
+
+  // Scores one finished round and returns the updated scoreboard.
+  // Called once per round, after the timer ends, with every player's answer.
+  // Safe to retry: sending the same quiz_id + round_number again replaces
+  // the earlier result instead of counting it twice.
+  //
+  // Suggested points: correct = 500 + 500 * (time left / time limit),
+  // rounded; wrong or no answer = 0.
+  rpc RecordRound(RecordRoundRequest) returns (RecordRoundResponse);
+
+  // Marks a quiz as over and returns the final standings.
+  rpc FinalizeQuiz(FinalizeQuizRequest) returns (FinalizeQuizResponse);
+
+  // One finished quiz. NOT_FOUND if it doesn't exist.
+  rpc GetQuizResult(GetQuizResultRequest) returns (GetQuizResultResponse);
+
+  // A player's past quizzes, newest first.
+  rpc GetPlayerHistory(GetPlayerHistoryRequest) returns (GetPlayerHistoryResponse);
+}
+
+enum EndReason {
+  END_REASON_UNSPECIFIED = 0;
+  // All rounds were played.
+  END_REASON_COMPLETED = 1;
+  // Players voted to end the quiz early.
+  END_REASON_VOTED_TO_END = 2;
+  // Fewer than 2 players were left.
+  END_REASON_NOT_ENOUGH_PLAYERS = 3;
+}
+
+message StartQuizRequest {
+  string quiz_id = 1;
+  string room_code = 2;
+  repeated QuizParticipant players = 3;
+  int32 total_rounds = 4;
+  int32 seconds_per_question = 5;
+}
+
+message QuizParticipant {
+  string user_id = 1;
+  // Saved so the history page still shows the name used in this quiz.
+  string display_name = 2;
+}
+
+message StartQuizResponse {}
+
+message RecordRoundRequest {
+  string quiz_id = 1;
+  int32 round_number = 2;  // starts at 1
+  repeated PlayerAnswer answers = 3;
+}
+
+message PlayerAnswer {
+  string user_id = 1;
+  // False if the player didn't answer before the timer ran out.
+  bool answered = 2;
+  bool correct = 3;
+  // Time from the question appearing to the answer arriving at RoomService.
+  int32 response_time_ms = 4;
+}
+
+message RecordRoundResponse {
+  repeated RoundPoints round_points = 1;
+  repeated ScoreboardEntry scoreboard = 2;
+}
+
+message RoundPoints {
+  string user_id = 1;
+  int32 points = 2;
+}
+
+message ScoreboardEntry {
+  string user_id = 1;
+  string display_name = 2;
+  int32 total_points = 3;
+  int32 correct_answers = 4;
+  // 1 = first place. Players with equal points share a rank.
+  int32 rank = 5;
+}
+
+message FinalizeQuizRequest {
+  string quiz_id = 1;
+  int32 rounds_played = 2;
+  EndReason end_reason = 3;
+}
+
+message FinalizeQuizResponse {
+  QuizSummary summary = 1;
+}
+
+message QuizSummary {
+  string quiz_id = 1;
+  google.protobuf.Timestamp started_at = 2;
+  google.protobuf.Timestamp finished_at = 3;
+  int32 total_rounds = 4;
+  int32 rounds_played = 5;
+  EndReason end_reason = 6;
+  repeated ScoreboardEntry final_scoreboard = 7;
+}
+
+message GetQuizResultRequest {
+  string quiz_id = 1;
+}
+
+message GetQuizResultResponse {
+  QuizSummary summary = 1;
+}
+
+message GetPlayerHistoryRequest {
+  string user_id = 1;
+  // 0 means the server default (20). Maximum 50.
+  int32 page_size = 2;
+  // Empty for the first page; otherwise next_page_token from the last call.
+  string page_token = 3;
+}
+
+message GetPlayerHistoryResponse {
+  repeated QuizSummary quizzes = 1;
+  // Empty when there are no more pages.
+  string next_page_token = 2;
+}

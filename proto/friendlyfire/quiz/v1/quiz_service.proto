@@ -1,0 +1,68 @@
+// v1 — changes need a pull request approved by a project manager.
+//
+// QuizService turns players' match stats into trivia questions.
+// It keeps no state: RoomService asks for all of a quiz's questions in one
+// call when the host starts, and grades answers itself.
+//
+// Callers: RoomService.
+// Calls out to: MatchDataService (GetPlayerMatchStats).
+syntax = "proto3";
+
+package friendlyfire.quiz.v1;
+
+service QuizService {
+  // Builds every question for a quiz. Uses both matches the players played
+  // together and each player's solo matches.
+  // Errors:
+  //   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+  //   FAILED_PRECONDITION  not enough match data to make question_count
+  //                        different questions (the message says how many
+  //                        could be made)
+  rpc GenerateQuiz(GenerateQuizRequest) returns (GenerateQuizResponse);
+}
+
+enum QuestionType {
+  QUESTION_TYPE_UNSPECIFIED = 0;
+  // "Who had 31 kills on Ascent last Tuesday?" The options are the players.
+  QUESTION_TYPE_PICK_THE_PLAYER = 1;
+}
+
+message GenerateQuizRequest {
+  repeated QuizPlayer players = 1;
+  int32 question_count = 2;
+  // Same seed + same data = same questions. Handy for tests.
+  // 0 means pick a random seed.
+  int64 seed = 3;
+}
+
+message QuizPlayer {
+  string user_id = 1;
+  // Used as the option text in PICK_THE_PLAYER questions.
+  string display_name = 2;
+}
+
+message GenerateQuizResponse {
+  repeated Question questions = 1;
+}
+
+// A full question, INCLUDING the answer. RoomService keeps this on the
+// server. Browsers get a copy without correct_option_id until the reveal.
+message Question {
+  string question_id = 1;
+  QuestionType type = 2;
+  // e.g. "Who had 31 kills on Ascent last Tuesday?"
+  string text = 3;
+  repeated AnswerOption options = 4;
+  string correct_option_id = 5;
+  // Shown after the reveal, e.g. "Sam went 31/12/4 as Jett."
+  string explanation = 6;
+  // The match the question came from.
+  string source_match_id = 7;
+}
+
+message AnswerOption {
+  // For PICK_THE_PLAYER this is the player's user_id.
+  string option_id = 1;
+  // For PICK_THE_PLAYER this is the player's display name.
+  string label = 2;
+}
