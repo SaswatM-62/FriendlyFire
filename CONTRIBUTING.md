@@ -88,8 +88,9 @@ dependencies, so it takes a few minutes. Later starts take about a minute.
 
 1. `make ps`: all 9 containers say `(healthy)`. The Java services are the last ones.
 2. Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`: the Gateway only
-   accepts requests from `FRONTEND_ORIGIN`). The **System status** page should say
-   **"17 of 17 checks passing"** and **"Realtime: connected · N ms"**.
+   accepts requests from `FRONTEND_ORIGIN`). The **System status** page should show
+   every check passing (**"N of N checks passing"**; 17 today) and
+   **"Realtime: connected · N ms"**.
 3. From a terminal:
    ```bash
    curl localhost:8080/api/health                                  # {"status":"UP"}
@@ -193,6 +194,7 @@ work, delete the comment in the same pull request.
   `feat(room-service): join a room by code`.
 - Open a pull request to `main`. The **`ci-ok`** check must be green.
 - Changes to `proto/` or `gen/` need a project manager's review (see `.github/CODEOWNERS`).
+  An approved breaking change also gets the `breaking-change` label (see [Contracts](#contracts-proto)).
 - For a risky change, add the **`run-e2e`** label to also run the end-to-end test.
 
 **Before you push**
@@ -435,6 +437,9 @@ frontend/src/
   become the `TODO(ff)` checklists.
 - Never change, reuse or remove field numbers, fields or RPCs in `v1`; add new ones
   instead (CI runs `buf breaking`). A real breaking change means a new `v2` package.
+  The one exception: before the first release, the project managers can approve a
+  deliberate break by adding the **`breaking-change`** label to the pull request, which
+  makes CI skip `buf breaking` for it.
 - Run `make proto` and commit `proto/` and `gen/` together; a project manager approves.
 
 ## 6. Troubleshooting

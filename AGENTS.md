@@ -58,7 +58,8 @@ make coverage           unit tests + coverage reports
 ## Rules
 
 - **Never edit `gen/` by hand.** After changing a `.proto`, run `make proto` and commit
-  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval.
+  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval;
+  CI's `buf breaking` only lets a break through when a PM adds the `breaking-change` label.
 - **Config comes from environment variables only** (`.env`, copied from `.env.example`).
   Never commit secrets or `.env`.
 - **Inject dependencies through constructors.** No field injection, no globals; wiring
