@@ -160,4 +160,4 @@ Dockerfiles, `go.mod` files, `pom.xml` files and CI use the same ones
 | Dev images | grpc_health_probe 0.4.60, watchexec 2.8.0, air 1.67.4 |
 
 The full list of library versions is in each service's build file (`pom.xml`,
-`pyproject.toml` + `uv.lock`, `go.mod`, `package.json` + `package-lock.json`).
+`pyproject.toml` + `uv.lock`, `go.mod`, `package.json` + `package-lock.json`). Saswat
