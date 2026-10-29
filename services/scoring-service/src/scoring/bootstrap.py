@@ -75,8 +75,9 @@ async def build_server(settings: Settings, overrides: Overrides | None = None) -
             # could take minutes to notice Postgres is back.)
             reconnect_timeout=10.0,
         )
-        # Don't wait for Postgres: the service starts, and serves health, even if it's down.
-        await pool.open(wait=False)
+        # Fails to start if Postgres is unreachable. Once running, the pool reconnects
+        # by itself and the health check reports DOWN meanwhile.
+        await pool.open(wait=True)
         closers.append(pool.close)
 
     checks = overrides.dependency_checks
