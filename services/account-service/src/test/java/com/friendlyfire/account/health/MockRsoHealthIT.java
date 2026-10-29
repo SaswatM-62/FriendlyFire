@@ -21,6 +21,8 @@ import org.wiremock.spring.InjectWireMock;
 @SpringBootTest(properties = {
     "spring.grpc.server.port=0",
     "spring.grpc.client.channel.matchdata.target=localhost:1",
+    // Flyway needs a database at startup; this test doesn't use one.
+    "spring.flyway.enabled=false",
 })
 @EnableWireMock(@ConfigureWireMock(name = "mock-rso", baseUrlProperties = "friendlyfire.mock-rso-url"))
 class MockRsoHealthIT {
