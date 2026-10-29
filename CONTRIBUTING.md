@@ -457,6 +457,7 @@ Then the status page (http://localhost:3000) shows which connection fails, and w
 | Status page says "Can't reach the Gateway" or "Realtime: disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
 | A node is DOWN with "connection refused" or "unknown host" | That service (or Postgres) isn't running: `make up`. |
 | A node is DOWN with "deadline exceeded" | It answered too slowly, usually because it or something below it is still starting. Wait a few seconds. |
+| A service with migrations (scoring-service) stays DOWN after Postgres was stopped and started again | A service may fail to start while Postgres is unreachable, and in `make up` the hot-reload watcher (`watchfiles`) can restart the process, sometimes at that moment (Docker Desktop reports file changes in the shared `gen/python` folder). The process then exits and stays down, because the container keeps running and Docker's restart policy never fires. Start Postgres, then `docker compose restart <service>`. |
 | A Java service doesn't pick up my change | Look for a compile error in `make logs s=<service>`: the app only restarts after a successful compile. |
 | Hot reload does nothing on Windows | The repo is under `/mnt/c`. Clone it inside WSL (`~/code/FriendlyFire`). |
 | A new dependency isn't found | `docker compose restart <service>`. |
