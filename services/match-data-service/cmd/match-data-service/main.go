@@ -16,6 +16,7 @@ import (
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/grpcserver"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/health"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/matchdata"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/migrations"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -41,8 +42,13 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
 
-	// Creating the pool doesn't connect, so the service starts (and serves health)
-	// even when Postgres is down.
+	// Fails to start if Postgres is unreachable; Compose restarts the service until it is up.
+	if err := migrations.Up(cfg.Postgres.ConnString()); err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+
+	// Once running, the pool reconnects by itself after a Postgres outage, and the
+	// health check reports DOWN meanwhile.
 	poolConfig, err := pgxpool.ParseConfig(cfg.Postgres.ConnString())
 	if err != nil {
 		return fmt.Errorf("postgres config: %w", err)
