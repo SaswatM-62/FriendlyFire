@@ -19,7 +19,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.grpc.client.GrpcChannelFactory;
 
 /** Talks to the real gRPC server, in-process. */
-@SpringBootTest
+// Flyway needs a database at startup; FlywayMigrationIT covers it against a real Postgres.
+@SpringBootTest(properties = "spring.flyway.enabled=false")
 @AutoConfigureTestGrpcTransport
 class AccountGrpcServiceTest {
 

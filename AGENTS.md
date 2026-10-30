@@ -65,6 +65,11 @@ make coverage           unit tests + coverage reports
   happens in one place per service (`config/` in Java, `bootstrap.py`, `cmd/<svc>/main.go`).
 - **Every change comes with tests**: unit tests by default, integration tests when it
   touches Postgres or an HTTP API. Follow the naming and folders below.
+- **Startup and Postgres.** A service may fail to start if Postgres is unreachable
+  (Compose waits for Postgres, and `restart: unless-stopped` retries). Once running, it
+  must never crash when Postgres drops: it reports DOWN in the health tree and recovers.
+  Services with a schema (account, scoring, matchdata) apply their own migrations at
+  startup and touch only their own schema.
 - **Keep `/api/health/deep` working.** When a service starts calling something new
   (a service, a database, an external API), add it to that service's dependency health
   check, using the same injected client the feature uses.

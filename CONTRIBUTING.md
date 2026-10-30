@@ -220,6 +220,10 @@ commit `proto/` and `gen/` together. See [Contracts](#contracts-proto) for the r
 With mise you can run the same commands (`uv add`, `go get`, `npm install`) in the
 service folder instead.
 
+**Add a database migration.** Each service with a schema owns its migrations and applies
+them at startup: see the Postgres notes in the Java, Python and Go sections below. Never
+edit a migration that is already merged: add a new one.
+
 **Add an environment variable.** Add it to `.env.example` (leave secrets empty: real
 values never go in the repo), read it in the service's config (`application.yml`,
 `settings.py` or `internal/config`) and nowhere else, and tell the team to update their
@@ -249,6 +253,11 @@ lists the Dockerfiles, `go.mod` and `pom.xml` files that still need the same cha
   never log tokens, API keys or passwords.
 - **Return the gRPC status codes the `.proto` comments name** (`NOT_FOUND`,
   `INVALID_ARGUMENT`, ...). The Gateway turns them into HTTP status codes.
+- **Startup and Postgres:** a service may fail to start if Postgres is unreachable
+  (Compose waits for Postgres, and `restart: unless-stopped` retries). Once running, it
+  must never crash when Postgres drops: it reports DOWN in the health tree and recovers.
+  Don't add settings that let a service start without a database (such as Hikari's
+  `initialization-fail-timeout: -1`, `open(wait=False)` or a lazy pgx pool).
 - **Every change comes with tests:** unit tests by default, integration tests when the
   change touches Postgres or an HTTP API.
 - **Use fakes for our own interfaces** (`FakeDependencyCheck`, `tests/fakes.py`,
@@ -292,8 +301,13 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
   `/app/...`; room updates go to `/topic/room/{code}`; messages for one player go to
   `/user/queue/...`.
 - **Postgres** (account-service only, so far): Spring JDBC (`JdbcClient`) on the `account`
-  schema. There are no tables yet: agree on a migration tool with the project managers
-  before adding the first one.
+  schema. Flyway creates and updates the tables when the service starts.
+  **To add a migration:** create `src/main/resources/db/migration/V<n>__<what>.sql`
+  (next number after the highest one, two underscores, e.g. `V2__create_users.sql`) with
+  plain SQL, then save: the service restarts and Flyway applies it. The history table is
+  `account.flyway_schema_history`. Tests that load the whole app without a database set
+  `spring.flyway.enabled=false`; `FlywayMigrationIT` covers the migrations on a real
+  Postgres.
 - **Time:** room-service injects a `java.time.Clock`; never call `Instant.now()` directly
   in game logic.
 - 4-space indents. No Java formatter or linter is set up yet, so follow the surrounding code.
@@ -340,7 +354,14 @@ services/scoring-service/
 - quiz-engine-service: the same seed and data must give the same questions. Use
   `random.Random(seed)`, never the module-level `random` functions.
 - scoring-service: Postgres through the injected psycopg `AsyncConnectionPool`, on the
-  `scoring` schema. No tables yet (the migration tool is still to be agreed).
+  `scoring` schema. Alembic creates and updates the tables, running
+  `scoring.migrate.upgrade_to_head` before the gRPC server starts.
+  **To add a migration:** copy `src/scoring/migrations/versions/0001_init.py` to
+  `000N_<what>.py`, set `revision` to the new id and `down_revision` to the previous one,
+  and write the SQL with `op.execute("...")` in `upgrade()` and `downgrade()`. Raw SQL
+  only: there are no models and no autogenerate (SQLAlchemy is just Alembic's
+  connection layer). The history table is `scoring.alembic_version`. Restart the service
+  to apply it.
 - Dependencies: uv, exact versions, commit `uv.lock`. `grpcio*` and `protobuf` must match
   the Buf plugins in `buf.gen.yaml`.
 
@@ -377,7 +398,14 @@ services/match-data-service/
   and declare them where they're used (like `health.Pinger`).
 - Background goroutines (the sync worker) take a context and stop on shutdown. Tests
   check for leaked goroutines with goleak.
-- Postgres: the `pgxpool.Pool` from `main.go`, on the `matchdata` schema.
+- Postgres: the `pgxpool.Pool` from `main.go`, on the `matchdata` schema. Once running,
+  the pool reconnects by itself after an outage.
+  match-data-service applies its migrations (golang-migrate) in `main.go` before it
+  creates the pool.
+  **To add a migration:** create `internal/migrations/sql/00000N_<what>.up.sql` and a
+  matching `.down.sql` (next number, plain SQL). The files are embedded in the binary
+  (`go:embed`), so restart the service (`docker compose restart match-data-service`) to
+  rebuild and apply it. The history table is `matchdata.schema_migrations`.
 - HenrikDev: tests never call the real API. Save real responses (without the API key) in
   `internal/source/testdata/henrikdev/` and serve them with `httptest`. Stay under 30
   requests per minute (`internal/ratelimit`).
@@ -457,6 +485,7 @@ Then the status page (http://localhost:3000) shows which connection fails, and w
 | Status page says "Can't reach the Gateway" or "Realtime: disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
 | A node is DOWN with "connection refused" or "unknown host" | That service (or Postgres) isn't running: `make up`. |
 | A node is DOWN with "deadline exceeded" | It answered too slowly, usually because it or something below it is still starting. Wait a few seconds. |
+| A service with migrations (scoring-service) stays DOWN after Postgres was stopped and started again | A service may fail to start while Postgres is unreachable, and in `make up` the hot-reload watcher (`watchfiles`) can restart the process, sometimes at that moment (Docker Desktop reports file changes in the shared `gen/python` folder). The process then exits and stays down, because the container keeps running and Docker's restart policy never fires. Start Postgres, then `docker compose restart <service>`. |
 | A Java service doesn't pick up my change | Look for a compile error in `make logs s=<service>`: the app only restarts after a successful compile. |
 | Hot reload does nothing on Windows | The repo is under `/mnt/c`. Clone it inside WSL (`~/code/FriendlyFire`). |
 | A new dependency isn't found | `docker compose restart <service>`. |

@@ -1,0 +1,2 @@
+-- Intentionally empty: proves the migration setup works before real tables arrive.
+-- Users are added in FF-105 and Riot links in FF-110.

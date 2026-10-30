@@ -5,13 +5,17 @@ import logging
 import signal
 
 from scoring.bootstrap import SERVICE_NAME, build_server
+from scoring.migrate import upgrade_to_head
 from scoring.settings import Settings
 
 log = logging.getLogger(SERVICE_NAME)
 
 
 async def serve() -> None:
-    service = await build_server(Settings())
+    settings = Settings()
+    # Fails to start if Postgres is unreachable; Compose restarts the service until it is up.
+    await asyncio.to_thread(upgrade_to_head, settings)
+    service = await build_server(settings)
     await service.start()
     log.info("listening on port %d", service.port)
 
