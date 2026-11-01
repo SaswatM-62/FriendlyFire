@@ -2,13 +2,11 @@
 
 
 class ScoreCalculator:
-
     def calculate_points(self, is_correct: bool, time_left: float, time_limit: float) -> int:
         """Computes points for an individual's answer submission"""
-        if not is_correct or time_left < 0:  
+        if not is_correct or time_left < 0:
             return 0
-        
-        score = 500 + 500 * (time_left/time_limit)
+        score = 500 + 500 * (time_left / time_limit)
         return round(score)
 
     def calculate_ranks(self, player_scores: dict[str, int]) -> dict[str, int]:

@@ -1,17 +1,9 @@
 import unittest
-import os
-import sys
 
-# Connecting this folder to the folder that contains score_calculator.py
-current_dir = os.path.dirname(os.path.abspath(__file__))
-target_dir = os.path.join(current_dir, "..", "..", "src", "scoring")
-sys.path.append(os.path.abspath(target_dir))
-
-from score_calculator import ScoreCalculator
+from scoring.score_calculator import ScoreCalculator
 
 
 class TestScoreCalculator(unittest.TestCase):
-
     def setUp(self):
         """Initializes the pure class before each individual test case runs."""
         self.calculator = ScoreCalculator()
@@ -37,25 +29,21 @@ class TestScoreCalculator(unittest.TestCase):
         # Format: (name, input_scores, expected_rankings)
         test_cases = [
             (
-                "Standard strict hierarchy", 
-                {"p1": 900, "p2": 800, "p3": 700}, 
-                {"p1": 1, "p2": 2, "p3": 3}
+                "Standard strict hierarchy",
+                {"p1": 900, "p2": 800, "p3": 700},
+                {"p1": 1, "p2": 2, "p3": 3},
             ),
             (
-                "Two-way tie for first place", 
-                {"p1": 850, "p2": 850, "p3": 600}, 
-                {"p1": 1, "p2": 1, "p3": 3}
+                "Two-way tie for first place",
+                {"p1": 850, "p2": 850, "p3": 600},
+                {"p1": 1, "p2": 1, "p3": 3},
             ),
             (
-                "Three-way tie for all places", 
-                {"p1": 500, "p2": 500, "p3": 500}, 
-                {"p1": 1, "p2": 1, "p3": 1}
+                "Three-way tie for all places",
+                {"p1": 500, "p2": 500, "p3": 500},
+                {"p1": 1, "p2": 1, "p3": 1},
             ),
-            (
-                "Empty room handling", 
-                {}, 
-                {}
-            ),
+            ("Empty room handling", {}, {}),
         ]
 
         for name, input_scores, expected_rankings in test_cases:
