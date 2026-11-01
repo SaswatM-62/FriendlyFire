@@ -42,7 +42,7 @@ packages = ["src/scoring"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = ["src", "."]
 # Integration tests need Docker: run them with `pytest -m integration`.
 addopts = "-m 'not integration'"
 markers = ["integration: needs Docker (Testcontainers)"]
