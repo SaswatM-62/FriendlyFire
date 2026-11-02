@@ -17,6 +17,9 @@ spring:
     # Migrations and their history table live in this service's own schema.
     schemas: account
     default-schema: account
+    # Postgres may still be starting: retry for about a minute (waits 1, 2, 4, then 5 s).
+    connect-retries: 14
+    connect-retries-interval: 5s
   grpc:
     server:
       port: ${GRPC_PORT:9091}
