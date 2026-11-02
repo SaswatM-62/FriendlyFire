@@ -9,6 +9,9 @@ name: friendlyfire
 x-dev: &dev
   env_file: .env
   init: true
+  # A service that fails to start (for example, Postgres stayed down longer than its
+  # startup wait) is started again.
+  restart: unless-stopped
   extra_hosts:
     - "host.docker.internal:host-gateway"
 
