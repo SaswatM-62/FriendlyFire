@@ -13,7 +13,8 @@ log = logging.getLogger(SERVICE_NAME)
 
 async def serve() -> None:
     settings = Settings()
-    # Fails to start if Postgres is unreachable; Compose restarts the service until it is up.
+    # Waits up to a minute for Postgres, then fails to start. In `make up` (watchfiles) a
+    # failed start leaves the container running, so this wait is what rides out a short outage.
     await asyncio.to_thread(upgrade_to_head, settings)
     service = await build_server(settings)
     await service.start()
