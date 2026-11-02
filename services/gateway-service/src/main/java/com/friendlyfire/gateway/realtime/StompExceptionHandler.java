@@ -9,8 +9,6 @@ public class StompExceptionHandler {
 
     @MessageExceptionHandler(StatusRuntimeException.class)
     public void handleGrpcError(StatusRuntimeException ex) {
-        // TODO(ff-006):
-        // Send structured errors to:
-        // /user/queue/errors
+        // TODO(ff-006): route errors to /user/queue/errors
     }
 }
