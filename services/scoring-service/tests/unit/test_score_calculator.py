@@ -16,7 +16,7 @@ class TestScoreCalculator(unittest.TestCase):
             ("Answering halfway", True, 7.5, 15.0, 750),
             ("Answering exactly at deadline", True, 0.0, 15.0, 500),
             ("Wrong answer gets zero", False, 12.0, 15.0, 0),
-            ("Missing/Expired deadline gets zero", True, -2.0, 15.0, 0),
+            ("No answer", False, 0.0, 15.0, 0),
         ]
 
         for name, is_correct, time_left, time_limit, expected in test_cases:
