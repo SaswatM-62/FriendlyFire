@@ -411,7 +411,10 @@ services/match-data-service/
   rebuild and apply it. The history table is `matchdata.schema_migrations`.
 - HenrikDev: tests never call the real API. Save real responses (without the API key) in
   `internal/source/testdata/henrikdev/` and serve them with `httptest`. Stay under 30
-  requests per minute (`internal/ratelimit`).
+  requests per minute with the one shared `ratelimit.Limiter`: call `Wait(ctx)` before
+  every request, and on a 429 call `PauseFor(d)` (`ratelimit.RetryAfter` reads the
+  `Retry-After` header). `Estimate(n)` says how long n requests will take. Give tests a
+  `testutil.FakeClock` so they never sleep.
 - `gofmt`, `go vet` and `golangci-lint` must be clean. Check every error, even in tests:
   `defer func() { _ = resp.Body.Close() }()`.
 
