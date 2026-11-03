@@ -11,10 +11,15 @@ spring:
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:}
     hikari:
-      # Start, and serve health, even when Postgres is down.
-      initialization-fail-timeout: -1
       # Give up on a connection quickly, inside the 1-second health deadline.
       connection-timeout: 750
+  flyway:
+    # Migrations and their history table live in this service's own schema.
+    schemas: account
+    default-schema: account
+    # Postgres may still be starting: retry for about a minute (waits 1, 2, 4, then 5 s).
+    connect-retries: 14
+    connect-retries-interval: 5s
   grpc:
     server:
       port: ${GRPC_PORT:9091}

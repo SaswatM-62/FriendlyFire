@@ -8,5 +8,5 @@ type MatchStore struct {
 	//   - query stats per player, newest first, since a time, capped per player
 	//   - remember each player's sync status and newest stored match
 	//   - delete everything for a player
-	//   - uses: the *pgxpool.Pool from main (tables need a migration tool first)
+	//   - uses: the *pgxpool.Pool from main (tables come from a new migration in internal/migrations/sql)
 }

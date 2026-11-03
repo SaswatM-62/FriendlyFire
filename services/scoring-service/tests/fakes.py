@@ -2,6 +2,7 @@
 
 import asyncio
 from collections.abc import Awaitable, Callable
+from contextlib import AbstractContextManager, nullcontext
 
 from friendlyfire.health.v1.dependency_health_pb2 import ComponentHealth
 
@@ -45,3 +46,17 @@ class FakeCheck:
             return up()
 
         return cls(name, hang)
+
+
+class FlakyPostgres:
+    """An engine whose connect() raises the given errors one by one, then works."""
+
+    def __init__(self, *errors: Exception) -> None:
+        self._errors = list(errors)
+        self.connects = 0
+
+    def connect(self) -> AbstractContextManager[object]:
+        self.connects += 1
+        if self._errors:
+            raise self._errors.pop(0)
+        return nullcontext()

@@ -16,6 +16,7 @@ import (
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/grpcserver"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/health"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/matchdata"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/migrations"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -41,8 +42,14 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
 
-	// Creating the pool doesn't connect, so the service starts (and serves health)
-	// even when Postgres is down.
+	// Waits up to a minute for Postgres, then fails to start. In `make up` (air) a failed
+	// start leaves the container running, so this wait is what rides out a short outage.
+	if err := migrations.Up(ctx, cfg.Postgres.ConnString()); err != nil {
+		return fmt.Errorf("migrate: %w", err)
+	}
+
+	// Once running, the pool reconnects by itself after a Postgres outage, and the
+	// health check reports DOWN meanwhile.
 	poolConfig, err := pgxpool.ParseConfig(cfg.Postgres.ConnString())
 	if err != nil {
 		return fmt.Errorf("postgres config: %w", err)
@@ -52,6 +59,10 @@ func run() error {
 		return fmt.Errorf("postgres pool: %w", err)
 	}
 	defer pool.Close()
+	// pgx connects lazily; connect now so a bad address or password stops the start.
+	if err := pool.Ping(ctx); err != nil {
+		return fmt.Errorf("postgres ping: %w", err)
+	}
 
 	// What /api/health/deep checks for this service. When it starts calling something
 	// new, add it here, using the same client the feature uses.

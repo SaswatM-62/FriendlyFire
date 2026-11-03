@@ -7,5 +7,5 @@ class QuizRepository:
     #     with their display names, and round results keyed by (quiz_id, round_number)
     #     so RecordRound can be retried
     #   - a player's finished quizzes, newest first, paged (GetPlayerHistory)
-    #   - uses: the connection pool (inject it); tables need a migration tool first
+    #   - uses: the connection pool (inject it); tables: add an Alembic migration
     ...
