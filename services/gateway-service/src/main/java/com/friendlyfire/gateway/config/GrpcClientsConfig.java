@@ -1,5 +1,5 @@
 package com.friendlyfire.gateway.config;
-
+import java.util.concurrent.TimeUnit;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc;
@@ -31,7 +31,9 @@ public class GrpcClientsConfig {
 
     @Bean
     AccountServiceBlockingStub accountService(@Qualifier("accountChannel") ManagedChannel channel) {
-        return AccountServiceGrpc.newBlockingStub(channel);
+        return AccountServiceGrpc
+		.newBlockingStub(channel)
+		.withDeadlineAfter(3, TimeUnit.SECONDS);
     }
 
     @Bean
@@ -46,7 +48,9 @@ public class GrpcClientsConfig {
 
     @Bean
     RoomServiceBlockingStub roomService(@Qualifier("roomChannel") ManagedChannel channel) {
-        return RoomServiceGrpc.newBlockingStub(channel);
+    	return RoomServiceGrpc
+            	.newBlockingStub(channel)
+            	.withDeadlineAfter(3, TimeUnit.SECONDS);
     }
 
     @Bean
@@ -61,7 +65,10 @@ public class GrpcClientsConfig {
 
     @Bean
     ScoringServiceBlockingStub scoringService(@Qualifier("scoringChannel") ManagedChannel channel) {
-        return ScoringServiceGrpc.newBlockingStub(channel);
+        return ScoringServiceGrpc
+		.newBlockingStub(channel)
+            	.withDeadlineAfter(3, TimeUnit.SECONDS);
+
     }
 
     @Bean
@@ -76,7 +83,9 @@ public class GrpcClientsConfig {
 
     @Bean
     MatchDataServiceBlockingStub matchDataService(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return MatchDataServiceGrpc.newBlockingStub(channel);
+        return MatchDataServiceGrpc
+		.newBlockingStub(channel)
+		.withDeadlineAfter(3, TimeUnit.SECONDS);
     }
 
     @Bean
