@@ -55,7 +55,8 @@ cp .env.example .env && make up
 
 The first start builds every image and takes a few minutes. When `make ps` shows every
 container as `(healthy)`, open **http://localhost:3000**: the **System status** page
-should say "17 of 17 checks passing" and "Realtime: connected · N ms". `make e2e` checks
+should show every check passing (e.g. "17 of 17 checks passing") and "Realtime: connected
+· N ms". `make e2e` checks
 the same thing in a real browser.
 
 **Low on memory?** Start only what you need (plus what it depends on):
