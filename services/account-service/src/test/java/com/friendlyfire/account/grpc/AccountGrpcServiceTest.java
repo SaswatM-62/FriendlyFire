@@ -1,13 +1,8 @@
 package com.friendlyfire.account.grpc;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
-import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import io.grpc.ManagedChannel;
-import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 import io.grpc.health.v1.HealthGrpc;
@@ -41,15 +36,4 @@ class AccountGrpcServiceTest {
         assertThat(response.getStatus()).isEqualTo(ServingStatus.SERVING);
     }
 
-    @Test
-    void rpcsAreNotImplementedYet() {
-        var accounts = AccountServiceGrpc.newBlockingStub(channel);
-
-        assertThatExceptionOfType(StatusRuntimeException.class)
-                .isThrownBy(() -> accounts.getUser(GetUserRequest.getDefaultInstance()))
-                .satisfies(e -> {
-                    assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.UNIMPLEMENTED);
-                    assertThat(e.getStatus().getDescription()).isEqualTo("not implemented yet");
-                });
-    }
 }
