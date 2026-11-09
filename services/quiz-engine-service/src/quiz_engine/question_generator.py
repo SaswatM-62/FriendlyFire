@@ -7,12 +7,13 @@ Question.question_id is the stable key callers may pass in avoid_question_keys.
 """
 
 import hashlib
+import itertools
 import json
 import math
 import random
 from collections import defaultdict
 from collections.abc import Collection, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from fractions import Fraction
 
 from friendlyfire.matchdata.v1.match_data_service_pb2 import PlayerMatchStats
@@ -67,44 +68,10 @@ def _timestamp(row: PlayerMatchStats) -> tuple[int, int]:
     return row.played_at.seconds, row.played_at.nanos
 
 
-def _recent(rows: list[PlayerMatchStats], n: int) -> list[PlayerMatchStats] | None:
-    if (
-        n < 1
-        or len(rows) < n
-        or any(
-            not r.HasField("played_at")
-            or not -62135596800 <= r.played_at.seconds <= 253402300799
-            or not 0 <= r.played_at.nanos < 1_000_000_000
-            for r in rows
-        )
-    ):
-        return None
-    ordered = sorted(rows, key=lambda r: (_timestamp(r), r.match_id), reverse=True)
-    if len(ordered) > n and _timestamp(ordered[n - 1]) == _timestamp(ordered[n]):
-        return None
-    return ordered[:n]
-
-
 def _evaluate(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value | None:
     if not rows:
         return None
-    if template.last_n is not None:
-        recent = _recent(rows, template.last_n)
-        if recent is None:
-            return None
-        rows = recent
     rows = sorted(rows, key=lambda r: r.match_id)
-    window_evidence = tuple((r.match_id, str(_timestamp(r))) for r in rows)
-    if template.parameter_label:
-        if any(not r.labels.get(template.parameter_label) for r in rows):
-            return None
-        rows = [r for r in rows if r.labels[template.parameter_label] == template.parameter_value]
-        if not rows and template.rule != "agent_games":
-            return None
-    if template.rule == "max_rank":
-        rows = [r for r in rows if r.labels.get("queue_id") == "competitive"]
-        if not rows:
-            return None
     evidence: list[tuple[str, ...]] = []
     if template.rule == "max_kills":
         # Proto3 scalars have no presence. The upstream contract must supply kills;
@@ -151,70 +118,8 @@ def _evaluate(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Valu
         score = Fraction(sum(row.won for row in rows))
         numerator, denominator = score, Fraction(n)
         source = rows[0].match_id
-    elif template.rule in {"max_rank", "max_headshots", "max_round_damage"}:
-        key = {
-            "max_rank": "rank_tier",
-            "max_headshots": "headshots",
-            "max_round_damage": "max_round_damage",
-        }[template.rule]
-        numbers = [_number(r, key) for r in rows]
-        if any(v is None or (key == "rank_tier" and v <= 0) for v in numbers):
-            return None
-        known = [v for v in numbers if v is not None]
-        score = max(known)
-        numerator, denominator = score, Fraction(1)
-        source = rows[known.index(score)].match_id
-        evidence = [(r.match_id, str(v)) for r, v in zip(rows, known, strict=True)]
-    elif template.rule == "agent_games":
-        score = numerator = Fraction(len(rows))
-        denominator = Fraction(template.last_n or len(window_evidence))
-        source = rows[0].match_id if rows else window_evidence[0][0]
-        evidence = [(r.match_id, template.parameter_value) for r in rows]
-    elif template.rule == "map_win_rate":
-        if any(
-            r.labels.get("result") not in {"win", "loss", "draw"}
-            or r.won != (r.labels.get("result") == "win")
-            for r in rows
-        ):
-            return None
-        numerator, denominator = Fraction(sum(r.won for r in rows)), Fraction(len(rows))
-        score = numerator / denominator
-        source = rows[0].match_id
-        evidence = [(r.match_id, r.labels["result"]) for r in rows]
-    elif template.rule in {
-        "pooled_kd",
-        "agent_kd",
-        "pooled_headshots",
-        "lowest_adr",
-        "highest_adr",
-    }:
-        numerator, denominator = Fraction(0), Fraction(0)
-        for r in rows:
-            if template.rule in {"pooled_kd", "agent_kd"}:
-                if r.kills < 0 or r.deaths < 0:
-                    return None
-                top, bottom = Fraction(r.kills), Fraction(r.deaths)
-            elif template.rule == "pooled_headshots":
-                head, body, leg = (_number(r, k) for k in ("headshots", "bodyshots", "legshots"))
-                if head is None or body is None or leg is None:
-                    return None
-                top, bottom = head, head + body + leg
-            else:
-                damage, rounds = _number(r, "damage_dealt"), _number(r, "rounds_played")
-                if damage is None or rounds is None or rounds <= 0:
-                    return None
-                top, bottom = damage, rounds
-            numerator += top
-            denominator += bottom
-            evidence.append((r.match_id, str(top), str(bottom)))
-        if denominator <= 0:
-            return None
-        score = numerator / denominator
-        source = rows[0].match_id
     else:
         raise ValueError(f"Unsupported rule: {template.rule}")
-    if template.last_n is not None:
-        evidence = [*window_evidence, *evidence]
     return _Value(score, numerator, denominator, tuple(rows), tuple(evidence), source)
 
 
@@ -270,20 +175,7 @@ class QuestionGenerator:
 
         candidates: list[_Candidate] = []
         avoided = set(avoid_question_keys)
-        expanded: list[QuestionTemplate] = []
         for template in self._templates:
-            if template.parameter_label and not template.parameter_value:
-                parameters = sorted(
-                    {
-                        r.labels[template.parameter_label]
-                        for r in unique.values()
-                        if r.game == template.game and r.labels.get(template.parameter_label)
-                    }
-                )
-                expanded.extend(replace(template, parameter_value=v) for v in parameters)
-            else:
-                expanded.append(template)
-        for template in expanded:
             for scope in sorted(set(template.scopes)):
                 groups: dict[str, list[PlayerMatchStats]] = {uid: [] for uid in ids}
                 applicable = [r for r in unique.values() if r.game == template.game]
@@ -302,9 +194,8 @@ class QuestionGenerator:
                 if any(v is None for v in values.values()):
                     continue
                 complete = {uid: v for uid, v in values.items() if v is not None}
-                extreme = min if template.lowest else max
-                target = extreme(v.score for v in complete.values())
-                winners = [uid for uid, v in complete.items() if v.score == target]
+                maximum = max(v.score for v in complete.values())
+                winners = [uid for uid, v in complete.items() if v.score == maximum]
                 if len(winners) != 1:
                     continue
                 winner = winners[0]
@@ -316,9 +207,6 @@ class QuestionGenerator:
                         template.game,
                         template.rule,
                         template.last_n,
-                        template.parameter_label,
-                        template.parameter_value,
-                        template.lowest,
                         [(uid, v.evidence) for uid, v in complete.items()],
                     )
                 )
@@ -332,8 +220,6 @@ class QuestionGenerator:
                     "numerator": _display(value.numerator),
                     "denominator": _display(value.denominator),
                     "last_n": template.last_n,
-                    "parameter": template.parameter_value,
-                    "percent": _display(value.score * 100),
                 }
                 question = Question(
                     question_id=question_key,
@@ -352,63 +238,22 @@ class QuestionGenerator:
 
         rng = random.Random(seed)
         rng.shuffle(candidates)
-        best = _select(candidates, question_count)
+        # Only three templates initially. Enumerating choices by template avoids a
+        # greedy pick blocking a mixed shared/solo quiz or a larger valid result.
+        by_template = [
+            [c for c in candidates if c.template_id == t.id] + [None] for t in self._templates
+        ]
+        best: list[_Candidate] = []
+        best_rank = (-1, -1)
+        for choice in itertools.product(*by_template):
+            selected = [c for c in choice if c is not None]
+            if len(selected) > question_count or len({c.fact_key for c in selected}) != len(
+                selected
+            ):
+                continue
+            scopes = {c.scope for c in selected}
+            rank = (len(selected), int("shared" in scopes and "solo" in scopes))
+            if rank > best_rank:
+                best, best_rank = selected, rank
         rng.shuffle(best)
         return [c.question for c in best]
-
-
-def _select(candidates: list[_Candidate], count: int) -> list[_Candidate]:
-    """Match templates to distinct facts without enumerating the entire bank.
-
-    Try each shared/solo pair as mandatory first choices to preserve the engine's
-    preference for a mixed quiz, then maximize size with augmenting paths.
-    """
-    by_template: dict[str, list[_Candidate]] = {}
-    for candidate in candidates:
-        by_template.setdefault(candidate.template_id, []).append(candidate)
-    starts: list[list[_Candidate]] = [[]] + [
-        [shared, solo]
-        for shared in candidates
-        if shared.scope == "shared"
-        for solo in candidates
-        if solo.scope == "solo"
-        and shared.template_id != solo.template_id
-        and shared.fact_key != solo.fact_key
-    ]
-    best: list[_Candidate] = []
-    best_rank = (-1, -1)
-    for forced in starts:
-        if len(forced) > count:
-            continue
-        fixed = {c.template_id for c in forced}
-        matched = {c.fact_key: c for c in forced}
-
-        def assign(
-            template_id: str,
-            visited: set[str],
-            matched: dict[str, _Candidate],
-            fixed: set[str],
-        ) -> bool:
-            for candidate in by_template[template_id]:
-                if candidate.fact_key in visited:
-                    continue
-                visited.add(candidate.fact_key)
-                previous = matched.get(candidate.fact_key)
-                if previous is None or (
-                    previous.template_id not in fixed
-                    and assign(previous.template_id, visited, matched, fixed)
-                ):
-                    matched[candidate.fact_key] = candidate
-                    return True
-            return False
-
-        for template_id in by_template:
-            if template_id not in fixed:
-                assign(template_id, set(), matched, fixed)
-        selected = forced + [c for c in matched.values() if c.template_id not in fixed]
-        selected = selected[:count]
-        scopes = {c.scope for c in selected}
-        rank = (len(selected), int("shared" in scopes and "solo" in scopes))
-        if rank > best_rank:
-            best, best_rank = selected, rank
-    return best

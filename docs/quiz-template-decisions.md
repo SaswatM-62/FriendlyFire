@@ -24,11 +24,11 @@ means Akhil has claimed it; the document has no claim column or review statuses.
   Highest and lowest ADR ask different comparisons and were separately approved
   questions. Existing maximum-kills, pooled-ACS and recent-wins templates are not
   counted among the ten additions.
-- Reuse the existing FF-402 generator from `feat/FF-402-question-engine` (abfc361).
-  The new branch depends on that unmerged work. Extend its evaluator and template
-  metadata; preserve its seeded behavior and deduplication. Replace exhaustive
-  candidate selection with matching so adding templates does not multiply all
-  possible quiz combinations.
+- Leave the FF-402 generator and its template contract unchanged. Both existing
+  source files match `feat/FF-402-question-engine` (abfc361) exactly. Keep the ten
+  question specifications in `recent_templates.py`, outside the runtime registry.
+  Akhil will discuss the missing integration support with the owner at the meeting.
+  No changes to another contributor's code are part of this proposal.
 
 ## Claimed templates
 
@@ -52,11 +52,25 @@ cannot distinguish an omitted scalar from a legitimate zero/false; ingestion mus
 supply them as required by the existing contract. Map entries preserve presence
 and are checked explicitly. No proto or generated files are changed.
 
-All new templates have fixture tests for a unique winner, tied leaders and missing
-history, plus missing required map fields, invalid numbers, timestamp boundaries,
-pooled calculations and agent/map filtering. Selection also has property tests
-against an exhaustive small-case oracle and a 100-template regression.
+The ten definitions have specification checks for distinct comparisons, last-ten
+scope, required fields and renderable wording. They are not registered with the
+existing generator. Runtime fixture checks from the initial implementation were
+removed with the generator changes; the earlier 173-test result does not describe
+this revised proposal.
 
-The document marks implementation/test status separately from merge status.
-Manager review and merging remain necessary to satisfy the original acceptance
-criterion. The generator RPC wiring remains owned by its existing workstream.
+## Meeting concerns and remaining work
+
+The existing generator supports only maximum kills, pooled ACS and recent wins.
+The new questions need additional calculations, last-ten windows for those
+calculations, agent/map parameters and a minimum comparison for lowest ADR. Its
+exhaustive candidate selection may also need review before expanding the bank.
+The generator owner should agree on the extension interface and implement these
+changes before registering the new definitions.
+
+After integration, each question still needs fixture tests proving a unique
+correct player, skipped tied leaders and skipped missing required data. Verify
+pooled arithmetic, timestamp cutoffs, filter order and deterministic generation
+as well. These runtime acceptance tests and merging are still outstanding.
+
+The document now marks these questions as claimed, with definitions prepared and
+integration pending. The task is not complete. Akhil will open the PR himself.
