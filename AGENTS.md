@@ -60,7 +60,8 @@ make coverage           unit tests + coverage reports
 - **Never edit `gen/` by hand.** After changing a `.proto`, run `make proto` and commit
   the result. Contract changes (`proto/`, `gen/`) need a project manager's approval.
 - **Config comes from environment variables only** (`.env`, copied from `.env.example`).
-  Never commit secrets or `.env`.
+  Never commit secrets or `.env`. The one config file is the mock RSO's real test players
+  (`services/mock-rso-service/testplayers.json`, gitignored): never commit those either.
 - **Inject dependencies through constructors.** No field injection, no globals; wiring
   happens in one place per service (`config/` in Java, `bootstrap.py`, `cmd/<svc>/main.go`).
 - **Every change comes with tests**: unit tests by default, integration tests when it

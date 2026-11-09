@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
+	"github.com/SaswatM-62/FriendlyFire/services/mock-rso-service/internal/config"
 	"github.com/SaswatM-62/FriendlyFire/services/mock-rso-service/internal/rso"
 )
 
@@ -27,20 +27,22 @@ func main() {
 }
 
 func run() error {
-	port := 8090
-	if value := os.Getenv("HTTP_PORT"); value != "" {
-		var err error
-		if port, err = strconv.Atoi(value); err != nil {
-			return fmt.Errorf("HTTP_PORT must be a number, got %q", value)
-		}
+	cfg, err := config.Load(os.Getenv)
+	if err != nil {
+		return err
 	}
+	players, err := rso.LoadPlayers(cfg.PlayersFile)
+	if err != nil {
+		return err
+	}
+	slog.Info("test players loaded", "file", cfg.PlayersFile, "count", len(players))
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
 
 	server := &http.Server{
-		Addr:              fmt.Sprintf(":%d", port),
-		Handler:           rso.NewHandler(),
+		Addr:              fmt.Sprintf(":%d", cfg.HTTPPort),
+		Handler:           rso.NewHandler(players, cfg.RedirectURIs, time.Now),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	go func() {
@@ -51,7 +53,7 @@ func run() error {
 		_ = server.Shutdown(shutdownCtx)
 	}()
 
-	slog.Info("listening", "port", port)
+	slog.Info("listening", "port", cfg.HTTPPort)
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
