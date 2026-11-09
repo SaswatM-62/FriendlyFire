@@ -1,12 +1,12 @@
-# Hot reload for `make up`: air rebuilds and restarts the service when a .go file
-# changes. Paths are relative to root.
+# Hot reload for `make up`: air rebuilds and restarts the service when a .go file or
+# the test players change. Paths are relative to root.
 root = "."
 tmp_dir = "tmp"
 
 [build]
 cmd = "go build -o tmp/mock-rso-service ./cmd/mock-rso-service"
 entrypoint = ["./tmp/mock-rso-service"]
-include_ext = ["go", "mod"]
+include_ext = ["go", "mod", "json"]
 exclude_dir = ["tmp"]
 delay = 500
 # Stop the old process with SIGINT, like Ctrl+C, so it shuts down cleanly.

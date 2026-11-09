@@ -1,6 +1,7 @@
 # Every image builds with the repo root as its context; keep it small and secret-free.
 .git
 **/.env
+**/testplayers.json
 **/node_modules
 **/.next
 **/coverage

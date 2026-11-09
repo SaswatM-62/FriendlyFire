@@ -1,0 +1,26 @@
+[
+  {
+    "puuid": "00000000-0000-4000-8000-000000000001",
+    "gameName": "Sam",
+    "tagLine": "NA1",
+    "region": "na"
+  },
+  {
+    "puuid": "00000000-0000-4000-8000-000000000002",
+    "gameName": "Alex",
+    "tagLine": "EUW",
+    "region": "eu"
+  },
+  {
+    "puuid": "00000000-0000-4000-8000-000000000003",
+    "gameName": "Kim",
+    "tagLine": "KR1",
+    "region": "ap"
+  },
+  {
+    "puuid": "00000000-0000-4000-8000-000000000004",
+    "gameName": "Jordan",
+    "tagLine": "TEST",
+    "region": "na"
+  }
+]

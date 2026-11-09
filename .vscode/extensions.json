@@ -9,6 +9,7 @@
     "dbaeumer.vscode-eslint",
     "bradlc.vscode-tailwindcss",
     "bufbuild.vscode-buf",
-    "hverlin.mise-vscode"
+    "hverlin.mise-vscode",
+    "openai.chatgpt"
   ]
 }

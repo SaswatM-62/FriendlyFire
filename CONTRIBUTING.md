@@ -116,7 +116,7 @@ If something is red, see [Troubleshooting](#6-troubleshooting).
 |---|---|
 | Java code or `application.yml` | Recompiles, then the app restarts (a few seconds) |
 | Python code | `watchfiles` restarts the server |
-| Go code | `air` rebuilds and restarts |
+| Go code, or the mock RSO's test players | `air` rebuilds and restarts |
 | Frontend code | Next.js hot-reloads the page |
 | A `.proto` file | Nothing yet: run `make proto`, then the services reload |
 | `pom.xml`, `pyproject.toml`, `go.mod`, `package.json` | Nothing: `docker compose restart <service>` (it installs the new dependencies when it starts) |
@@ -241,7 +241,8 @@ lists the Dockerfiles, `go.mod` and `pom.xml` files that still need the same cha
 ### Every service
 
 - **Config comes from environment variables only.** No hard-coded hosts, ports or
-  secrets, and never commit `.env`.
+  secrets, and never commit `.env`. The one config file is the mock RSO's real test players
+  (`services/mock-rso-service/testplayers.json`, gitignored): never commit those either.
 - **Inject dependencies through constructors.** Objects are wired in one place per
   service: `config/` in Java, `bootstrap.py` in Python, `cmd/<service>/main.go` in Go.
   No globals, no field injection.
@@ -415,6 +416,28 @@ services/match-data-service/
   every request, and on a 429 call `PauseFor(d)` (`ratelimit.RetryAfter` reads the
   `Retry-After` header). `Estimate(n)` says how long n requests will take. Give tests a
   `testutil.FakeClock` so they never sleep.
+- mock-rso-service: a fake Riot Sign-On at http://localhost:8090. Codes and tokens live in
+  memory, so a restart only means linking again.
+  **Test players:** by default, the made-up players in `testplayers.example.json`. For real
+  ones, save the list from the team password manager as
+  `services/mock-rso-service/testplayers.json` (same format, gitignored: never commit it);
+  the service picks it up by itself. `MOCK_RSO_PLAYERS_FILE` points at any other file.
+  **Callback URLs:** `/authorize` only sends the browser back to the exact URLs in
+  `MOCK_RSO_REDIRECT_URIS`; anything else gets a 400.
+  **Try it with curl:**
+  ```bash
+  CALLBACK=http://localhost:3000/link/riot/callback
+  # The page a browser would show
+  curl "http://localhost:8090/authorize?response_type=code&redirect_uri=$CALLBACK&state=abc"
+  # Pick a player: the Location header has the code. deny=1 instead of puuid refuses.
+  curl -i http://localhost:8090/authorize -d "redirect_uri=$CALLBACK" -d state=abc \
+    -d puuid=00000000-0000-4000-8000-000000000001
+  # Swap the code for a token (a code works once)
+  curl http://localhost:8090/token -d grant_type=authorization_code -d "redirect_uri=$CALLBACK" \
+    -d code=PASTE_THE_CODE
+  # Who is it? /userinfo answers too.
+  curl http://localhost:8090/riot/account/v1/accounts/me -H "Authorization: Bearer PASTE_THE_TOKEN"
+  ```
 - `gofmt`, `go vet` and `golangci-lint` must be clean. Check every error, even in tests:
   `defer func() { _ = resp.Body.Close() }()`.
 
