@@ -1,5 +1,4 @@
-"""Turns match stats into questions.
-Pure, deterministic room-only question generation; no I/O or wall clock.
+"""Pure, deterministic room-only question generation; no I/O or wall clock.
 
 Returns up to question_count questions. The RPC layer owns minimum quiz length,
 seed=0 randomization and translating an insufficient result into an RPC error.
@@ -7,12 +6,11 @@ Question.question_id is the stable key callers may pass in avoid_question_keys.
 """
 
 import hashlib
-import itertools
 import json
 import math
 import random
 from collections import defaultdict
-from collections.abc import Collection, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from fractions import Fraction
 
@@ -140,7 +138,7 @@ class QuestionGenerator:
         question_count: int,
         seed: int,
         *,
-        avoid_question_keys: Collection[str] = (),
+        avoid_question_keys: Sequence[str] = (),
     ) -> list[Question]:
         """Generate at most one question per template and distinct underlying fact.
 
@@ -148,6 +146,7 @@ class QuestionGenerator:
         possible, include both shared-only and solo-only evidence. Incomplete
         comparisons (any room player missing required data) are skipped.
         Input ordering and outsiders never influence output, including IDs.
+        Avoided keys are ordered oldest first and reused only to fill a short quiz.
         """
         players = sorted(players, key=lambda p: p.user_id)
         ids = {p.user_id for p in players}
@@ -174,7 +173,6 @@ class QuestionGenerator:
             members[row.game, row.match_id].add(row.user_id)
 
         candidates: list[_Candidate] = []
-        avoided = set(avoid_question_keys)
         for template in self._templates:
             for scope in sorted(set(template.scopes)):
                 groups: dict[str, list[PlayerMatchStats]] = {uid: [] for uid in ids}
@@ -210,9 +208,6 @@ class QuestionGenerator:
                         [(uid, v.evidence) for uid, v in complete.items()],
                     )
                 )
-                question_key = f"{template.id}:{fact_key}"
-                if question_key in avoided:
-                    continue
                 context = {
                     "name": next(p.display_name for p in players if p.user_id == winner),
                     "scope": _SCOPE_TEXT[scope],
@@ -221,14 +216,18 @@ class QuestionGenerator:
                     "denominator": _display(value.denominator),
                     "last_n": template.last_n,
                 }
+                text = template.question.format(**context)
+                # Repeat identity follows the visible question and answer, not the
+                # evidence or explanation, which can change after a match sync.
+                question_key = f"{template.id}:{_key((scope, winner, text))}"
                 question = Question(
                     question_id=question_key,
                     type=QUESTION_TYPE_PICK_THE_PLAYER,
-                    text=template.question.format(**context),
+                    text=text,
                     explanation=template.explanation.format(**context),
                     correct_option_id=winner,
                     # For aggregates this is representative evidence, not the sole
-                    # source. The key fingerprints the full comparison evidence.
+                    # source. fact_key fingerprints the full comparison evidence.
                     source_match_id=value.source_match_id,
                     options=[
                         AnswerOption(option_id=p.user_id, label=p.display_name) for p in players
@@ -238,22 +237,63 @@ class QuestionGenerator:
 
         rng = random.Random(seed)
         rng.shuffle(candidates)
-        # Only three templates initially. Enumerating choices by template avoids a
-        # greedy pick blocking a mixed shared/solo quiz or a larger valid result.
-        by_template = [
-            [c for c in candidates if c.template_id == t.id] + [None] for t in self._templates
-        ]
-        best: list[_Candidate] = []
-        best_rank = (-1, -1)
-        for choice in itertools.product(*by_template):
-            selected = [c for c in choice if c is not None]
-            if len(selected) > question_count or len({c.fact_key for c in selected}) != len(
-                selected
-            ):
-                continue
-            scopes = {c.scope for c in selected}
-            rank = (len(selected), int("shared" in scopes and "solo" in scopes))
-            if rank > best_rank:
-                best, best_rank = selected, rank
-        rng.shuffle(best)
-        return [c.question for c in best]
+        # Preserve the first (oldest) occurrence if history contains duplicate keys.
+        age: dict[str, int] = {}
+        for index, key in enumerate(avoid_question_keys):
+            age.setdefault(key, index)
+        fresh = [c for c in candidates if c.question.question_id not in age]
+        reused = sorted(
+            (c for c in candidates if c.question.question_id in age),
+            key=lambda c: age[c.question.question_id],
+        )
+        selected: list[_Candidate] = []
+        templates: set[str] = set()
+        facts: set[str] = set()
+        for pool in (fresh, reused):
+            for candidate in pool:
+                if len(selected) == question_count:
+                    break
+                if candidate.template_id in templates or candidate.fact_key in facts:
+                    continue
+                selected.append(candidate)
+                templates.add(candidate.template_id)
+                facts.add(candidate.fact_key)
+
+        # Two bounded repair passes, never a Cartesian product. Keep fresh picks
+        # ahead of repeats and retain the other scope when swapping one in.
+        if len(selected) >= 2:
+            for scope in ("shared", "solo"):
+                if any(c.scope == scope for c in selected):
+                    continue
+                scope_counts = {s: sum(c.scope == s for c in selected) for s in ("shared", "solo")}
+                repaired = False
+                for candidate in fresh + reused:
+                    if candidate.scope != scope:
+                        continue
+                    for index in range(len(selected) - 1, -1, -1):
+                        old = selected[index]
+                        if (
+                            candidate.question.question_id in age
+                            and old.question.question_id not in age
+                        ):
+                            continue
+                        if scope_counts.get(old.scope) == 1:
+                            continue
+                        if (
+                            candidate.template_id in templates
+                            and candidate.template_id != old.template_id
+                        ) or (candidate.fact_key in facts and candidate.fact_key != old.fact_key):
+                            continue
+                        templates.remove(old.template_id)
+                        facts.remove(old.fact_key)
+                        templates.add(candidate.template_id)
+                        facts.add(candidate.fact_key)
+                        selected[index] = candidate
+                        repaired = True
+                        break
+                    if repaired:
+                        break
+        # Stable sort keeps fresh picks shuffled and reused picks oldest first,
+        # including after a scope repair. Do not shuffle the completed quiz again.
+        selected.sort(key=lambda c: age.get(c.question.question_id, -1))
+        return [c.question for c in selected]
