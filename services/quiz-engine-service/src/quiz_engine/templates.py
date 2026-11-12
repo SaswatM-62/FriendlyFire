@@ -163,21 +163,21 @@ TEMPLATES: tuple[QuestionTemplate, ...] = (
     ),
     # FF-410: Question Pack 7
     QuestionTemplate(
-        id="most-recent-competitive-games-v1",
-        question="This player played {value} Competitive games in their last 10 available games. Who is it?",
-        explanation="{name} played {value} Competitive games.",
-        stats=("labels.queue_id",),
-        rule="count",
-        stat="matches",
-        queues=("competitive",),
-    ),
-    QuestionTemplate(
         id="most-recent-competitive-wins-v1",
         question="This player won {value} of their last 10 Competitive games. Who is it?",
         explanation="{name} won {value} Competitive games.",
         stats=("won", "labels.queue_id", "labels.result"),
         rule="count",
         stat="won",
+        queues=("competitive",),
+    ),
+    QuestionTemplate(
+        id="most-recent-competitive-kills-v1",
+        question="This player recorded {value} kills across their last 10 Competitive games. Who is it?",
+        explanation="{name} recorded {value} kills across their last 10 Competitive games.",
+        stats=("kills", "labels.queue_id"),
+        rule="count",
+        stat="kills",
         queues=("competitive",),
     ),
     QuestionTemplate(

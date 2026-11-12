@@ -1,7 +1,7 @@
 from quiz_engine.templates import TEMPLATES
 
 FF410_IDS = [
-    "most-recent-competitive-games-v1",
+    "most-recent-competitive-kills-v1",
     "most-recent-competitive-wins-v1",
     "most-recent-kills-v1",
     "most-recent-assists-v1",
