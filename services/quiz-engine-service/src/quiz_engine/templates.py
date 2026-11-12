@@ -173,7 +173,7 @@ TEMPLATES: tuple[QuestionTemplate, ...] = (
     ),
     QuestionTemplate(
         id="most-recent-competitive-kills-v1",
-        question="This player recorded {value} kills across their last 10 Competitive games. Who is it?",
+        question="Who recorded {value} kills in their last 10 Competitive games?",
         explanation="{name} recorded {value} kills across their last 10 Competitive games.",
         stats=("kills", "labels.queue_id"),
         rule="count",
@@ -222,7 +222,7 @@ TEMPLATES: tuple[QuestionTemplate, ...] = (
     ),
     QuestionTemplate(
         id="most-recent-defuses-v1",
-        question="This player defused the spike {value} times in their last 10 games. Who is it?",
+        question="Who defused the spike {value} times in their last 10 games?",
         explanation="{name} defused the spike {value} times.",
         stats=("numbers.defuses",),
         rule="count",

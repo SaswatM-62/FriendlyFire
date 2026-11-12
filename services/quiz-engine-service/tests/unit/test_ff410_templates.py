@@ -47,7 +47,4 @@ def test_ff410_questions_have_valid_queues():
     for template in TEMPLATES:
         if template.id in FF410_IDS:
             assert template.queues
-            assert all(
-                queue in ("competitive", "unrated")
-                for queue in template.queues
-            )
+            assert all(queue in ("competitive", "unrated") for queue in template.queues)
