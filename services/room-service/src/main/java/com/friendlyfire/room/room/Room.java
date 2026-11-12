@@ -80,10 +80,6 @@ public class Room {
         return phase;
     }
 
-    public synchronized void setPhase(RoomPhase phase) {
-        this.phase = phase;
-    }
-
     public synchronized RoomSettings getSettings() {
         return settings;
     }
@@ -114,11 +110,19 @@ public class Room {
     }
 
     public synchronized boolean removePlayer(String userId) {
-        if (userId.equals(hostUserId)) {
+        if (players.remove(userId) == null) {
             return false;
         }
 
-        return players.remove(userId) != null;
+        if (userId.equals(hostUserId)) {
+            if (players.isEmpty()) {
+                hostUserId = null;
+            } else {
+                hostUserId = players.keySet().iterator().next();
+            }
+        }
+
+        return true;
     }
 
     public synchronized String getQuizId() {
@@ -150,8 +154,18 @@ public class Room {
         return currentQuestion;
     }
 
-    public synchronized void setCurrentQuestion(Question currentQuestion) {
-        this.currentQuestion = currentQuestion;
+    public synchronized void startQuestion(Question question, Timestamp deadline) {
+        this.currentQuestion = question;
+        this.phaseDeadline = deadline;
+        this.currentResults.clear();
+        this.phase = RoomPhase.ROOM_PHASE_QUESTION;
+    }
+
+    public synchronized void reveal(List<PlayerResult> results, Timestamp deadline) {
+        this.currentResults.clear();
+        this.currentResults.addAll(results);
+        this.phaseDeadline = deadline;
+        this.phase = RoomPhase.ROOM_PHASE_REVEAL;
     }
 
     public synchronized List<ScoreEntry> getScoreboard() {
@@ -165,11 +179,6 @@ public class Room {
 
     public synchronized List<PlayerResult> getCurrentResults() {
         return new ArrayList<>(currentResults);
-    }
-
-    public synchronized void setCurrentResults(List<PlayerResult> results) {
-        this.currentResults.clear();
-        this.currentResults.addAll(results);
     }
 
     public synchronized Vote getActiveVote() {

@@ -1,8 +1,7 @@
+
 package com.friendlyfire.room.room;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Random;
 
@@ -10,30 +9,35 @@ import org.junit.jupiter.api.Test;
 
 class RoomCodeGeneratorTest {
 
-    private static final String CHARACTERS = "ABCDEFGHJKMNPQRTUVWXY346789";
-
     @Test
     void generatedCodeHasSixAllowedCharacters() {
         RoomRepository repository = new InMemoryRoomRepository();
         RoomCodeGenerator generator =
                 new RoomCodeGenerator(repository, new Random(42));
 
-        String code = generator.generateCode();
+        String excluded = "0O1IL5S2Z";
 
-        assertEquals(6, code.length());
+        for (int i = 0; i < 1000; i++) {
+            String code = generator.generateCode();
 
-        for (char character : code.toCharArray()) {
-            assertTrue(CHARACTERS.indexOf(character) >= 0);
+            assertThat(code).hasSize(6);
+
+            for (char character : code.toCharArray()) {
+                assertThat(excluded.indexOf(character)).isEqualTo(-1);
+                assertThat(Character.isLetterOrDigit(character)).isTrue();
+            }
         }
     }
 
     @Test
     void retriesWhenGeneratedCodeIsAlreadyTaken() {
         RoomRepository repository = new InMemoryRoomRepository();
-        Random expectedRandom = new Random(42);
 
-        String takenCode = generateExpectedCode(expectedRandom);
-        String nextCode = generateExpectedCode(expectedRandom);
+        RoomCodeGenerator firstGenerator =
+                new RoomCodeGenerator(repository, new Random(42));
+
+        String takenCode = firstGenerator.generateCode();
+        String expectedNextCode = firstGenerator.generateCode();
 
         repository.save(new Room(takenCode, "host", "Host"));
 
@@ -42,19 +46,7 @@ class RoomCodeGeneratorTest {
 
         String generatedCode = generator.generateCode();
 
-        assertEquals(nextCode, generatedCode);
-        assertNotEquals(takenCode, generatedCode);
-    }
-
-    private String generateExpectedCode(Random random) {
-        StringBuilder code = new StringBuilder();
-
-        for (int i = 0; i < 6; i++) {
-            code.append(CHARACTERS.charAt(
-                    random.nextInt(CHARACTERS.length())
-            ));
-        }
-
-        return code.toString();
+        assertThat(generatedCode).isEqualTo(expectedNextCode);
+        assertThat(generatedCode).isNotEqualTo(takenCode);
     }
 }

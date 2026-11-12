@@ -1,17 +1,22 @@
 package com.friendlyfire.room.room;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import com.friendlyfire.room.room.Room;
 import com.friendlyfire.proto.friendlyfire.quiz.v1.Question;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomPhase;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
+
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
+
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 class RoomTest {
     @Test
@@ -48,16 +53,15 @@ class RoomTest {
         start.countDown();
         executor.shutdown();
 
-        while (!executor.isTerminated()) {
-            Thread.yield();
-        }
+        assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
+            .isTrue();
 
-        assertEquals(7, successfulJoins.get());
-        assertEquals(8, room.getPlayers().size());
+        assertThat(successfulJoins.get()).isEqualTo(7);
+        assertThat(room.getPlayers()).hasSize(8);
     }
 
     @Test
-    void correctAnswerIsHiddenBeforeReveal() {
+    void correctAnswerIsHiddenOutsideReveal() {
         Room room = new Room("ABC123", "host1", "Host");
 
         Question question = Question.newBuilder()
@@ -66,12 +70,17 @@ class RoomTest {
                 .setCorrectOptionId("A")
                 .build();
 
-        room.setCurrentQuestion(question);
+        room.startQuestion(question, null);
 
         var snapshot = room.buildSnapshot();
 
-        assertFalse(snapshot.getCurrentQuestion().hasReveal());
+        assertThat(snapshot.getPhase())
+                .isEqualTo(RoomPhase.ROOM_PHASE_QUESTION);
+
+        assertThat(snapshot.getCurrentQuestion().hasReveal())
+                .isFalse();
     }
+
 
     @Test
     void correctAnswerIsVisibleDuringReveal() {
@@ -83,15 +92,145 @@ class RoomTest {
                 .setCorrectOptionId("A")
                 .build();
 
-        room.setCurrentQuestion(question);
-        room.setPhase(RoomPhase.ROOM_PHASE_REVEAL);
+        room.startQuestion(question, null);
+        room.reveal(List.of(), null);
 
         var snapshot = room.buildSnapshot();
 
-        assertTrue(snapshot.getCurrentQuestion().hasReveal());
-        assertEquals(
-                "A",
-                snapshot.getCurrentQuestion().getReveal().getCorrectOptionId()
-        );
+        assertThat(snapshot.getCurrentQuestion().hasReveal()).isTrue();
+
+        assertThat(snapshot.getCurrentQuestion()
+                .getReveal()
+                .getCorrectOptionId()).isEqualTo("A");
+    }
+
+    @Test
+    void concurrentSnapshotsNeverRevealNextAnswerEarly() throws Exception {
+        Room room = new Room("ABC123", "host1", "Host");
+
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> updater = executor.submit(() -> {
+                for (int i = 0; i < 10000; i++) {
+                    Question question = Question.newBuilder()
+                            .setQuestionId("q" + i)
+                            .setText("Question " + i)
+                            .setCorrectOptionId("answer-" + i)
+                            .build();
+
+                    room.startQuestion(question, null);
+                    room.reveal(java.util.List.of(), null);
+                }
+            });
+
+            Future<?> reader = executor.submit(() -> {
+                for (int i = 0; i < 10000; i++) {
+                    var snapshot = room.buildSnapshot();
+
+                    if (snapshot.hasCurrentQuestion()
+                            && snapshot.getPhase() != RoomPhase.ROOM_PHASE_REVEAL) {
+                        assertThat(snapshot.getCurrentQuestion().hasReveal())
+                                .isFalse();
+                    }
+                }
+            });
+
+            updater.get();
+            reader.get();
+
+        } finally {
+            executor.shutdown();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
+                    .isTrue();
+        }
+    }
+
+    @Test
+    void nextQuestionAnswerIsNeverRevealedEarly() throws Exception {
+        Room room = new Room("ABC123", "host1", "Host");
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        try {
+            Future<?> updater = executor.submit(() -> {
+                for (int i = 0; i < 10000; i++) {
+                    Question question = Question.newBuilder()
+                            .setQuestionId("q" + i)
+                            .setText("Question " + i)
+                            .setCorrectOptionId("answer-" + i)
+                            .build();
+
+                    room.startQuestion(question, null);
+                    room.reveal(java.util.List.of(), null);
+                }
+            });
+
+            Future<?> reader = executor.submit(() -> {
+                int highestRevealed = -1;
+
+                for (int i = 0; i < 10000; i++) {
+                    var snapshot = room.buildSnapshot();
+
+                    if (!snapshot.hasCurrentQuestion()) {
+                        continue;
+                    }
+
+                    String questionId =
+                            snapshot.getCurrentQuestion().getQuestionId();
+
+                    if (snapshot.getPhase() == RoomPhase.ROOM_PHASE_REVEAL) {
+                        assertThat(snapshot.getCurrentQuestion().hasReveal())
+                                .isTrue();
+                        assertThat(snapshot.getCurrentQuestion()
+                            .getReveal()
+                            .getCorrectOptionId())
+                            .isEqualTo("answer-" + questionId.substring(1));
+
+                        int questionNumber =
+                                Integer.parseInt(questionId.substring(1));
+
+                        assertThat(questionNumber)
+                                .isGreaterThanOrEqualTo(highestRevealed);
+
+                        highestRevealed = questionNumber;
+                    } else {
+                        assertThat(snapshot.getCurrentQuestion().hasReveal())
+                                .isFalse();
+                    }
+                }
+            });
+
+            updater.get();
+            reader.get();
+
+        } finally {
+            executor.shutdown();
+            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
+                    .isTrue();
+        }
+    }
+
+    @Test
+    void hostTransfersToNextPlayerWhenHostLeaves() {
+        Room room = new Room("ABC123", "host1", "Host");
+
+        Player first = Player.newBuilder()
+                .setUserId("player1")
+                .setDisplayName("Player 1")
+                .build();
+
+        Player second = Player.newBuilder()
+                .setUserId("player2")
+                .setDisplayName("Player 2")
+                .build();
+
+        room.addPlayer(first);
+        room.addPlayer(second);
+
+        assertThat(room.removePlayer("host1")).isTrue();
+        assertThat(room.getHostUserId()).isEqualTo("player1");
+
+        assertThat(room.removePlayer("player1")).isTrue();
+        assertThat(room.getHostUserId()).isEqualTo("player2");
     }
 }

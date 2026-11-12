@@ -1,7 +1,6 @@
 package com.friendlyfire.room.room;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import java.util.Random;
+
 import java.util.random.RandomGenerator;
 
 import org.springframework.stereotype.Component;
@@ -14,11 +13,6 @@ public class RoomCodeGenerator {
 
     private final RoomRepository repository;
     private final RandomGenerator random;
-
-    @Autowired
-    public RoomCodeGenerator(RoomRepository repository) {
-        this(repository, new Random());
-    }
 
     public RoomCodeGenerator(RoomRepository repository, RandomGenerator random) {
         this.repository = repository;
