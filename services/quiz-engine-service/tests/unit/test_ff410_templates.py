@@ -1,16 +1,16 @@
 from quiz_engine.templates import TEMPLATES
 
 FF410_IDS = [
-    "most-competitive-matches-act-v1",
-    "highest-competitive-win-rate-v1",
-    "most-kills-single-match-v1",
-    "highest-recent-acs-v1",
-    "most-competitive-wins-v1",
-    "highest-map-acs-v1",
-    "most-assists-single-match-v1",
+    "most-recent-competitive-games-v1",
+    "most-recent-competitive-wins-v1",
+    "most-recent-kills-v1",
+    "most-recent-assists-v1",
     "most-recent-deaths-v1",
     "most-recent-first-bloods-v1",
-    "most-weapon-kills-v1",
+    "most-recent-plants-v1",
+    "most-recent-defuses-v1",
+    "highest-recent-kda-v1",
+    "most-recent-first-deaths-v1",
 ]
 
 
