@@ -87,9 +87,9 @@ dependencies, so it takes a few minutes. Later starts take about a minute.
 ### Is everything working?
 
 1. `make ps`: all 9 containers say `(healthy)`. The Java services are the last ones.
-2. Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`: the Gateway only
-   accepts requests from `FRONTEND_ORIGIN`). The **System status** page should say
-   **"17 of 17 checks passing"** and **"Realtime: connected · N ms"**.
+2. Open **http://localhost:3000/status** (use `localhost`, not `127.0.0.1`: the Gateway only
+   accepts requests from `FRONTEND_ORIGIN`). The **Status** page should say
+   **"17 of 17 checks passing"** and, under Realtime ping, **"Connected · N ms"**.
 3. From a terminal:
    ```bash
    curl localhost:8080/api/health                                  # {"status":"UP"}
@@ -455,31 +455,59 @@ services/match-data-service/
 
 ```
 frontend/src/
-├── app/          routes (App Router): one page.tsx per route
-├── components/   React components, each with its *.test.tsx next to it
-├── lib/          config.ts (NEXT_PUBLIC_* values) and Gateway API helpers
-└── test/         Vitest setup, the fake Gateway (MSW) and test data
+├── app/          routes (App Router): (site)/ pages with the top bar, (bare)/login,
+│                 room/[roomCode], plus icons, manifest and the link-preview image
+├── components/   React components by area (home, profile, room, history, chrome, ui),
+│                 each tested in a *.test.tsx next to it
+├── lib/          config.ts (NEXT_PUBLIC_* values), api.ts (the Gateway client),
+│                 api-types.ts (every REST and STOMP body), useRoomSocket.ts, helpers
+├── mocks/        the fake backend: MSW handlers for every endpoint and a scripted room
+├── styles/       the design: tokens.css, design.css (every board's classes), app.css
+└── test/         Vitest setup and render helpers (renderWithApp, renderRoom)
 ```
 
-- TypeScript in strict mode; avoid `any` and type every Gateway response (see
-  `lib/health.ts`).
+- TypeScript in strict mode; avoid `any`. Every Gateway body is typed in `lib/api-types.ts`
+  (the STOMP ones are also described in `docs/realtime-messages.md`, FF-005).
 - Server components by default. Add `"use client"` only for state, effects or browser APIs.
-- The frontend only talks to the Gateway: REST through helpers in `src/lib` (using
-  `config.gatewayUrl`), realtime over STOMP (`@stomp/stompjs`, `config.wsUrl`).
+  A server component can't pass a function (like a render prop) to a client one.
+- The frontend only talks to the Gateway: REST through `useApi()` (`lib/api.ts`, which adds
+  the access token and shows errors as toasts unless the call is `quiet`), realtime through
+  `useRoomSocket` (`@stomp/stompjs`). Pages never decide what the server decides: who is
+  host, whether time is up, who was right.
 - `NEXT_PUBLIC_*` values are read only in `src/lib/config.ts`.
-- Style with Tailwind classes.
-- The React lint rules don't allow calling `setState` directly in an effect. Set state
-  in callbacks instead (a promise's `.then`, an event handler, a subscription), as
-  `SystemStatus.tsx` does.
-- `cacheComponents` is on: when a page reads request data (route params, cookies,
-  uncached fetches), wrap that part in `<Suspense>`.
+- Style with the design's classes (`src/styles/design.css`, copied from the "Calmer revamp"
+  boards: `card`, `btn`, `tag`, `tile`, `room`...) and Tailwind utilities for small layout
+  fixes. The design CSS sits in Tailwind's components layer, so a utility can override it;
+  a design class that's also a Tailwind utility name loses, which is why the boards' `ring`
+  and `block` are `cring` and `pblock` here. Colours come from the tokens
+  (`var(--mint-text)`, `text-muted`), never hex values. Every screen works at 375 px and
+  with `prefers-reduced-motion`.
+- The React lint rules don't allow calling `setState` directly in an effect or calling
+  `Date.now()` while rendering. Set state in callbacks (a promise's `.then`, an event
+  handler, a subscription), and read the time with `useNow()`.
+- `cacheComponents` is on: when a component reads request data (route params, search
+  params, `usePathname`), wrap it in `<Suspense>`.
+- Sign-in uses the Auth0 Next.js SDK (`src/proxy.ts`, `src/lib/auth0.ts`) with the
+  `AUTH0_*` settings in `.env`. Without them every page still renders, signed out.
+
+**The fake backend (FF-513).** With `NEXT_PUBLIC_FAKE_BACKEND=true` in `.env` (then
+`docker compose up -d --no-deps frontend`), the frontend answers every Gateway call itself
+and replaces the WebSocket with a scripted room: players join, a sync finishes, then the
+countdown, questions, reveals, a disconnect and vote, and the podium. A **Fake backend**
+button (bottom right) signs you in or out, links or unlinks Riot, changes the sync status,
+and jumps the room to any screen. `K7QM2X` is a room you join as a guest; `PACKED` is full,
+`BUSY22` has started, any other code is "Room not found". It only works in `next dev`:
+`npm run check:no-fake-backend` (in CI) fails if a production build contains it.
 
 **Tests**
 - Vitest and React Testing Library. Query the page like a user would (`getByRole`,
   `getByText`), interact with `user-event`, and assert with jest-dom matchers.
 - Fake the Gateway with MSW inside the test:
-  `server.use(http.get(url, () => HttpResponse.json(...)))`. A request without a handler
-  fails the test.
+  `server.use(http.get(url, () => HttpResponse.json(...)))`, or render with
+  `renderWithApp(<Page />)`, which uses the fake backend's handlers. Room screens render
+  with `renderRoom(<Lobby />, snapshot)`. A request without a handler fails the test.
+- `next/navigation` is mocked in `src/test/setup.ts`; assert on `router` from
+  `@/test/navigation`.
 - End-to-end: Playwright specs in `e2e/tests/`, run with `make e2e` while `make up` runs.
 - Run: `make test s=frontend` and `make lint`, or with mise in `frontend/`: `npm test`,
   `npm run test:watch`, `npm run lint`, `npm run typecheck`.
@@ -503,7 +531,7 @@ make ps                   # which container isn't healthy?
 make logs s=<service>     # why?
 ```
 
-Then the status page (http://localhost:3000) shows which connection fails, and why.
+Then the status page (http://localhost:3000/status) shows which connection fails, and why.
 
 | Problem | Fix |
 |---|---|
@@ -511,7 +539,7 @@ Then the status page (http://localhost:3000) shows which connection fails, and w
 | `make: command not found` | macOS: `xcode-select --install`. WSL: `sudo apt install make`. |
 | `make up` stops with "dependency failed to start: container ... is unhealthy" | `make logs s=<that service>`. On the very first start, a Java service can be slow while it downloads dependencies: run `make up` again. |
 | "port is already allocated" | Another program uses that port. For Postgres, set `POSTGRES_HOST_PORT=5433` in `.env`. For 3000, 8080, 8090 or 9091–9095, find it with `lsof -i :3000` (macOS) or `ss -ltnp \| grep 3000` (Linux/WSL), often an old stack from another clone (`docker ps`). |
-| Status page says "Can't reach the Gateway" or "Realtime: disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
+| Status page says "Can't reach the Gateway" or Realtime ping says "Disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
 | A node is DOWN with "connection refused" or "unknown host" | That service (or Postgres) isn't running: `make up`. |
 | A node is DOWN with "deadline exceeded" | It answered too slowly, usually because it or something below it is still starting. Wait a few seconds. |
 | A service with migrations stays DOWN after Postgres was stopped and started again | Services wait about a minute for Postgres at startup, then exit. In `make up` the hot-reload watcher (`watchfiles`, `air`) can restart the process at any time (Docker Desktop reports file changes in shared folders such as `gen/python`), and a failed start leaves the container running. If Postgres was down for more than a minute at that moment, start Postgres, then `docker compose restart <service>`. |

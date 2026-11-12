@@ -1,24 +1,24 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/design.css";
+@import "../styles/app.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* The design tokens as Tailwind colours, e.g. text-muted, bg-surface, border-line. */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-mint: var(--mint-text);
+  --color-orange: var(--orange-text);
+  --color-pink: var(--pink-text);
+  --color-cyan: var(--cyan-text);
+  --color-violet: var(--violet-text);
+  --color-yellow: var(--yellow-text);
+  --color-red: var(--red-text);
+  --breakpoint-phone: 601px;
 }

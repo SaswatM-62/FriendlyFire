@@ -235,7 +235,11 @@ jobs:
       - run: npm run typecheck
       - name: Tests with coverage (npm test plus a v8 coverage report)
         run: npm run coverage
+      # Built with the fake backend switched on, to prove production builds leave it out (FF-513).
       - run: npm run build
+        env:
+          NEXT_PUBLIC_FAKE_BACKEND: "true"
+      - run: npm run check:no-fake-backend
       - uses: actions/upload-artifact@v7
         if: always()
         with:

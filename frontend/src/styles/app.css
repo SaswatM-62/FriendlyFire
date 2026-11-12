@@ -1,0 +1,88 @@
+/*
+ * What the app needs beyond the boards: page defaults, the toast stack, the modal overlay,
+ * and the motion the design's notes describe (every phase change fades and rises over
+ * 600 ms; the reveal builds up in steps, then a bar drains until the next question).
+ */
+
+/*
+ * The boards rely on the browser's default link underline (footer links, "See all
+ * history", the legal pages). Tailwind's reset removes it, so put it back in the base
+ * layer, where .btn, .chip, .logo and the list rows can still turn it off.
+ */
+@layer base {
+  a{text-decoration:underline}
+}
+
+@layer components {
+  body{margin:0;background:var(--bg);color:var(--text);font:400 15px/22px var(--font-body);-webkit-font-smoothing:antialiased}
+
+  /* the skip link, visible only when focused */
+  .skip{position:absolute;left:12px;top:-60px;z-index:60;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);font:700 14px/1 var(--font-ui)}
+  .skip:focus{top:12px}
+
+  /* screen-reader-only text outside a .c frame (dialogs, toasts) */
+  .nf-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* a character sits bare in .av or .mini; disconnected players fade (the boards' .away) */
+  .nf-char{display:block;flex:none}
+  .nf-char.is-away{opacity:.35}
+
+  /* toasts: 4 seconds, top right on desktop, bottom on phones (Messages board) */
+  .toasts{position:fixed;z-index:50;top:16px;right:16px;display:flex;flex-direction:column;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none}
+  .toasts > *{pointer-events:auto}
+  .toasts .toast{color:var(--text);font-family:var(--font-body);animation:ff-toast-in 180ms ease-out}
+  @media (max-width:600px){.toasts{top:auto;bottom:16px;left:12px;right:12px;width:auto}}
+  @keyframes ff-toast-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+  /* modal dialogs on a 60% scrim (Dialogs board) */
+  .modal{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal__scrim{position:absolute;inset:0;background:rgb(11 8 18 / .6)}
+  [data-theme="light"] .modal__scrim{background:rgb(22 18 31 / .35)}
+  .modal > .dlg{position:relative;width:min(460px,100%);color:var(--text);font:400 15px/22px var(--font-body)}
+
+  /* a poor connection: one red bar (the boards show good and fair) */
+  .net--poor i:nth-child(1){background:var(--red-text)}
+
+  /* legal pages: muted body text, lists keep their bullets */
+  .tbody section p,.tbody section li{color:var(--text-muted)}
+  .tbody section ul{list-style:disc;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+  .tbody section a{color:var(--cyan-text)}
+
+  /* the look picker is a set of radio groups: style the checked one as the boards' pressed one */
+  .ib[aria-checked="true"]{border:2px solid var(--pink);background:color-mix(in oklab,var(--pink) 10%,transparent)}
+  .sw[aria-checked="true"]{outline:2px solid var(--text)}
+  .eb[aria-checked="true"]{border-color:var(--text);color:var(--text)}
+
+  /* loading placeholders */
+  .skel{display:block;border-radius:10px;background:var(--surface-2);animation:ff-pulse 1.4s ease-in-out infinite}
+  @keyframes ff-pulse{50%{opacity:.55}}
+
+  /* Join sits level with the room code field (Home boards) */
+  .join-btn{height:56px}
+  .home--busy .join-btn{height:52px}
+  @media (max-width:600px){.c .join-btn{height:52px}}
+
+  /* a wrong room code */
+  .codein[aria-invalid="true"]{border-color:var(--red-text)}
+
+  /* every phase change fades and rises over 600 ms */
+  .nf-phase{animation:ff-phase 600ms cubic-bezier(.2,.7,.2,1) both}
+  @keyframes ff-phase{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* the reveal builds up in steps (each .nf-step waits --d) */
+  [data-motion="reveal"] .nf-step{animation:ff-phase 500ms cubic-bezier(.2,.7,.2,1) var(--d,0s) both}
+
+  /* the countdown number pops on each step */
+  .countnum{animation:ff-pop 1s ease-out both}
+  @keyframes ff-pop{from{transform:scale(1.35);opacity:0}25%{opacity:1}to{transform:scale(1);opacity:1}}
+
+  /* timer bars move smoothly between ticks */
+  .timer .fill,.next .fill,.nf-drain{transition:width 250ms linear}
+
+  /* scoreboard rows slide to their new place */
+  .sb li{transition:transform 400ms ease}
+
+  @media (prefers-reduced-motion:reduce){
+    .nf-phase,[data-motion="reveal"] .nf-step,.countnum,.toasts .toast,.skel{animation:none}
+  }
+}
