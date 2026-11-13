@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyfire.gateway.testsupport.FakeAccountService;
 import com.friendlyfire.gateway.testsupport.FakeTokens;
 import com.friendlyfire.gateway.testsupport.GatewayTestBase;
+import com.friendlyfire.gateway.testsupport.StompTestClient;
+import com.friendlyfire.gateway.testsupport.TestNames;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
@@ -19,6 +21,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +30,9 @@ class MeControllerTest extends GatewayTestBase {
 
     @Autowired
     private MockMvc mvc;
+
+    @LocalServerPort
+    private int port;
 
     @Test
     void withoutATokenIs401() throws Exception {
@@ -136,5 +142,18 @@ class MeControllerTest extends GatewayTestBase {
                 .andExpect(status().isNoContent());
 
         assertThat(ACCOUNT.calls.last(DeleteAccountRequest.class).getUserId()).isEqualTo("user-maya");
+    }
+
+    @Test
+    void deletingTheAccountClosesItsLiveConnection() throws Exception {
+        String player = TestNames.player();
+        try (StompTestClient otherDevice = StompTestClient.connect(port, FakeTokens.token(player))) {
+            otherDevice.sync();
+
+            mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token(player))))
+                    .andExpect(status().isNoContent());
+
+            assertThat(otherDevice.nextErrorFrame()).startsWith("ACCOUNT_DELETED");
+        }
     }
 }

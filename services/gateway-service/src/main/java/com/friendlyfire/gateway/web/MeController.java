@@ -1,6 +1,7 @@
 package com.friendlyfire.gateway.web;
 
 import com.friendlyfire.gateway.json.MeJson;
+import com.friendlyfire.gateway.realtime.SessionCloser;
 import com.friendlyfire.gateway.security.SignedInUser;
 import com.friendlyfire.gateway.security.UserResolver;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
@@ -25,10 +26,12 @@ public class MeController {
 
     private final AccountServiceBlockingStub accounts;
     private final UserResolver users;
+    private final SessionCloser sockets;
 
-    public MeController(AccountServiceBlockingStub accounts, UserResolver users) {
+    public MeController(AccountServiceBlockingStub accounts, UserResolver users, SessionCloser sockets) {
         this.accounts = accounts;
         this.users = users;
+        this.sockets = sockets;
     }
 
     /**
@@ -53,7 +56,11 @@ public class MeController {
         return MeJson.from(user);
     }
 
-    /** Deletes the user, their Riot link and their match data (FF-111). 204 when done. */
+    /**
+     * Deletes the user, their Riot link and their match data (FF-111). 204 when done. A
+     * live WebSocket of theirs (another tab or device) is closed: tokens are only checked
+     * when a socket connects (ADR-022).
+     */
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccount(SignedInUser me) {
@@ -62,6 +69,7 @@ public class MeController {
         //   - uses: a RoomServiceBlockingStub
         accounts.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(me.userId()).build());
         users.evict(me.subject());
+        sockets.closeUser(me.userId(), ErrorCodes.ACCOUNT_DELETED, "Your FriendlyFire account was deleted.");
     }
 
     /** PATCH /api/me body: 1–24 characters (Account checks). */

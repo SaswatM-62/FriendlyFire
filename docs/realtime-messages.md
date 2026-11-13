@@ -24,7 +24,7 @@ shapes are typed for the frontend in
 |---|---|---|
 | `/topic/room/{code}` | server → room members | [`RoomEvent`](#roomevent) |
 | `/user/queue/errors` | server → one player | [`RealtimeError`](#errors) |
-| `/app/ping` → `/user/queue/pong` | both | `{"t": 1731170405120}`; the pong echoes `t` and adds `serverTime` (planned, FF-506) |
+| `/app/ping` → `/user/queue/pong` | both | `{"t": 1731170405120}`; the pong echoes `t` and adds `serverTime` |
 | `/app/room/{code}/leave` | browser → server | `{}` |
 | `/app/room/{code}/kick` | browser → server | `{"targetUserId": "…"}` |
 | `/app/room/{code}/settings` | browser → server | `{"questionCount": 10, "secondsPerQuestion": 20}` |
@@ -37,6 +37,27 @@ shapes are typed for the frontend in
 `/app/ping` is answered with the browser's own `t`, so the browser can time the round trip.
 With `serverTime` (the Gateway's `System.currentTimeMillis()` when it answered) the
 browser also works out its clock offset, so question timers match `phaseDeadline`.
+
+**Who may do what** (the Gateway's `ConnectInterceptor`):
+
+- `CONNECT` sends the Auth0 access token as `Authorization: Bearer …`. Outside production a
+  connection without one is allowed, but it may only ping (the status page). In production
+  every connection needs one.
+- One live connection per player, and the newest wins (ADR-017): a new connection replaces
+  the old one, which gets an `ERROR` frame with `ALREADY_CONNECTED` and closes. Replacing a
+  connection isn't reported to the room as a drop.
+- The token is checked on `CONNECT` only: a live connection stays open after the token
+  expires (ADR-022). Deleting the account closes it (`ACCOUNT_DELETED`).
+- A session may subscribe to `/user/queue/pong`, `/user/queue/errors`, and
+  `/topic/room/{code}` for a room its player is in (the Gateway asks room-service).
+  Subscribing starts the room's events flowing to that topic.
+- `/app/room/{code}/…` is accepted only from a session subscribed to that room's topic, so
+  subscribe first. A refused subscription or action is dropped and answered on
+  `/user/queue/errors` (codes `UNAUTHENTICATED`, `NOT_IN_ROOM`, `ROOM_NOT_FOUND`,
+  `FORBIDDEN`). Subscribe to `/user/queue/errors` before the room topic to see why a
+  room subscription was refused.
+- `vote` also accepts the contract's `"WAIT"`; the Gateway sends `"PAUSE"` as
+  `VOTE_OPTION_WAIT` until ADR-026 changes the contract.
 
 ## RoomEvent
 
@@ -134,7 +155,7 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 | `currentQuestion.reveal` | **Only during `REVEAL`**: `{correctOptionId, explanation, results: [{userId, chosenOptionId, correct, points}]}` |
 | `phaseDeadline` | When the countdown, question, reveal, vote or pause ends; not set in `LOBBY` and `FINISHED` |
 | `scoreboard` | Empty in the lobby; `rank` 1 is first, equal points share a rank; `correctAnswers` from Scoring |
-| `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseVotes` and `pauseAllowed` are planned (ADR-026; the contract has `waitVotes`) |
+| `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseVotes` carries the contract's `wait_votes` until ADR-026 renames it; `pauseAllowed` is planned (ADR-026) |
 | `waitingForUserId` | Planned (ADR-026): during `PAUSED` |
 | `pauseSecondsLeft` | Planned (ADR-026): pause time left in this quiz, out of 180 |
 | `endReason` | Planned: when `FINISHED`, `COMPLETED`, `VOTED_TO_END` or `NOT_ENOUGH_PLAYERS` |
@@ -152,6 +173,12 @@ format as REST errors (FF-006), plus the destination that failed:
 }
 ```
 
-A refused `CONNECT` because the player is already connected in another tab or device
-(ADR-017) is a STOMP `ERROR` frame whose `message` header contains `ALREADY_CONNECTED`;
-the browser stops retrying and says so.
+When the Gateway ends a connection it sends a STOMP `ERROR` frame whose `message` header
+starts with the code, then closes it:
+
+| Code | When | The browser |
+|---|---|---|
+| `UNAUTHENTICATED` | `CONNECT` without a token in production, or with one Auth0 wouldn't accept (e.g. expired) | Reconnects with a fresh token |
+| `EMAIL_NOT_VERIFIED`, `INVITE_ONLY` | `CONNECT` from a player who may not use the app yet | Reconnects (the REST calls send them to the right page) |
+| `ALREADY_CONNECTED` | The player connected again in another tab or device, which took over (ADR-017) | Stops retrying; offers "Play here" |
+| `ACCOUNT_DELETED` | The player deleted their account (ADR-022) | Stops retrying; offers to sign out |
