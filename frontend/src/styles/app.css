@@ -1,0 +1,145 @@
+/*
+ * What the app needs beyond the boards: page defaults, the toast stack, the modal overlay,
+ * and the motion the design's notes describe (every phase change fades and rises over
+ * 600 ms; the reveal builds up in steps, then a bar drains until the next question).
+ */
+
+/*
+ * The boards rely on the browser's default link underline (footer links, "See all
+ * history", the legal pages). Tailwind's reset removes it, so put it back in the base
+ * layer, where .btn, .chip, .logo and the list rows can still turn it off.
+ */
+@layer base {
+  a{text-decoration:underline}
+}
+
+@layer components {
+  body{margin:0;background:var(--bg);color:var(--text);font:400 15px/22px var(--font-body);-webkit-font-smoothing:antialiased}
+
+  /* the skip link, visible only when focused */
+  .skip{position:absolute;left:12px;top:-60px;z-index:60;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line-strong);color:var(--text);font:700 14px/1 var(--font-ui)}
+  .skip:focus{top:12px}
+
+  /* screen-reader-only text outside a .c frame (dialogs, toasts) */
+  .nf-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* a character sits bare in .av or .mini; disconnected players fade (the boards' .away) */
+  .nf-char{display:block;flex:none}
+  .nf-char.is-away{opacity:.35}
+
+  /* toasts: 4 seconds, top right on desktop, bottom on phones (Messages board) */
+  .toasts{position:fixed;z-index:50;top:16px;right:16px;display:flex;flex-direction:column;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none}
+  .toasts > *{pointer-events:auto}
+  .toasts .toast{color:var(--text);font-family:var(--font-body);animation:ff-toast-in 180ms ease-out}
+  @media (max-width:600px){.toasts{top:auto;bottom:16px;left:12px;right:12px;width:auto}}
+  @keyframes ff-toast-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+  /* modal dialogs on a 60% scrim (Dialogs board) */
+  .modal{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal__scrim{position:absolute;inset:0;background:rgb(11 8 18 / .6)}
+  [data-theme="light"] .modal__scrim{background:rgb(22 18 31 / .35)}
+  .modal > .dlg{position:relative;width:min(460px,100%);color:var(--text);font:400 15px/22px var(--font-body)}
+
+  /* answer tiles sit three to a row; the boards stretch a lone last tile across the whole
+     row, so 4 answers (after someone is removed or sits out) read 3 + 1. Make 4 answers two
+     rows of two, and 7 answers 3 + 2 + 2 (phones already lay them out two by two) */
+  .tile:first-child:nth-last-child(4),.tile:first-child:nth-last-child(4) ~ .tile,
+  .tile:first-child:nth-last-child(7) ~ .tile:nth-last-child(-n+4){grid-column:span 3}
+
+  /* the pink "You" tag on your own highlighted row: the row's background darkens the tag's
+     tint to 4.45:1 (dark) and 3.99:1 (light); a touch of the text colour lifts it past 5:1 */
+  .you .tag--pink{color:color-mix(in srgb,var(--pink-text) 80%,var(--text))}
+
+  /* the status page's dependency tree: rows indent by depth (less on phones) and grow when a
+     name or an error wraps; "797 ms" stays on one line */
+  .deps li{height:auto;min-height:44px;padding-left:calc(6px + var(--depth,0) * 22px)}
+  .deps .ms{white-space:nowrap}
+  @media (max-width:600px){.c .deps li{padding-left:calc(4px + var(--depth,0) * 10px);grid-template-columns:minmax(0,1fr) 68px 92px}}
+
+  /* tablets (601 to 900 px), which the boards don't show: Profile goes to two columns with
+     recent quizzes underneath, Status puts the ping under the dependencies, and the final
+     results put the winner first, as on phones */
+  @media (min-width:601px) and (max-width:900px){
+    .c .prof{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .c .prof > .rq{grid-column:1 / -1}
+    .c .podroom .stage{order:-1}
+    .c .stat__grid{grid-template-columns:minmax(0,1fr)}
+  }
+  /* the landing page's sample question needs about 500 px for its answers to show names and
+     tags side by side, so it sits under the intro until the page is wider than 1180 px */
+  @media (min-width:601px) and (max-width:1180px){.c .land{grid-template-columns:minmax(0,1fr);gap:28px;flex:none}}
+  /* small laptops and tablets in landscape (901 to 1180 px): next to the chat the room's main
+     column would be under 740 px, too narrow for the lobby, the answer tiles and the final
+     standings, so the room stacks as it does on tablets, with the chat underneath */
+  @media (min-width:901px) and (max-width:1180px){
+    .c .room,.c .podroom{grid-template-columns:minmax(0,1fr);height:auto;flex:none;margin:0}
+    .c .room__side .chat,.c .podroom .chat{min-height:380px}
+    .c .players{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-template-rows:none}
+    .c .podroom .stage{order:-1}
+    .c .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  /* the lobby's code and settings, and its status and buttons, wrap rather than overlap */
+  .head,.actions{flex-wrap:wrap}
+
+  /* history rows on tablets: the columns fit their content and the row grows, so the room
+     name keeps its space (the boards' fixed 220 and 140 px columns squeeze it to nothing) */
+  @media (min-width:601px) and (max-width:1000px){
+    .c .hl li a{grid-template-columns:44px minmax(0,1fr) auto auto 16px;height:auto;min-height:64px;padding:10px 12px}
+  }
+
+  /* the room bar's phase label shortens with "…" (it's a flex box, so the text needs its own element) */
+  .chip__text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* How it works: a long name in the "lock in" picture shortens with "…" */
+  .mt__nm{font:inherit;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* a long name in a sample answer stops before its tag; on small phones the tag is just its tick */
+  .t2 > span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media (max-width:420px){.t2 .t2__word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
+
+  /* a poor connection: one red bar (the boards show good and fair) */
+  .net--poor i:nth-child(1){background:var(--red-text)}
+
+  /* legal pages: muted body text, lists keep their bullets */
+  .tbody section p,.tbody section li{color:var(--text-muted)}
+  .tbody section ul{list-style:disc;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+  .tbody section a{color:var(--cyan-text)}
+
+  /* the look picker is a set of radio groups: style the checked one as the boards' pressed one */
+  .ib[aria-checked="true"]{border:2px solid var(--pink);background:color-mix(in oklab,var(--pink) 10%,transparent)}
+  .sw[aria-checked="true"]{outline:2px solid var(--text)}
+  .eb[aria-checked="true"]{border-color:var(--text);color:var(--text)}
+
+  /* loading placeholders */
+  .skel{display:block;border-radius:10px;background:var(--surface-2);animation:ff-pulse 1.4s ease-in-out infinite}
+  @keyframes ff-pulse{50%{opacity:.55}}
+
+  /* Join sits level with the room code field (Home boards) */
+  .join-btn{height:56px}
+  .home--busy .join-btn{height:52px}
+  @media (max-width:600px){.c .join-btn{height:52px}}
+
+  /* a wrong room code */
+  .codein[aria-invalid="true"]{border-color:var(--red-text)}
+
+  /* every phase change fades and rises over 600 ms */
+  .nf-phase{animation:ff-phase 600ms cubic-bezier(.2,.7,.2,1) both}
+  @keyframes ff-phase{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  /* the reveal builds up in steps (each .nf-step waits --d) */
+  [data-motion="reveal"] .nf-step{animation:ff-phase 500ms cubic-bezier(.2,.7,.2,1) var(--d,0s) both}
+
+  /* the countdown number pops on each step */
+  .countnum{animation:ff-pop 1s ease-out both}
+  @keyframes ff-pop{from{transform:scale(1.35);opacity:0}25%{opacity:1}to{transform:scale(1);opacity:1}}
+
+  /* timer bars move smoothly between ticks */
+  .timer .fill,.next .fill,.nf-drain{transition:width 250ms linear}
+
+  /* scoreboard rows slide to their new place */
+  .sb li{transition:transform 400ms ease}
+
+  @media (prefers-reduced-motion:reduce){
+    .nf-phase,[data-motion="reveal"] .nf-step,.countnum,.toasts .toast,.skel{animation:none}
+  }
+}

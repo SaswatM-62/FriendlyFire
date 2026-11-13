@@ -13,28 +13,29 @@ describe("SystemStatus", () => {
   it("shows how many checks pass and the error of the one that's down", async () => {
     server.use(http.get(deepHealth, () => HttpResponse.json(treeWithScoringPostgresDown())));
 
-    render(<SystemStatus />);
+    render(<SystemStatus ping={null} />);
 
-    expect(await screen.findByText("16 of 17 checks passing")).toBeInTheDocument();
+    expect(await screen.findByText(/16 of 17 checks passing/)).toBeInTheDocument();
     expect(screen.getByText("connection refused")).toBeInTheDocument();
-    expect(screen.getAllByText("DOWN")).toHaveLength(1);
+    expect(screen.getAllByText("Down")).toHaveLength(1);
   });
 
   it("fetches again when Refresh is clicked", async () => {
     server.use(http.get(deepHealth, () => HttpResponse.json(treeWithScoringPostgresDown()), { once: true }));
-    render(<SystemStatus />);
-    expect(await screen.findByText("16 of 17 checks passing")).toBeInTheDocument();
+    render(<SystemStatus ping={null} />);
+    expect(await screen.findByText(/16 of 17 checks passing/)).toBeInTheDocument();
 
     server.use(http.get(deepHealth, () => HttpResponse.json(healthyTree())));
     await userEvent.click(screen.getByRole("button", { name: "Refresh" }));
 
-    expect(await screen.findByText("17 of 17 checks passing")).toBeInTheDocument();
+    expect(await screen.findByText(/17 of 17 checks passing/)).toBeInTheDocument();
+    expect(screen.getByText("All systems up.")).toBeInTheDocument();
   });
 
   it("says so when the Gateway can't be reached", async () => {
     server.use(http.get(deepHealth, () => HttpResponse.error()));
 
-    render(<SystemStatus />);
+    render(<SystemStatus ping={null} />);
 
     expect(await screen.findByText(/Can't reach the Gateway/)).toBeInTheDocument();
   });
