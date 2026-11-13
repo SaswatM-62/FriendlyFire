@@ -1,18 +1,21 @@
 package com.friendlyfire.gateway.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.friendlyfire.gateway.security.SignedInUserArgumentResolver;
+import com.friendlyfire.gateway.security.UserResolver;
+import java.util.List;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+/** Spring MVC. CORS is in SecurityConfig. */
 @Configuration(proxyBeanMethods = false)
 public class WebConfig implements WebMvcConfigurer {
 
-    private final String frontendOrigin;
+    private final UserResolver users;
 
-    public WebConfig(@Value("${friendlyfire.frontend-origin}") String frontendOrigin) {
-        this.frontendOrigin = frontendOrigin;
+    public WebConfig(UserResolver users) {
+        this.users = users;
     }
 
     /** GET /api/health is Actuator's simple health group: is the Gateway running? */
@@ -21,11 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addViewController("/api/health").setViewName("forward:/actuator/health/simple");
     }
 
-    /** Only the frontend (FRONTEND_ORIGIN) may call the API from a browser. */
+    /** Controllers declare a SignedInUser parameter to get the player making the request. */
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins(frontendOrigin)
-                .allowedMethods("GET", "POST", "PATCH", "DELETE");
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(new SignedInUserArgumentResolver(users));
     }
 }

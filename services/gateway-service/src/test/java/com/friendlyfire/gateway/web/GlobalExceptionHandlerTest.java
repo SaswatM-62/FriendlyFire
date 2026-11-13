@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.friendlyfire.gateway.testsupport.FakeTokens;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
@@ -25,6 +26,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.bean.override.convention.TestBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,11 +43,15 @@ import org.springframework.web.bind.annotation.RestController;
 class GlobalExceptionHandlerTest {
 
     private static final String NEVER_ANSWERS = "room-never-answers";
+    private static final String SIGNED_IN = FakeTokens.bearer(FakeTokens.token("maya"));
 
     private static Server roomThatNeverAnswers;
 
     @TestBean
     private ManagedChannel roomChannel;
+
+    @TestBean(methodName = "com.friendlyfire.gateway.testsupport.FakeTokens#decoder")
+    private JwtDecoder jwtDecoder;
 
     @Autowired
     private MockMvc mvc;
@@ -72,7 +79,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void clientErrorFromAServiceKeepsItsMessage() throws Exception {
-        mvc.perform(get("/test/grpc/FAILED_PRECONDITION"))
+        mvc.perform(get("/test/grpc/FAILED_PRECONDITION").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error.code").value("FAILED_PRECONDITION"))
                 .andExpect(jsonPath("$.error.message").value("Maya is still syncing."));
@@ -80,7 +87,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void unavailableServiceIs503WithoutItsDetails() throws Exception {
-        mvc.perform(get("/test/grpc/UNAVAILABLE"))
+        mvc.perform(get("/test/grpc/UNAVAILABLE").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error.code").value("UNAVAILABLE"))
                 .andExpect(jsonPath("$.error.message").value(ApiErrors.UNAVAILABLE_MESSAGE));
@@ -90,7 +97,7 @@ class GlobalExceptionHandlerTest {
     void serviceThatNeverAnswersIs503WithinAboutThreeSeconds() throws Exception {
         long start = System.nanoTime();
 
-        mvc.perform(get("/test/room"))
+        mvc.perform(get("/test/room").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error.code").value("DEADLINE_EXCEEDED"));
 
@@ -99,7 +106,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void unexpectedErrorIs500WithoutTheException() throws Exception {
-        String body = mvc.perform(get("/test/boom"))
+        String body = mvc.perform(get("/test/boom").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.error.code").value("INTERNAL"))
                 .andReturn().getResponse().getContentAsString();
@@ -109,14 +116,14 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void unknownPathIs404InTheSameFormat() throws Exception {
-        mvc.perform(get("/api/no-such-thing"))
+        mvc.perform(get("/api/no-such-thing").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
     }
 
     @Test
     void unfinishedEndpointIs501NotImplemented() throws Exception {
-        mvc.perform(get("/api/rooms/K7QM2X"))
+        mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isNotImplemented())
                 .andExpect(jsonPath("$.error.code").value("NOT_IMPLEMENTED"));
     }

@@ -1,0 +1,63 @@
+package com.friendlyfire.gateway.config;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.friendlyfire.gateway.testsupport.FakeTokens;
+import com.friendlyfire.gateway.testsupport.GatewayTestBase;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.web.servlet.MockMvc;
+
+/** APP_ENV=prod: admin-only internals (FF-602) and the invite list (FF-618). */
+@TestPropertySource(properties = {"friendlyfire.app-env=prod", "friendlyfire.invited-emails=Sam@example.com, kai@example.com"})
+class ProductionSecurityTest extends GatewayTestBase {
+
+    @Autowired
+    private MockMvc mvc;
+
+    @Test
+    void healthStaysPublic() throws Exception {
+        mvc.perform(get("/api/health")).andExpect(status().isOk());
+    }
+
+    @Test
+    void deepHealthNeedsSignIn() throws Exception {
+        mvc.perform(get("/api/health/deep")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void deepHealthIsForbiddenToPlayers() throws Exception {
+        mvc.perform(get("/api/health/deep").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("sam"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deepHealthIsForAdmins() throws Exception {
+        mvc.perform(get("/api/health/deep").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.admin("pm"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("gateway-service"));
+    }
+
+    @Test
+    void invitedTestersGetIn() throws Exception {
+        mvc.perform(get("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("sam"))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void everyoneElseSeesTheInviteOnlyPage() throws Exception {
+        mvc.perform(get("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("INVITE_ONLY"));
+    }
+
+    @Test
+    void adminsAlwaysGetIn() throws Exception {
+        mvc.perform(get("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.admin("pm"))))
+                .andExpect(status().isOk());
+    }
+}

@@ -21,6 +21,9 @@ spring:
 
 server:
   port: 8080
+  # Behind the load balancer in production: trust its X-Forwarded-* headers, so HTTPS
+  # requests count as secure (HSTS) and rate limits see the player's IP, not the proxy's.
+  forward-headers-strategy: native
 
 management:
   endpoint:
@@ -34,3 +37,16 @@ management:
 
 friendlyfire:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+  # "prod" turns on the production-only rules: admin-only health and docs, every
+  # WebSocket needs sign-in, and the invite-only list.
+  app-env: ${APP_ENV:local}
+  auth:
+    # Auth0 (FF-003). Without an issuer, every route that needs sign-in answers 401.
+    issuer-uri: ${AUTH0_ISSUER_URI:}
+    audience: ${AUTH0_AUDIENCE:https://api.friendlyfire.dev}
+    # The Auth0 Action in infra/auth0/post-login-action.js adds <namespace>email,
+    # email_verified, name and roles to access tokens (see TokenClaims).
+    claim-namespace: ${AUTH0_CLAIM_NAMESPACE:https://friendlyfire.dev/}
+  # Before Riot approves us, production lets in only these emails, plus admins (FF-618).
+  invite-only: ${INVITE_ONLY:true}
+  invited-emails: ${INVITED_EMAILS:}
