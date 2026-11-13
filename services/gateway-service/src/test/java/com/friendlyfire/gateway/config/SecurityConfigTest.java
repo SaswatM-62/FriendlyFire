@@ -30,6 +30,11 @@ class SecurityConfigTest extends GatewayTestBase {
     }
 
     @Test
+    void apiDocsAreOpenOutsideProduction() throws Exception {
+        mvc.perform(get("/api/docs/openapi.json")).andExpect(status().isOk());
+    }
+
+    @Test
     void everythingElseNeedsSignIn() throws Exception {
         mvc.perform(get("/api/no-such-thing"))
                 .andExpect(status().isUnauthorized())
@@ -65,6 +70,12 @@ class SecurityConfigTest extends GatewayTestBase {
                 .andExpect(header().string("X-Frame-Options", "DENY"))
                 .andExpect(header().string("Referrer-Policy", "no-referrer"))
                 .andExpect(header().string("Strict-Transport-Security", "max-age=31536000 ; includeSubDomains"));
+    }
+
+    @Test
+    void theDocsPageGetsALooserPolicyForSwaggerUi() throws Exception {
+        mvc.perform(get("/api/docs/openapi.json"))
+                .andExpect(header().string("Content-Security-Policy", SecurityConfig.DOCS_CSP));
     }
 
     @Test

@@ -49,6 +49,12 @@ class ProductionSecurityTest extends GatewayTestBase {
     }
 
     @Test
+    void apiDocsAreForAdminsOnly() throws Exception {
+        mvc.perform(get("/api/docs/openapi.json").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("sam"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void invitedTestersGetIn() throws Exception {
         mvc.perform(get("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("sam"))))
                 .andExpect(status().isOk());

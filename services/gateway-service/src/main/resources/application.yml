@@ -35,6 +35,14 @@ management:
         simple:
           include: ping
 
+springdoc:
+  # GET /api/docs: the REST reference (FF-005). Public outside production only.
+  api-docs:
+    path: /api/docs/openapi.json
+  swagger-ui:
+    path: /api/docs
+  default-produces-media-type: application/json
+
 friendlyfire:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
   # "prod" turns on the production-only rules: admin-only health and docs, every
