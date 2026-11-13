@@ -44,6 +44,8 @@ describe("RoomLive", () => {
       </ToastProvider>,
     );
     await act(async () => vi.advanceTimersByTime(300));
+    // The theme can change mid-game: the room bar has the toggle.
+    expect(screen.getByRole("banner")).toContainElement(screen.getByRole("button", { name: /Switch to (light|dark) theme/ }));
 
     await act(async () => room.handle("start", {}, ME_ID));
     for (let i = 0; i < 2; i++) {

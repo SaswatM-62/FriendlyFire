@@ -1,6 +1,6 @@
 "use client";
 
-import { MuteToggle } from "@/components/chrome/Toggles";
+import { MuteToggle, ThemeToggle } from "@/components/chrome/Toggles";
 import { Logo } from "@/components/ui/Brand";
 import { Icon } from "@/components/ui/Icon";
 import { NetBars } from "@/components/ui/NetBars";
@@ -9,7 +9,7 @@ import { QUALITY_LABEL } from "@/lib/net";
 
 /**
  * The bar across the top of every room screen: the room code, where the room is, your
- * connection (FF-310's network bar), the chat button on phones, sound and Leave. The
+ * connection (FF-310's network bar), the chat button on phones, theme, sound and Leave. The
  * logo isn't a link here, so nobody leaves a quiz by accident; Leave asks first.
  */
 export function RoomBar({
@@ -58,6 +58,7 @@ export function RoomBar({
             {unread ? <span className="dot">{unread > 9 ? "9+" : unread}</span> : null}
           </button>
         )}
+        <ThemeToggle />
         <MuteToggle />
         {onLeave && (
           <button type="button" className="btn btn--icon" aria-label="Leave room" onClick={onLeave}>

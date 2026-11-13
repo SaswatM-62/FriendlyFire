@@ -40,6 +40,34 @@
   [data-theme="light"] .modal__scrim{background:rgb(22 18 31 / .35)}
   .modal > .dlg{position:relative;width:min(460px,100%);color:var(--text);font:400 15px/22px var(--font-body)}
 
+  /* answer tiles sit three to a row; the boards stretch a lone last tile across the whole
+     row, so 4 answers (after someone is removed or sits out) read 3 + 1. Make 4 answers two
+     rows of two, and 7 answers 3 + 2 + 2 (phones already lay them out two by two) */
+  .tile:first-child:nth-last-child(4),.tile:first-child:nth-last-child(4) ~ .tile,
+  .tile:first-child:nth-last-child(7) ~ .tile:nth-last-child(-n+4){grid-column:span 3}
+
+  /* the pink "You" tag on your own highlighted row: the row's background darkens the tag's
+     tint to 4.45:1 (dark) and 3.99:1 (light); a touch of the text colour lifts it past 5:1 */
+  .you .tag--pink{color:color-mix(in srgb,var(--pink-text) 80%,var(--text))}
+
+  /* the status page's dependency tree: rows indent by depth (less on phones) and grow when a
+     name or an error wraps; "797 ms" stays on one line */
+  .deps li{height:auto;min-height:44px;padding-left:calc(6px + var(--depth,0) * 22px)}
+  .deps .ms{white-space:nowrap}
+  @media (max-width:600px){.c .deps li{padding-left:calc(4px + var(--depth,0) * 10px);grid-template-columns:minmax(0,1fr) 68px 92px}}
+
+  /* tablets (601 to 900 px), which the boards don't show: Profile goes to two columns with
+     recent quizzes underneath, Landing stacks its sample question under the intro, and the
+     final results put the winner first, as on phones */
+  @media (min-width:601px) and (max-width:900px){
+    .c .prof{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .c .prof > .rq{grid-column:1 / -1}
+    .c .land{grid-template-columns:minmax(0,1fr);gap:28px}
+    .c .podroom .stage{order:-1}
+  }
+  /* a long name in a sample answer stops before its tag */
+  .t2 > span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
   /* a poor connection: one red bar (the boards show good and fair) */
   .net--poor i:nth-child(1){background:var(--red-text)}
 

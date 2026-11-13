@@ -62,7 +62,8 @@ export function ChatPanel({ lines, onSend, onClose }: { lines: ChatLine[]; onSen
           <Icon name="close" size={16} />
         </button>
       </div>
-      <ol ref={log} className="chat__log" aria-live="polite">
+      {/* Focusable, so keyboard users can scroll back through it. */}
+      <ol ref={log} className="chat__log" aria-live="polite" aria-label="Chat messages" tabIndex={0}>
         {lines.length === 0 && <li className="msg msg--sys">Say hi to your squad</li>}
         {lines.map((line) => {
           if (line.kind === "sys") {

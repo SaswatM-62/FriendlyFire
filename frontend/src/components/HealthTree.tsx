@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { HealthNode, HealthStatus } from "@/lib/health";
 
 const TAG: Record<HealthStatus, { cls: string; label: string }> = {
@@ -18,7 +19,7 @@ export function HealthTree({ node }: { node: HealthNode }) {
   return (
     <ul className="deps">
       {rows(node, 0, node.name).map(({ node: n, depth, key }) => (
-        <li key={key} style={{ paddingLeft: 6 + depth * 22, height: n.error ? "auto" : undefined, minHeight: 44 }}>
+        <li key={key} style={{ "--depth": depth } as CSSProperties}>
           <span>
             <span className="h2" style={{ fontSize: 16 }}>
               {n.name}
