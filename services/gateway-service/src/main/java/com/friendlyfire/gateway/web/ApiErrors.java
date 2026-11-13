@@ -18,11 +18,15 @@ public final class ApiErrors {
     static final String UNAVAILABLE_MESSAGE = "FriendlyFire is having trouble right now. Try again in a moment.";
     static final String NOT_IMPLEMENTED_MESSAGE = "That part of FriendlyFire isn't ready yet.";
 
+    static final String UNAUTHENTICATED_MESSAGE = "Sign in first.";
+
     private static final Map<HttpStatus, String> CLIENT_ERROR_MESSAGES = Map.of(
             HttpStatus.BAD_REQUEST, "That request isn't valid.",
             HttpStatus.FORBIDDEN, "You can't do that.",
             HttpStatus.NOT_FOUND, "Not found.",
-            HttpStatus.CONFLICT, "That can't be done right now.");
+            HttpStatus.CONFLICT, "That can't be done right now.",
+            HttpStatus.CONTENT_TOO_LARGE, "That request is too big.",
+            HttpStatus.TOO_MANY_REQUESTS, "You're going a bit fast. Wait a moment and try again.");
 
     private ApiErrors() {
     }
@@ -69,10 +73,18 @@ public final class ApiErrors {
         if (status == HttpStatus.SERVICE_UNAVAILABLE) {
             return of("UNAVAILABLE", UNAVAILABLE_MESSAGE);
         }
+        if (status == HttpStatus.UNAUTHORIZED) {
+            return unauthenticated();
+        }
         if (status == null || status.is5xxServerError()) {
             return internal();
         }
         return of(status.name(), clientErrorMessage(status));
+    }
+
+    /** The body for a request without a valid sign-in. */
+    public static ErrorResponse unauthenticated() {
+        return of(ErrorCodes.UNAUTHENTICATED, UNAUTHENTICATED_MESSAGE);
     }
 
     /** The body for an unexpected failure. */

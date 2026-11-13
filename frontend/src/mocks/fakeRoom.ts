@@ -42,6 +42,7 @@ export type FakeScene =
   | "ended"
   | "drop"
   | "elsewhere"
+  | "deleted"
   | "closed"
   | "chat";
 
@@ -260,12 +261,21 @@ export class FakeRoom {
     }
   }
 
-  /** The Gateway refuses the connection: the player is connected somewhere else (ADR-017). */
+  /** The Gateway closes the connection: the player opened the room somewhere else (ADR-017). */
   simulateElsewhere() {
+    this.endConnections("elsewhere");
+  }
+
+  /** The Gateway closes the connection: the player deleted their account on another device (ADR-022). */
+  simulateDeleted() {
+    this.endConnections("deleted");
+  }
+
+  private endConnections(state: "elsewhere" | "deleted") {
     for (const c of this.connections) {
       c.open = false;
       clearInterval(c.pinger);
-      c.handlers.onState("elsewhere");
+      c.handlers.onState(state);
     }
   }
 
@@ -791,6 +801,8 @@ export class FakeRoom {
         return this.simulateDrop();
       case "elsewhere":
         return this.simulateElsewhere();
+      case "deleted":
+        return this.simulateDeleted();
       case "closed":
         return this.close();
       case "chat": {

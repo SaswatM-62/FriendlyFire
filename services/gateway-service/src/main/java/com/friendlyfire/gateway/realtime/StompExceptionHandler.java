@@ -2,9 +2,11 @@ package com.friendlyfire.gateway.realtime;
 
 import com.friendlyfire.gateway.web.ApiError;
 import com.friendlyfire.gateway.web.ApiErrors;
+import com.friendlyfire.gateway.web.ApiException;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -30,6 +32,21 @@ public class StompExceptionHandler {
             log.warn("gRPC call for {} failed: {}", destination, ex.getStatus());
         }
         return new RealtimeError(ApiErrors.fromGrpc(ex).error(), destination);
+    }
+
+    @MessageExceptionHandler(ApiException.class)
+    @SendToUser(destinations = "/queue/errors", broadcast = false)
+    public RealtimeError handleApiError(
+            ApiException ex, @Header(SimpMessageHeaderAccessor.DESTINATION_HEADER) String destination) {
+        return new RealtimeError(ex.body().error(), destination);
+    }
+
+    /** A body that isn't the JSON the destination expects. */
+    @MessageExceptionHandler(MessageConversionException.class)
+    @SendToUser(destinations = "/queue/errors", broadcast = false)
+    public RealtimeError handleUnreadableBody(
+            MessageConversionException ex, @Header(SimpMessageHeaderAccessor.DESTINATION_HEADER) String destination) {
+        return new RealtimeError(new ApiError("INVALID_ARGUMENT", "That message isn't valid."), destination);
     }
 
     @MessageExceptionHandler(Exception.class)

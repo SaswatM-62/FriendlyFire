@@ -303,6 +303,11 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
 - **Gateway STOMP:** `@MessageMapping` methods in `realtime/`. Browsers send to
   `/app/...`; room updates go to `/topic/room/{code}`; messages for one player go to
   `/user/queue/...`.
+- **The signed-in player in the Gateway:** a REST controller declares a `SignedInUser`
+  parameter (filled in from the checked Auth0 token, cached for a few minutes); a STOMP
+  handler takes the session's `Principal`, whose name is the `user_id`. When the frontend
+  reacts to an error by code (`ROOM_FULL`...), rename the gRPC error with
+  `GrpcErrors.renaming(...)`; the codes are listed in `web/ErrorCodes.java`.
 - **Postgres** (account-service only, so far): Spring JDBC (`JdbcClient`) on the `account`
   schema. Flyway creates and updates the tables when the service starts.
   **To add a migration:** create `src/main/resources/db/migration/V<n>__<what>.sql`
@@ -320,6 +325,11 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
 - In `src/test/java`, same package as the class. `*Test` = unit test (`make test`),
   `*IT` = integration test (`make test-integration`).
 - JUnit 5 and AssertJ. MockMvc (`@WebMvcTest`) for REST, `WebSocketStompClient` for STOMP.
+- **Gateway tests** extend `testsupport/GatewayTestBase`: the whole Gateway with
+  account-, room- and scoring-service as in-process fakes (`FakeServices`) and Auth0 as
+  `FakeTokens` (`FakeTokens.token("maya")` signs in as `user-maya`). `StompTestClient` is a
+  browser's WebSocket. These tests share one Spring context, so use `TestNames` for fresh
+  players and room codes.
 - To call the service over gRPC: `@SpringBootTest` + `@AutoConfigureTestGrpcTransport`,
   then `GrpcChannelFactory.createChannel("any")` reaches it in-process. Careful: this also
   routes the service's own clients back to itself, so don't call `CheckDependencies`
@@ -488,7 +498,10 @@ frontend/src/
 - `cacheComponents` is on: when a component reads request data (route params, search
   params, `usePathname`), wrap it in `<Suspense>`.
 - Sign-in uses the Auth0 Next.js SDK (`src/proxy.ts`, `src/lib/auth0.ts`) with the
-  `AUTH0_*` settings in `.env`. Without them every page still renders, signed out.
+  `AUTH0_*` settings in `.env`. Without them every page still renders, signed out. The
+  Gateway also needs the tenant's post-login Action from `infra/auth0/post-login-action.js`
+  (it adds the email, verified flag, name and roles to access tokens); without it every
+  player gets "verify your email".
 
 **The fake backend (FF-513).** With `NEXT_PUBLIC_FAKE_BACKEND=true` in `.env` (then
 `docker compose up -d --no-deps frontend`), the frontend answers every Gateway call itself

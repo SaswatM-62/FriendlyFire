@@ -201,8 +201,6 @@ services:
         condition: service_healthy
       scoring-service:
         condition: service_healthy
-      match-data-service:
-        condition: service_healthy
 
   frontend:
     <<: *dev

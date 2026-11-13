@@ -4,10 +4,9 @@ import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc.DependencyHealthServiceBlockingStub;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
+import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceStub;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc.ScoringServiceBlockingStub;
 import io.grpc.ClientInterceptor;
@@ -25,7 +24,11 @@ import org.springframework.grpc.client.GrpcChannelFactory;
  *
  * <p>Every call gets a 3-second deadline unless it sets its own, so a slow service can't
  * hang a request (FF-006). A call that needs longer sets it on the call, e.g.
- * {@code rooms.withDeadlineAfter(15, TimeUnit.SECONDS).startQuiz(...)}.
+ * {@code rooms.withDeadlineAfter(15, TimeUnit.SECONDS).startQuiz(...)}. The one exception
+ * is the room event stream (roomEvents), which stays open as long as the room does.
+ *
+ * <p>Match Data isn't here: Account owns players' sync status (ADR-010), so the Gateway
+ * asks Account.
  */
 @Configuration(proxyBeanMethods = false)
 public class GrpcClientsConfig {
@@ -59,6 +62,12 @@ public class GrpcClientsConfig {
         return RoomServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
+    /** For StreamRoomEvents (RoomEventRelay): async, and no default deadline. */
+    @Bean
+    RoomServiceStub roomEvents(@Qualifier("roomChannel") ManagedChannel channel) {
+        return RoomServiceGrpc.newStub(channel);
+    }
+
     @Bean
     DependencyHealthServiceBlockingStub roomHealth(@Qualifier("roomChannel") ManagedChannel channel) {
         return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
@@ -76,21 +85,6 @@ public class GrpcClientsConfig {
 
     @Bean
     DependencyHealthServiceBlockingStub scoringHealth(@Qualifier("scoringChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
-    }
-
-    @Bean
-    ManagedChannel matchDataChannel(GrpcChannelFactory channels) {
-        return channels.createChannel("matchdata");
-    }
-
-    @Bean
-    MatchDataServiceBlockingStub matchDataService(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return MatchDataServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
-    }
-
-    @Bean
-    DependencyHealthServiceBlockingStub matchDataHealth(@Qualifier("matchDataChannel") ManagedChannel channel) {
         return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 }

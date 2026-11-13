@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFavouriteLook } from "@/components/chrome/useFavouriteLook";
 import { useRoomTransport } from "@/components/providers/AppProviders";
 import { useApi } from "@/components/providers/ApiProvider";
+import { useSession } from "@/components/providers/SessionProvider";
 import { useSound } from "@/components/providers/SoundProvider";
 import { Countdown, GetReady } from "@/components/room/Countdown";
 import { SiteChrome } from "@/components/chrome/SiteChrome";
@@ -107,6 +108,7 @@ function useEventEffects(meId: string) {
  */
 export function RoomLive({ code, meId, initial }: { code: string; meId: string; initial: RoomSnapshot }) {
   const api = useApi();
+  const session = useSession();
   const router = useRouter();
   const toast = useToast();
   const transport = useRoomTransport();
@@ -189,18 +191,35 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
   const sendChat = (text: string) => socket.send("chat", { text });
 
   if (socket.connection === "elsewhere") {
+    // The newest connection wins (ADR-017): reloading reconnects here and takes the room back.
     return (
       <RoomMessage
         icon="monitor"
         tone="yellow"
-        title="FriendlyFire is open in another tab or device"
+        title="You're playing in another tab or on another device"
         actions={
           <button type="button" className="btn btn--primary" onClick={() => window.location.reload()}>
-            Try again
+            Play here
           </button>
         }
       >
-        <p className="muted">Close FriendlyFire there, then try again.</p>
+        <p className="muted">You opened this room somewhere else, so it closed here. Play here to move back.</p>
+      </RoomMessage>
+    );
+  }
+  if (socket.connection === "deleted") {
+    return (
+      <RoomMessage
+        icon="close"
+        tone="red"
+        title="Your account was deleted"
+        actions={
+          <button type="button" className="btn btn--primary" onClick={session.signOut}>
+            Sign out
+          </button>
+        }
+      >
+        <p className="muted">Your FriendlyFire account was deleted on another tab or device, so this room closed here.</p>
       </RoomMessage>
     );
   }

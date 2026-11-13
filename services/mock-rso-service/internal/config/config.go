@@ -18,7 +18,8 @@ const (
 	localPlayersFile   = "testplayers.json"
 	examplePlayersFile = "testplayers.example.json"
 
-	defaultRedirectURIs = "http://localhost:3000/link/riot/callback,http://localhost:8080/api/link/riot/callback"
+	// The frontend's callback page, which finishes the link through the Gateway (ADR-007).
+	defaultRedirectURIs = "http://localhost:3000/link/riot/callback"
 )
 
 // Config is everything mock-rso-service reads from the environment.

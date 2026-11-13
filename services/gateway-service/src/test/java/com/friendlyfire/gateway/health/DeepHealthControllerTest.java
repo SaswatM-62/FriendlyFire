@@ -11,29 +11,29 @@ import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.bean.override.convention.TestBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(DeepHealthController.class)
+/** The controller with fake dependency checks. Public outside production (SecurityConfig). */
+@SpringBootTest
+@AutoConfigureMockMvc
 class DeepHealthControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
-    @TestConfiguration
-    static class FakeDownstream {
+    @TestBean
+    private DependencyHealthChecker dependencyHealthChecker;
 
-        @Bean
-        DependencyHealthChecker dependencyHealthChecker() {
-            return new DependencyHealthChecker("gateway-service", List.of(
-                    FakeDependencyCheck.up("account-service"),
-                    FakeDependencyCheck.failing("room-service", Status.UNAVAILABLE
-                            .withCause(new ConnectException("Connection refused"))
-                            .asRuntimeException())),
-                    Duration.ofMillis(1500));
-        }
+    static DependencyHealthChecker dependencyHealthChecker() {
+        return new DependencyHealthChecker("gateway-service", List.of(
+                FakeDependencyCheck.up("account-service"),
+                FakeDependencyCheck.failing("room-service", Status.UNAVAILABLE
+                        .withCause(new ConnectException("Connection refused"))
+                        .asRuntimeException())),
+                Duration.ofMillis(1500));
     }
 
     @Test
