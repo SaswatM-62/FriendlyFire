@@ -16,8 +16,8 @@ public class InMemoryRoomRepository implements RoomRepository {
     }
 
     @Override
-    public void save(Room room) {
-        rooms.put(room.getCode(), room);
+    public boolean save(Room room) {
+        return rooms.putIfAbsent(room.getCode(), room) == null;
     }
 
     @Override

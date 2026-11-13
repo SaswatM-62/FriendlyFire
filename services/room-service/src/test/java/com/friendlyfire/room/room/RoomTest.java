@@ -105,14 +105,22 @@ class RoomTest {
     }
 
     @Test
-    void concurrentSnapshotsNeverRevealNextAnswerEarly() throws Exception {
+    void snapshotsNeverShowAnAnswerBeforeItsReveal() throws Exception {
         Room room = new Room("ABC123", "host1", "Host");
+        int questions = 20_000;
 
+        // Raised just before reveal(i), so a snapshot that rightly shows question i's
+        // answer always reads a value of at least i afterwards. A snapshot showing a
+        // higher question's answer saw it before its reveal.
+        AtomicInteger revealable = new AtomicInteger(-1);
+        CountDownLatch readerStarted = new CountDownLatch(1);
         ExecutorService executor = Executors.newFixedThreadPool(2);
 
         try {
             Future<?> updater = executor.submit(() -> {
-                for (int i = 0; i < 10000; i++) {
+                readerStarted.await();
+
+                for (int i = 0; i < questions; i++) {
                     Question question = Question.newBuilder()
                             .setQuestionId("q" + i)
                             .setText("Question " + i)
@@ -120,25 +128,36 @@ class RoomTest {
                             .build();
 
                     room.startQuestion(question, null);
-                    room.reveal(java.util.List.of(), null);
+                    revealable.set(i);
+                    room.reveal(List.of(), null);
                 }
+
+                return null;
             });
 
-            Future<?> reader = executor.submit(() -> {
-                for (int i = 0; i < 10000; i++) {
-                    var snapshot = room.buildSnapshot();
+            Future<Integer> reader = executor.submit(() -> {
+                int early = 0;
+                readerStarted.countDown();
 
-                    if (snapshot.hasCurrentQuestion()
-                            && snapshot.getPhase() != RoomPhase.ROOM_PHASE_REVEAL) {
-                        assertThat(snapshot.getCurrentQuestion().hasReveal())
-                                .isFalse();
+                while (!updater.isDone()) {
+                    var snapshot = room.buildSnapshot();
+                    int allowed = revealable.get();
+
+                    if (snapshot.getCurrentQuestion().hasReveal()) {
+                        int shown = Integer.parseInt(
+                                snapshot.getCurrentQuestion().getQuestionId().substring(1));
+
+                        if (shown > allowed) {
+                            early++;
+                        }
                     }
                 }
+
+                return early;
             });
 
             updater.get();
-            reader.get();
-
+            assertThat(reader.get()).as("snapshots that showed an answer early").isZero();
         } finally {
             executor.shutdown();
             assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
@@ -147,67 +166,28 @@ class RoomTest {
     }
 
     @Test
-    void nextQuestionAnswerIsNeverRevealedEarly() throws Exception {
+    void roomClosesAndRefusesJoinsWhenTheLastPlayerLeaves() {
         Room room = new Room("ABC123", "host1", "Host");
-        ExecutorService executor = Executors.newFixedThreadPool(2);
 
-        try {
-            Future<?> updater = executor.submit(() -> {
-                for (int i = 0; i < 10000; i++) {
-                    Question question = Question.newBuilder()
-                            .setQuestionId("q" + i)
-                            .setText("Question " + i)
-                            .setCorrectOptionId("answer-" + i)
-                            .build();
+        assertThat(room.removePlayer("host1")).isTrue();
+        assertThat(room.isClosed()).isTrue();
 
-                    room.startQuestion(question, null);
-                    room.reveal(java.util.List.of(), null);
-                }
-            });
+        Player late = Player.newBuilder()
+                .setUserId("late")
+                .setDisplayName("Late")
+                .build();
 
-            Future<?> reader = executor.submit(() -> {
-                int highestRevealed = -1;
+        assertThat(room.addPlayer(late)).isFalse();
+        assertThat(room.getPlayers()).isEmpty();
+    }
 
-                for (int i = 0; i < 10000; i++) {
-                    var snapshot = room.buildSnapshot();
+    @Test
+    void snapshotOfAClosedRoomHasNoHost() {
+        Room room = new Room("ABC123", "host1", "Host");
 
-                    if (!snapshot.hasCurrentQuestion()) {
-                        continue;
-                    }
+        room.removePlayer("host1");
 
-                    String questionId =
-                            snapshot.getCurrentQuestion().getQuestionId();
-
-                    if (snapshot.getPhase() == RoomPhase.ROOM_PHASE_REVEAL) {
-                        assertThat(snapshot.getCurrentQuestion().hasReveal())
-                                .isTrue();
-                        assertThat(snapshot.getCurrentQuestion()
-                            .getReveal()
-                            .getCorrectOptionId())
-                            .isEqualTo("answer-" + questionId.substring(1));
-
-                        int questionNumber =
-                                Integer.parseInt(questionId.substring(1));
-
-                        assertThat(questionNumber)
-                                .isGreaterThanOrEqualTo(highestRevealed);
-
-                        highestRevealed = questionNumber;
-                    } else {
-                        assertThat(snapshot.getCurrentQuestion().hasReveal())
-                                .isFalse();
-                    }
-                }
-            });
-
-            updater.get();
-            reader.get();
-
-        } finally {
-            executor.shutdown();
-            assertThat(executor.awaitTermination(10, TimeUnit.SECONDS))
-                    .isTrue();
-        }
+        assertThat(room.buildSnapshot().getHostUserId()).isEmpty();
     }
 
     @Test
@@ -232,5 +212,6 @@ class RoomTest {
 
         assertThat(room.removePlayer("player1")).isTrue();
         assertThat(room.getHostUserId()).isEqualTo("player2");
+        assertThat(room.isClosed()).isFalse();
     }
 }

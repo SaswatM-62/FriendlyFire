@@ -1,8 +1,8 @@
 package com.friendlyfire.room.room;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class InMemoryRoomRepositoryTest {
 
@@ -11,9 +11,21 @@ class InMemoryRoomRepositoryTest {
         InMemoryRoomRepository repository = new InMemoryRoomRepository();
         Room room = new Room("ABC123", "host", "host");
 
-        repository.save(room);
+        assertThat(repository.save(room)).isTrue();
 
-        assertSame(room, repository.findByCode("ABC123").orElseThrow());
+        assertThat(repository.findByCode("ABC123")).containsSame(room);
+    }
+
+    @Test
+    void saveKeepsTheExistingRoomWhenTheCodeIsTaken() {
+        InMemoryRoomRepository repository = new InMemoryRoomRepository();
+        Room first = new Room("ABC123", "host1", "Host 1");
+        Room second = new Room("ABC123", "host2", "Host 2");
+
+        repository.save(first);
+
+        assertThat(repository.save(second)).isFalse();
+        assertThat(repository.findByCode("ABC123")).containsSame(first);
     }
 
     @Test
@@ -24,13 +36,13 @@ class InMemoryRoomRepositoryTest {
         repository.save(room);
         repository.deleteByCode("ABC123");
 
-        assertTrue(repository.findByCode("ABC123").isEmpty());
+        assertThat(repository.findByCode("ABC123")).isEmpty();
     }
 
     @Test
     void returnsEmptyWhenRoomDoesNotExist() {
         InMemoryRoomRepository repository = new InMemoryRoomRepository();
 
-        assertTrue(repository.findByCode("ABC123").isEmpty());
+        assertThat(repository.findByCode("ABC123")).isEmpty();
     }
 }

@@ -41,6 +41,9 @@ public class Room {
     private Vote activeVote;
     private Timestamp phaseDeadline;
 
+    // Set when the last player leaves; a closed room never reopens.
+    private boolean closed;
+
     public Room(String code, String hostUserId, String hostDisplayName) {
         this.code = code;
         this.hostUserId = hostUserId;
@@ -100,8 +103,12 @@ public class Room {
         return new LinkedHashMap<>(players);
     }
 
+    /**
+     * Adds a player in join order. Returns false if the room is closed, full (8 players)
+     * or already has this player; check {@link #isClosed()} to tell a closed room apart.
+     */
     public synchronized boolean addPlayer(Player player) {
-        if (players.size() >= 8 || players.containsKey(player.getUserId())) {
+        if (closed || players.size() >= 8 || players.containsKey(player.getUserId())) {
             return false;
         }
 
@@ -109,20 +116,27 @@ public class Room {
         return true;
     }
 
+    /**
+     * Removes a player. If the host leaves, the player who joined next becomes host.
+     * When the last player leaves, the room closes: delete it from the repository.
+     */
     public synchronized boolean removePlayer(String userId) {
         if (players.remove(userId) == null) {
             return false;
         }
 
-        if (userId.equals(hostUserId)) {
-            if (players.isEmpty()) {
-                hostUserId = null;
-            } else {
-                hostUserId = players.keySet().iterator().next();
-            }
+        if (players.isEmpty()) {
+            hostUserId = null;
+            closed = true;
+        } else if (userId.equals(hostUserId)) {
+            hostUserId = players.keySet().iterator().next();
         }
 
         return true;
+    }
+
+    public synchronized boolean isClosed() {
+        return closed;
     }
 
     public synchronized String getQuizId() {
@@ -200,7 +214,7 @@ public class Room {
     public synchronized RoomSnapshot buildSnapshot() {
         RoomSnapshot.Builder snapshot = RoomSnapshot.newBuilder()
                 .setRoomCode(code)
-                .setHostUserId(hostUserId)
+                .setHostUserId(hostUserId == null ? "" : hostUserId)
                 .setPhase(phase)
                 .setSettings(settings)
                 .setQuizId(quizId == null ? "" : quizId)
