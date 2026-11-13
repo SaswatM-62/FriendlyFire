@@ -101,7 +101,8 @@ Where tests live and how they're named:
   (`addopts = "-m 'not integration'"` in `pyproject.toml`).
 - **Go:** `_test.go` next to the code. Integration tests start with `//go:build integration`.
 - **Frontend:** `*.test.ts(x)` next to the component. Playwright specs in `e2e/tests/`.
-- **Shared fakes:** one place per service: `FakeDependencyCheck` (Java),
+- **Shared fakes:** one place per service: `FakeDependencyCheck` (Java; the Gateway's
+  fake services and tokens are in `testsupport/`),
   `tests/fakes.py` (Python), `internal/testutil` (Go). Prefer fakes over mocking
   libraries for our own interfaces.
 - **Timing asserts are loose:** assert "under 3 seconds", never "about 1 second".
