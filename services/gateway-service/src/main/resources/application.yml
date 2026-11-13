@@ -15,8 +15,6 @@ spring:
           target: ${ROOM_GRPC_ADDR:localhost:9092}
         scoring:
           target: ${SCORING_GRPC_ADDR:localhost:9094}
-        matchdata:
-          target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
   devtools:
     livereload:
       enabled: false

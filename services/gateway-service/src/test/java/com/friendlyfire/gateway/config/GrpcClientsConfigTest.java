@@ -27,8 +27,7 @@ class GrpcClientsConfigTest {
         List<AbstractStub<?>> stubs = List.of(
                 config.accountService(channel), config.accountHealth(channel),
                 config.roomService(channel), config.roomHealth(channel),
-                config.scoringService(channel), config.scoringHealth(channel),
-                config.matchDataService(channel), config.matchDataHealth(channel));
+                config.scoringService(channel), config.scoringHealth(channel));
 
         assertThat(stubs).allSatisfy(stub -> assertThat(stub.getCallOptions().getDeadline()).isNull());
     }

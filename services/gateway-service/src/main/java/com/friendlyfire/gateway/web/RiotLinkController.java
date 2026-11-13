@@ -1,7 +1,6 @@
 package com.friendlyfire.gateway.web;
 
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class RiotLinkController {
 
     private final AccountServiceBlockingStub accounts;
-    private final MatchDataServiceBlockingStub matchData;
 
-    public RiotLinkController(AccountServiceBlockingStub accounts, MatchDataServiceBlockingStub matchData) {
+    public RiotLinkController(AccountServiceBlockingStub accounts) {
         this.accounts = accounts;
-        this.matchData = matchData;
     }
 
     @PostMapping("/start")
@@ -53,10 +50,13 @@ public class RiotLinkController {
 
     @GetMapping("/status")
     public ResponseEntity<?> status() {
-        // TODO(ff): the "syncing your matches" screen's status
-        //   - calls MatchDataService.GetSyncStatus for the signed-in user
-        //   - 200 {"status": "IN_PROGRESS", "matchesStored": 12, "lastSyncedAt": ...}
-        //   - uses: matchData
+        // TODO(ff): the sync banner's status (FF-112)
+        //   - calls Account's sync-status RPC for the signed-in user (added by FF-202;
+        //     Account owns the 24-hour rule, ADR-010), never Match Data
+        //   - 200 {"status": "SYNCING", "estimatedSeconds": 120, "lastSyncedAt": ...,
+        //     "matchesStored": 41, "errorMessage": ...} (SyncStatusResponse in
+        //     frontend/src/lib/api-types.ts)
+        //   - uses: accounts
         return NotImplemented.response();
     }
 }

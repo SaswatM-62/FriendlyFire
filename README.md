@@ -27,7 +27,7 @@ link your Riot account, open a room with up to 7 friends, and answer questions b
 | Service | Depends on |
 |---|---|
 | frontend | gateway-service (HTTP and WebSocket) |
-| gateway-service | account, room, scoring, matchdata (gRPC) |
+| gateway-service | account, room, scoring (gRPC) |
 | account-service | matchdata (gRPC), postgres (`account` schema), mock-rso-service (HTTP) |
 | room-service | quiz, scoring, matchdata (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |

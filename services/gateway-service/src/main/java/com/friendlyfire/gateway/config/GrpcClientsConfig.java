@@ -4,8 +4,6 @@ import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc.DependencyHealthServiceBlockingStub;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc;
@@ -26,6 +24,9 @@ import org.springframework.grpc.client.GrpcChannelFactory;
  * <p>Every call gets a 3-second deadline unless it sets its own, so a slow service can't
  * hang a request (FF-006). A call that needs longer sets it on the call, e.g.
  * {@code rooms.withDeadlineAfter(15, TimeUnit.SECONDS).startQuiz(...)}.
+ *
+ * <p>Match Data isn't here: Account owns players' sync status (ADR-010), so the Gateway
+ * asks Account.
  */
 @Configuration(proxyBeanMethods = false)
 public class GrpcClientsConfig {
@@ -76,21 +77,6 @@ public class GrpcClientsConfig {
 
     @Bean
     DependencyHealthServiceBlockingStub scoringHealth(@Qualifier("scoringChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
-    }
-
-    @Bean
-    ManagedChannel matchDataChannel(GrpcChannelFactory channels) {
-        return channels.createChannel("matchdata");
-    }
-
-    @Bean
-    MatchDataServiceBlockingStub matchDataService(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return MatchDataServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
-    }
-
-    @Bean
-    DependencyHealthServiceBlockingStub matchDataHealth(@Qualifier("matchDataChannel") ManagedChannel channel) {
         return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 }
