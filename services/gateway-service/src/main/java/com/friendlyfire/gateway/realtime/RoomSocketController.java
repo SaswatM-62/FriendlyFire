@@ -22,7 +22,8 @@ public class RoomSocketController {
     public void leave(@DestinationVariable String code) {
         // TODO(ff): the player leaves the room for good
         //   - calls RoomService.LeaveRoom with the session's user_id (never from the body)
-        //   - send errors to the player on /user/queue/errors
+        //   - let gRPC errors propagate: StompExceptionHandler sends them to the player on
+        //     /user/queue/errors
         //   - uses: rooms
     }
 
@@ -45,6 +46,8 @@ public class RoomSocketController {
     public void start(@DestinationVariable String code) {
         // TODO(ff): host only: start the quiz
         //   - calls RoomService.StartQuiz; FAILED_PRECONDITION's message goes to the host
+        //   - StartQuiz generates the whole quiz first, so give it 15 s instead of the
+        //     default 3 s: rooms.withDeadlineAfter(15, TimeUnit.SECONDS).startQuiz(...)
         //   - uses: rooms
     }
 

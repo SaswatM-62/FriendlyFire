@@ -2,7 +2,6 @@ package com.friendlyfire.gateway.web;
 
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +23,7 @@ public class RiotLinkController {
     }
 
     @PostMapping("/start")
-    public ResponseEntity<Map<String, String>> start() {
+    public ResponseEntity<?> start() {
         // TODO(ff): start linking: return the Riot Sign-On URL to send the browser to
         //   - calls AccountService.StartRiotLink with this endpoint's callback URL
         //     (/api/link/riot/callback) as redirect_uri
@@ -34,7 +33,7 @@ public class RiotLinkController {
     }
 
     @GetMapping("/callback")
-    public ResponseEntity<Map<String, String>> callback() {
+    public ResponseEntity<?> callback() {
         // TODO(ff): Riot redirects the browser here with ?code=...&state=...
         //   - calls AccountService.CompleteRiotLink, then redirects to the frontend
         //     (FRONTEND_ORIGIN) with the result
@@ -45,7 +44,7 @@ public class RiotLinkController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Map<String, String>> unlink() {
+    public ResponseEntity<?> unlink() {
         // TODO(ff): unlink the Riot account and delete its match data
         //   - calls AccountService.UnlinkRiot; 204 when done
         //   - uses: accounts
@@ -53,7 +52,7 @@ public class RiotLinkController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<Map<String, String>> status() {
+    public ResponseEntity<?> status() {
         // TODO(ff): the "syncing your matches" screen's status
         //   - calls MatchDataService.GetSyncStatus for the signed-in user
         //   - 200 {"status": "IN_PROGRESS", "matchesStored": 12, "lastSyncedAt": ...}
