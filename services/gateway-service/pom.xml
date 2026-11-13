@@ -22,6 +22,7 @@
     <!-- protobuf-java (4.36.2) and grpc-java (1.84.1) come from Spring Boot's BOM and
          match the Buf plugins in buf.gen.yaml. Check both when bumping Spring Boot. -->
     <jacoco-maven-plugin.version>0.8.16</jacoco-maven-plugin.version>
+    <bucket4j.version>8.21.0</bucket4j.version>
   </properties>
 
   <dependencies>
@@ -40,6 +41,17 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <!-- Rate limits (FF-601). -->
+      <groupId>com.bucket4j</groupId>
+      <artifactId>bucket4j_jdk17-core</artifactId>
+      <version>${bucket4j.version}</version>
+    </dependency>
+    <dependency>
+      <!-- The signed-in user cache and the rate limiters' buckets, with expiry. -->
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>

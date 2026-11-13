@@ -32,6 +32,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(status).body(ApiErrors.fromGrpc(ex));
     }
 
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiError(ApiException ex) {
+        return ResponseEntity.status(ex.status()).body(ex.body());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
         log.error("Request failed", ex);
