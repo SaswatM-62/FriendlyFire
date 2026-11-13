@@ -1,5 +1,5 @@
 package com.friendlyfire.gateway.config;
-import java.util.concurrent.TimeUnit;
+
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc;
@@ -10,7 +10,9 @@ import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc.ScoringServiceBlockingStub;
+import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +22,17 @@ import org.springframework.grpc.client.GrpcChannelFactory;
  * gRPC clients for the services the Gateway calls. One channel per service (address
  * from spring.grpc.client.channel.*.target, i.e. the *_GRPC_ADDR env vars); the
  * feature stub and the health stub share it.
+ *
+ * <p>Every call gets a 3-second deadline unless it sets its own, so a slow service can't
+ * hang a request (FF-006). A call that needs longer sets it on the call, e.g.
+ * {@code rooms.withDeadlineAfter(15, TimeUnit.SECONDS).startQuiz(...)}.
  */
 @Configuration(proxyBeanMethods = false)
 public class GrpcClientsConfig {
+
+    static final Duration DEFAULT_DEADLINE = Duration.ofSeconds(3);
+
+    private final ClientInterceptor defaultDeadline = new DefaultDeadlineInterceptor(DEFAULT_DEADLINE);
 
     @Bean
     ManagedChannel accountChannel(GrpcChannelFactory channels) {
@@ -31,14 +41,12 @@ public class GrpcClientsConfig {
 
     @Bean
     AccountServiceBlockingStub accountService(@Qualifier("accountChannel") ManagedChannel channel) {
-        return AccountServiceGrpc
-		.newBlockingStub(channel)
-		.withDeadlineAfter(3, TimeUnit.SECONDS);
+        return AccountServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
     DependencyHealthServiceBlockingStub accountHealth(@Qualifier("accountChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel);
+        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
@@ -48,14 +56,12 @@ public class GrpcClientsConfig {
 
     @Bean
     RoomServiceBlockingStub roomService(@Qualifier("roomChannel") ManagedChannel channel) {
-    	return RoomServiceGrpc
-            	.newBlockingStub(channel)
-            	.withDeadlineAfter(3, TimeUnit.SECONDS);
+        return RoomServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
     DependencyHealthServiceBlockingStub roomHealth(@Qualifier("roomChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel);
+        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
@@ -65,15 +71,12 @@ public class GrpcClientsConfig {
 
     @Bean
     ScoringServiceBlockingStub scoringService(@Qualifier("scoringChannel") ManagedChannel channel) {
-        return ScoringServiceGrpc
-		.newBlockingStub(channel)
-            	.withDeadlineAfter(3, TimeUnit.SECONDS);
-
+        return ScoringServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
     DependencyHealthServiceBlockingStub scoringHealth(@Qualifier("scoringChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel);
+        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
@@ -83,13 +86,11 @@ public class GrpcClientsConfig {
 
     @Bean
     MatchDataServiceBlockingStub matchDataService(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return MatchDataServiceGrpc
-		.newBlockingStub(channel)
-		.withDeadlineAfter(3, TimeUnit.SECONDS);
+        return MatchDataServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 
     @Bean
     DependencyHealthServiceBlockingStub matchDataHealth(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return DependencyHealthServiceGrpc.newBlockingStub(channel);
+        return DependencyHealthServiceGrpc.newBlockingStub(channel).withInterceptors(defaultDeadline);
     }
 }

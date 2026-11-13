@@ -1,110 +1,157 @@
 package com.friendlyfire.gateway.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotResponse;
+import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
+import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
+import io.grpc.ManagedChannel;
+import io.grpc.Server;
 import io.grpc.Status;
-import io.grpc.StatusRuntimeException;
+import io.grpc.inprocess.InProcessChannelBuilder;
+import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.stub.StreamObserver;
+import java.io.IOException;
+import java.time.Duration;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
+import org.springframework.test.context.bean.override.convention.TestBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * The real advice, stubs and deadline, behind test-only endpoints that fail on purpose.
+ * room-service's channel points at an in-process fake that never answers.
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
 class GlobalExceptionHandlerTest {
 
-    private final GlobalExceptionHandler handler =
-            new GlobalExceptionHandler();
+    private static final String NEVER_ANSWERS = "room-never-answers";
 
-    void mapsNotFoundTo404() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.NOT_FOUND);
+    private static Server roomThatNeverAnswers;
 
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
+    @TestBean
+    private ManagedChannel roomChannel;
 
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.NOT_FOUND);
+    @Autowired
+    private MockMvc mvc;
+
+    static ManagedChannel roomChannel() {
+        return InProcessChannelBuilder.forName(NEVER_ANSWERS).build();
+    }
+
+    @BeforeAll
+    static void startRoomThatNeverAnswers() throws IOException {
+        var service = new RoomServiceGrpc.RoomServiceImplBase() {
+            @Override
+            public void getRoomSnapshot(
+                    GetRoomSnapshotRequest request, StreamObserver<GetRoomSnapshotResponse> responseObserver) {
+                // Never answers.
+            }
+        };
+        roomThatNeverAnswers = InProcessServerBuilder.forName(NEVER_ANSWERS).addService(service).build().start();
+    }
+
+    @AfterAll
+    static void stopRoomThatNeverAnswers() {
+        roomThatNeverAnswers.shutdownNow();
     }
 
     @Test
-    void mapsPermissionDeniedTo403() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.PERMISSION_DENIED);
-
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
-
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.FORBIDDEN);
+    void clientErrorFromAServiceKeepsItsMessage() throws Exception {
+        mvc.perform(get("/test/grpc/FAILED_PRECONDITION"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error.code").value("FAILED_PRECONDITION"))
+                .andExpect(jsonPath("$.error.message").value("Maya is still syncing."));
     }
 
     @Test
-    void mapsInvalidArgumentTo400() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.INVALID_ARGUMENT);
-
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
-
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.BAD_REQUEST);
+    void unavailableServiceIs503WithoutItsDetails() throws Exception {
+        mvc.perform(get("/test/grpc/UNAVAILABLE"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.error.code").value("UNAVAILABLE"))
+                .andExpect(jsonPath("$.error.message").value(ApiErrors.UNAVAILABLE_MESSAGE));
     }
 
     @Test
-    void mapsAlreadyExistsTo409() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.ALREADY_EXISTS);
+    void serviceThatNeverAnswersIs503WithinAboutThreeSeconds() throws Exception {
+        long start = System.nanoTime();
 
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
+        mvc.perform(get("/test/room"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.error.code").value("DEADLINE_EXCEEDED"));
 
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.CONFLICT);
+        assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(5));
     }
 
     @Test
-    void mapsFailedPreconditionTo409() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.FAILED_PRECONDITION);
+    void unexpectedErrorIs500WithoutTheException() throws Exception {
+        String body = mvc.perform(get("/test/boom"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error.code").value("INTERNAL"))
+                .andReturn().getResponse().getContentAsString();
 
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
-
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.CONFLICT);
+        assertThat(body).doesNotContain("secret internals", "IllegalStateException");
     }
 
     @Test
-    void mapsResourceExhaustedTo409() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.RESOURCE_EXHAUSTED);
-
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
-
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.CONFLICT);
+    void unknownPathIs404InTheSameFormat() throws Exception {
+        mvc.perform(get("/api/no-such-thing"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error.code").value("NOT_FOUND"));
     }
 
     @Test
-    void mapsUnavailableTo503() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.UNAVAILABLE);
-
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
-
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+    void unfinishedEndpointIs501NotImplemented() throws Exception {
+        mvc.perform(get("/api/rooms/K7QM2X"))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.error.code").value("NOT_IMPLEMENTED"));
     }
 
-    @Test
-    void mapsDeadlineExceededTo503() {
-        StatusRuntimeException ex =
-                new StatusRuntimeException(Status.DEADLINE_EXCEEDED);
+    @TestConfiguration(proxyBeanMethods = false)
+    static class FailingEndpoints {
 
-        ResponseEntity<ErrorResponse> response =
-                handler.handleGrpcError(ex);
+        @Bean
+        FailingController failingController(RoomServiceBlockingStub rooms) {
+            return new FailingController(rooms);
+        }
+    }
 
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+    @RestController
+    static class FailingController {
+
+        private final RoomServiceBlockingStub rooms;
+
+        FailingController(RoomServiceBlockingStub rooms) {
+            this.rooms = rooms;
+        }
+
+        @GetMapping("/test/grpc/{code}")
+        void grpc(@PathVariable Status.Code code) {
+            throw Status.fromCode(code).withDescription("Maya is still syncing.").asRuntimeException();
+        }
+
+        @GetMapping("/test/room")
+        void room() {
+            rooms.getRoomSnapshot(GetRoomSnapshotRequest.getDefaultInstance());
+        }
+
+        @GetMapping("/test/boom")
+        void boom() {
+            throw new IllegalStateException("secret internals");
+        }
     }
 }

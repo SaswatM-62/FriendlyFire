@@ -1,16 +1,16 @@
 package com.friendlyfire.gateway.web;
 
-import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-/** What every unfinished endpoint answers: 501 Not Implemented. */
+/** What every unfinished endpoint answers: 501 with the NOT_IMPLEMENTED error. */
 final class NotImplemented {
 
     private NotImplemented() {
     }
 
-    static ResponseEntity<Map<String, String>> response() {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("error", "not implemented yet"));
+    static ResponseEntity<ErrorResponse> response() {
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .body(ApiErrors.forHttpStatus(HttpStatus.NOT_IMPLEMENTED));
     }
 }
