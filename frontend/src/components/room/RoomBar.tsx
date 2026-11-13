@@ -39,7 +39,11 @@ export function RoomBar({
           {code}
         </span>
       </div>
-      {status && <span className="chip">{status}</span>}
+      {status && (
+        <span className="chip">
+          <span className="chip__text">{status}</span>
+        </span>
+      )}
       <div className="bar__side">
         {quality !== undefined && (
           <span className="chip netchip">

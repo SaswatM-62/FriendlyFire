@@ -128,7 +128,7 @@ export function HowItWorks() {
                 {picks.map((p) => (
                   <span key={p.name} className={p.on ? "on" : undefined}>
                     <i style={{ background: `var(--player-${p.colour}-fill)` }} />
-                    {p.name}
+                    <b className="mt__nm">{p.name}</b>
                   </span>
                 ))}
               </div>

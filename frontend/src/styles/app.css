@@ -57,16 +57,45 @@
   @media (max-width:600px){.c .deps li{padding-left:calc(4px + var(--depth,0) * 10px);grid-template-columns:minmax(0,1fr) 68px 92px}}
 
   /* tablets (601 to 900 px), which the boards don't show: Profile goes to two columns with
-     recent quizzes underneath, Landing stacks its sample question under the intro, and the
-     final results put the winner first, as on phones */
+     recent quizzes underneath, Status puts the ping under the dependencies, and the final
+     results put the winner first, as on phones */
   @media (min-width:601px) and (max-width:900px){
     .c .prof{grid-template-columns:repeat(2,minmax(0,1fr))}
     .c .prof > .rq{grid-column:1 / -1}
-    .c .land{grid-template-columns:minmax(0,1fr);gap:28px}
     .c .podroom .stage{order:-1}
+    .c .stat__grid{grid-template-columns:minmax(0,1fr)}
   }
-  /* a long name in a sample answer stops before its tag */
+  /* the landing page's sample question needs about 500 px for its answers to show names and
+     tags side by side, so it sits under the intro until the page is wider than 1180 px */
+  @media (min-width:601px) and (max-width:1180px){.c .land{grid-template-columns:minmax(0,1fr);gap:28px;flex:none}}
+  /* small laptops and tablets in landscape (901 to 1180 px): next to the chat the room's main
+     column would be under 740 px, too narrow for the lobby, the answer tiles and the final
+     standings, so the room stacks as it does on tablets, with the chat underneath */
+  @media (min-width:901px) and (max-width:1180px){
+    .c .room,.c .podroom{grid-template-columns:minmax(0,1fr);height:auto;flex:none;margin:0}
+    .c .room__side .chat,.c .podroom .chat{min-height:380px}
+    .c .players{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-template-rows:none}
+    .c .podroom .stage{order:-1}
+    .c .phases{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  /* the lobby's code and settings, and its status and buttons, wrap rather than overlap */
+  .head,.actions{flex-wrap:wrap}
+
+  /* history rows on tablets: the columns fit their content and the row grows, so the room
+     name keeps its space (the boards' fixed 220 and 140 px columns squeeze it to nothing) */
+  @media (min-width:601px) and (max-width:1000px){
+    .c .hl li a{grid-template-columns:44px minmax(0,1fr) auto auto 16px;height:auto;min-height:64px;padding:10px 12px}
+  }
+
+  /* the room bar's phase label shortens with "…" (it's a flex box, so the text needs its own element) */
+  .chip__text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* How it works: a long name in the "lock in" picture shortens with "…" */
+  .mt__nm{font:inherit;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* a long name in a sample answer stops before its tag; on small phones the tag is just its tick */
   .t2 > span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @media (max-width:420px){.t2 .t2__word{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}}
 
   /* a poor connection: one red bar (the boards show good and fair) */
   .net--poor i:nth-child(1){background:var(--red-text)}

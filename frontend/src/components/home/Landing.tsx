@@ -77,7 +77,7 @@ export function Landing() {
                 {p.correct ? (
                   <span className="tag tag--mint">
                     <Icon name="check" size={12} />
-                    Correct
+                    <span className="t2__word">Correct</span>
                   </span>
                 ) : (
                   <span />
