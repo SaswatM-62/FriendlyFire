@@ -5,10 +5,11 @@ import { backoffMs, PING_EVERY_MS } from "@/lib/net";
 
 /**
  * connecting: first connection · open: live · reconnecting: dropped, retrying with
- * backoff · elsewhere: refused because the player is connected in another tab or
- * device (ADR-017), no more retries · closed: we closed it.
+ * backoff · elsewhere: the player opened FriendlyFire in another tab or device, which
+ * took over (ADR-017), no more retries · deleted: the account was deleted, no more
+ * retries · closed: we closed it.
  */
-export type ConnectionState = "connecting" | "open" | "reconnecting" | "elsewhere" | "closed";
+export type ConnectionState = "connecting" | "open" | "reconnecting" | "elsewhere" | "deleted" | "closed";
 
 export interface PongSample {
   sentAt: number;
@@ -41,8 +42,12 @@ function parse<T>(message: IMessage): T | null {
   }
 }
 
-function isAlreadyConnected(frame: IFrame): boolean {
-  return `${frame.headers.message ?? ""} ${frame.body}`.includes(ERROR_CODES.alreadyConnected);
+/** The state for an ERROR frame that ends the connection for good, or null to keep retrying. */
+function finalState(frame: IFrame): "elsewhere" | "deleted" | null {
+  const text = `${frame.headers.message ?? ""} ${frame.body}`;
+  if (text.includes(ERROR_CODES.alreadyConnected)) return "elsewhere";
+  if (text.includes(ERROR_CODES.accountDeleted)) return "deleted";
+  return null;
 }
 
 /**
@@ -80,10 +85,8 @@ export function createStompTransport(options: {
       attempt = 0;
       client.reconnectDelay = backoffMs(0);
       handlers.onState("open");
-      client.subscribe(`/topic/room/${roomCode}`, (message) => {
-        const event = parse<RoomEvent>(message);
-        if (event) handlers.onEvent(event);
-      });
+      // The player's own queues first: if the room subscription is refused, the reason
+      // arrives on /user/queue/errors, which must already be listened to.
       client.subscribe("/user/queue/errors", (message) => {
         const error = parse<RealtimeError>(message);
         if (error) handlers.onError(error);
@@ -93,6 +96,10 @@ export function createStompTransport(options: {
         if (!pong) return;
         if (outstanding === pong.t) outstanding = null;
         handlers.onPong({ sentAt: pong.t, receivedAt: Date.now(), serverTime: pong.serverTime });
+      });
+      client.subscribe(`/topic/room/${roomCode}`, (message) => {
+        const event = parse<RoomEvent>(message);
+        if (event) handlers.onEvent(event);
       });
       const ping = () => {
         if (outstanding !== null) handlers.onMissedPing();
@@ -104,10 +111,11 @@ export function createStompTransport(options: {
     };
 
     client.onStompError = (frame) => {
-      if (isAlreadyConnected(frame)) {
+      const state = finalState(frame);
+      if (state) {
         stopped = true;
         stopPinging();
-        handlers.onState("elsewhere");
+        handlers.onState(state);
         void client.deactivate();
       }
     };

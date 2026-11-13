@@ -11,8 +11,10 @@ export const ERROR_CODES = {
   emailNotVerified: "EMAIL_NOT_VERIFIED",
   /** FF-618: the live site only lets invited testers in until Riot approves it. */
   inviteOnly: "INVITE_ONLY",
-  /** ADR-017: one live WebSocket per player. */
+  /** ADR-017: one live WebSocket per player; a newer one replaced this one. */
   alreadyConnected: "ALREADY_CONNECTED",
+  /** ADR-022: the account was deleted (on another tab or device), so its WebSocket closed. */
+  accountDeleted: "ACCOUNT_DELETED",
   roomNotFound: "ROOM_NOT_FOUND",
   roomFull: "ROOM_FULL",
   quizAlreadyStarted: "QUIZ_ALREADY_STARTED",

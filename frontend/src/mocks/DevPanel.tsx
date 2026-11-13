@@ -23,6 +23,7 @@ const SCENES: [FakeScene, string][] = [
   ["ended", "Ended early"],
   ["drop", "Drop my connection"],
   ["elsewhere", "Other tab"],
+  ["deleted", "Account deleted"],
   ["closed", "Close room"],
   ["chat", "Bot chat"],
 ];

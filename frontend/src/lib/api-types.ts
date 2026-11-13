@@ -325,7 +325,7 @@ export interface Ping {
   t: number;
 }
 
-/** /user/queue/pong. `serverTime` (planned, FF-506) lets the browser correct its clock. */
+/** /user/queue/pong. `serverTime` (the Gateway's clock, in ms) lets the browser correct its clock. */
 export interface Pong extends Ping {
   serverTime?: number;
 }
