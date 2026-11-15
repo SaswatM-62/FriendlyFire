@@ -55,7 +55,7 @@ cp .env.example .env && make up
 
 The first start builds every image and takes a few minutes. When `make ps` shows every
 container as `(healthy)`, open **http://localhost:3000/status**: the **Status** page
-should say "17 of 17 checks passing" and, under Realtime ping, "Connected · N ms".
+should say "15 of 15 checks passing" and, under Realtime ping, "Connected · N ms".
 `make e2e` checks the same thing in a real browser. The app itself is at
 **http://localhost:3000**.
 

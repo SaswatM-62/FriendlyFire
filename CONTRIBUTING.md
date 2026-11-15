@@ -89,7 +89,7 @@ dependencies, so it takes a few minutes. Later starts take about a minute.
 1. `make ps`: all 9 containers say `(healthy)`. The Java services are the last ones.
 2. Open **http://localhost:3000/status** (use `localhost`, not `127.0.0.1`: the Gateway only
    accepts requests from `FRONTEND_ORIGIN`). The **Status** page should say
-   **"17 of 17 checks passing"** and, under Realtime ping, **"Connected · N ms"**.
+   **"15 of 15 checks passing"** and, under Realtime ping, **"Connected · N ms"**.
 3. From a terminal:
    ```bash
    curl localhost:8080/api/health                                  # {"status":"UP"}
