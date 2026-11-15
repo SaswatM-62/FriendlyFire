@@ -3,8 +3,9 @@ import { expect, test } from "@playwright/test";
 test("the status page shows every check passing and a live realtime connection", async ({ page }) => {
   await page.goto("/status");
 
-  // The page refreshes every 10 seconds, so give slow-starting services time.
-  await expect(page.getByText(/17 of 17 checks passing/)).toBeVisible({ timeout: 90_000 });
+  // The page refreshes every 10 seconds, so give slow-starting services time. "N of N"
+  // rather than a fixed count: the count changes whenever a service gains a dependency.
+  await expect(page.getByText(/\b(\d+) of \1 checks passing/)).toBeVisible({ timeout: 90_000 });
   const ping = page.getByRole("region", { name: "Realtime ping" });
   await expect(ping).toContainText(/\d+\s*ms/, { timeout: 30_000 });
   await expect(ping).not.toContainText("Disconnected");
