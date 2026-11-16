@@ -1,7 +1,11 @@
 package com.friendlyfire.account.grpc;
 
 import com.friendlyfire.account.riotlink.LinkStateStore;
+import com.friendlyfire.account.riotlink.RiotAccountLink;
 import com.friendlyfire.account.riotlink.RiotLinkRepository;
+import com.friendlyfire.account.user.AccountUser;
+import com.friendlyfire.account.user.EnsuredUser;
+import com.friendlyfire.account.user.NewUserNames;
 import com.friendlyfire.account.user.UserRepository;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
@@ -19,25 +23,36 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameResponse;
 import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
+import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-/** friendlyfire.account.v1.AccountService. Every RPC is a stub for now. */
+/**
+ * friendlyfire.account.v1.AccountService. EnsureUser and GetUser work; the other RPCs are
+ * stubs for now. When the database can't be reached, DatabaseErrorHandler answers
+ * UNAVAILABLE.
+ */
 @Service
 public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBase {
 
     private final UserRepository users;
+    private final NewUserNames newUserNames;
     private final RiotLinkRepository riotLinks;
     private final LinkStateStore linkStates;
     private final MatchDataServiceBlockingStub matchData;
 
     public AccountGrpcService(
             UserRepository users,
+            NewUserNames newUserNames,
             RiotLinkRepository riotLinks,
             LinkStateStore linkStates,
             MatchDataServiceBlockingStub matchData) {
         this.users = users;
+        this.newUserNames = newUserNames;
         this.riotLinks = riotLinks;
         this.linkStates = linkStates;
         this.matchData = matchData;
@@ -45,23 +60,36 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
     @Override
     public void ensureUser(EnsureUserRequest request, StreamObserver<EnsureUserResponse> responseObserver) {
-        // TODO(ff): find the user for an Auth0 subject, or create them on their first visit
-        //   - look up by auth_subject; if there's none, create a user with a new UUID, the
-        //     email and suggested_display_name from the request, and set created = true
-        //   - if the user has a linked Riot account, ask Match Data to fetch new matches
-        //     (MatchDataService.SyncPlayer); don't fail the sign-in if that call fails
-        //   - errors: none in the contract
-        //   - uses: users, riotLinks, matchData
-        notImplemented(responseObserver);
+        // TODO(ff): if the user has a linked Riot account, ask Match Data to fetch new matches
+        //   (MatchDataService.SyncPlayer); don't fail the sign-in if that call fails
+        //   - uses: riotLinks, matchData
+        EnsuredUser ensured = users.ensure(
+                request.getAuthSubject(),
+                request.getEmail(),
+                newUserNames.from(request.getSuggestedDisplayName()));
+        AccountUser user = ensured.user();
+        responseObserver.onNext(EnsureUserResponse.newBuilder()
+                .setUser(toProto(user, riotLinks.findByUserId(user.userId())))
+                .setCreated(ensured.created())
+                .build());
+        responseObserver.onCompleted();
     }
 
     @Override
     public void getUser(GetUserRequest request, StreamObserver<GetUserResponse> responseObserver) {
-        // TODO(ff): return one user, with their Riot link if they have one
-        //   - the RiotLink message has no PUUID on purpose: never send it out
-        //   - errors: NOT_FOUND if the user doesn't exist
-        //   - uses: users, riotLinks
-        notImplemented(responseObserver);
+        Optional<AccountUser> user = parseUserId(request.getUserId()).flatMap(users::findById);
+        if (user.isEmpty()) {
+            // An ID that isn't a UUID can't belong to anyone, so it's NOT_FOUND too.
+            responseObserver.onError(
+                    Status.NOT_FOUND.withDescription("user not found").asRuntimeException());
+            return;
+        }
+
+        UUID userId = user.get().userId();
+        responseObserver.onNext(GetUserResponse.newBuilder()
+                .setUser(toProto(user.get(), riotLinks.findByUserId(userId)))
+                .build());
+        responseObserver.onCompleted();
     }
 
     @Override
@@ -119,5 +147,39 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
     private static void notImplemented(StreamObserver<?> responseObserver) {
         responseObserver.onError(Status.UNIMPLEMENTED.withDescription("not implemented yet").asRuntimeException());
+    }
+
+    private static Optional<UUID> parseUserId(String userId) {
+        try {
+            return Optional.of(UUID.fromString(userId));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
+    }
+
+    // Every RPC that returns a User passes the link, so none can leave it out by mistake.
+    private static com.friendlyfire.proto.friendlyfire.account.v1.User toProto(
+            AccountUser user, Optional<RiotAccountLink> riotLink) {
+        var builder = com.friendlyfire.proto.friendlyfire.account.v1.User.newBuilder()
+                .setUserId(user.userId().toString())
+                .setEmail(user.email())
+                .setDisplayName(user.displayName())
+                .setCreatedAt(timestamp(user.createdAt()));
+        // RiotLink has no PUUID field: the PUUID never leaves this service.
+        riotLink.ifPresent(link -> builder.setRiotLink(
+                com.friendlyfire.proto.friendlyfire.account.v1.RiotLink.newBuilder()
+                        .setGameName(link.gameName())
+                        .setTagLine(link.tagLine())
+                        .setRegion(link.region())
+                        .setLinkedAt(timestamp(link.linkedAt()))
+                        .build()));
+        return builder.build();
+    }
+
+    private static Timestamp timestamp(Instant instant) {
+        return Timestamp.newBuilder()
+                .setSeconds(instant.getEpochSecond())
+                .setNanos(instant.getNano())
+                .build();
     }
 }
