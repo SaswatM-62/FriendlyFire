@@ -58,7 +58,8 @@ make coverage           unit tests + coverage reports
 ## Rules
 
 - **Never edit `gen/` by hand.** After changing a `.proto`, run `make proto` and commit
-  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval.
+  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval;
+  CI's `buf breaking` only lets a break through when a PM adds the `breaking-change` label.
 - **Config comes from environment variables only** (`.env`, copied from `.env.example`).
   Never commit secrets or `.env`. The one config file is the mock RSO's real test players
   (`services/mock-rso-service/testplayers.json`, gitignored): never commit those either.
