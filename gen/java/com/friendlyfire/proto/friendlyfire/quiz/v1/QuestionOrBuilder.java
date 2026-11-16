@@ -128,4 +128,26 @@ public interface QuestionOrBuilder extends
    */
   com.google.protobuf.ByteString
       getSourceMatchIdBytes();
+
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The templateId.
+   */
+  java.lang.String getTemplateId();
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The bytes for templateId.
+   */
+  com.google.protobuf.ByteString
+      getTemplateIdBytes();
 }

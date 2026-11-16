@@ -40,6 +40,7 @@ private static final long serialVersionUID = 0L;
     correctOptionId_ = "";
     explanation_ = "";
     sourceMatchId_ = "";
+    templateId_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -338,6 +339,55 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int TEMPLATE_ID_FIELD_NUMBER = 8;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object templateId_ = "";
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The templateId.
+   */
+  @java.lang.Override
+  public java.lang.String getTemplateId() {
+    java.lang.Object ref = templateId_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      templateId_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The bytes for templateId.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getTemplateIdBytes() {
+    java.lang.Object ref = templateId_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      templateId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -373,6 +423,9 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sourceMatchId_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 7, sourceMatchId_);
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(templateId_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 8, templateId_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -404,6 +457,9 @@ private static final long serialVersionUID = 0L;
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(sourceMatchId_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(7, sourceMatchId_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(templateId_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(8, templateId_);
     }
     return size;
   }
@@ -442,6 +498,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getExplanation())) return false;
     if (!getSourceMatchId()
         .equals(other.getSourceMatchId())) return false;
+    if (!getTemplateId()
+        .equals(other.getTemplateId())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -469,6 +527,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getExplanation().hashCode();
     hash = (37 * hash) + SOURCE_MATCH_ID_FIELD_NUMBER;
     hash = (53 * hash) + getSourceMatchId().hashCode();
+    hash = (37 * hash) + TEMPLATE_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getTemplateId().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -618,6 +678,7 @@ private static final long serialVersionUID = 0L;
       correctOptionId_ = "";
       explanation_ = "";
       sourceMatchId_ = "";
+      templateId_ = "";
       return this;
     }
 
@@ -681,6 +742,9 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.sourceMatchId_ = sourceMatchId_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.templateId_ = templateId_;
       }
     }
 
@@ -750,6 +814,11 @@ private static final long serialVersionUID = 0L;
         bitField0_ |= 0x00000040;
         onChanged();
       }
+      if (!other.getTemplateId().isEmpty()) {
+        templateId_ = other.templateId_;
+        bitField0_ |= 0x00000080;
+        onChanged();
+      }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
       return this;
@@ -817,6 +886,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000040;
               break;
             } // case 58
+            case 66: {
+              templateId_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 66
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1536,6 +1610,103 @@ private static final long serialVersionUID = 0L;
       checkByteStringIsUtf8(value);
       sourceMatchId_ = value;
       bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object templateId_ = "";
+    /**
+     * <pre>
+     * The template the question was made from. RoomService passes it back in
+     * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+     * </pre>
+     *
+     * <code>string template_id = 8 [json_name = "templateId"];</code>
+     * @return The templateId.
+     */
+    public java.lang.String getTemplateId() {
+      java.lang.Object ref = templateId_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        templateId_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The template the question was made from. RoomService passes it back in
+     * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+     * </pre>
+     *
+     * <code>string template_id = 8 [json_name = "templateId"];</code>
+     * @return The bytes for templateId.
+     */
+    public com.google.protobuf.ByteString
+        getTemplateIdBytes() {
+      java.lang.Object ref = templateId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        templateId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * The template the question was made from. RoomService passes it back in
+     * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+     * </pre>
+     *
+     * <code>string template_id = 8 [json_name = "templateId"];</code>
+     * @param value The templateId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTemplateId(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      templateId_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The template the question was made from. RoomService passes it back in
+     * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+     * </pre>
+     *
+     * <code>string template_id = 8 [json_name = "templateId"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearTemplateId() {
+      templateId_ = getDefaultInstance().getTemplateId();
+      bitField0_ = (bitField0_ & ~0x00000080);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * The template the question was made from. RoomService passes it back in
+     * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+     * </pre>
+     *
+     * <code>string template_id = 8 [json_name = "templateId"];</code>
+     * @param value The bytes for templateId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setTemplateIdBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      templateId_ = value;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }

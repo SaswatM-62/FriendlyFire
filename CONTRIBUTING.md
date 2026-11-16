@@ -367,6 +367,11 @@ services/scoring-service/
   and `ruff format` (line length 100); `uv run ruff format` fixes formatting for you.
 - quiz-engine-service: the same seed and data must give the same questions. Use
   `random.Random(seed)`, never the module-level `random` functions.
+  **To add a question:** add one `QuestionTemplate` to `src/quiz_engine/templates.py`,
+  using the stat keys in `docs/stats-catalogue.md`. The module's docstring explains the
+  rules (`max_in_match`, `count`, `average`, `pooled_ratio`, `pair`), windows,
+  agent/map parameters and placeholders. The generator rejects a template it can't
+  evaluate or render as soon as it loads, and rates each question's difficulty itself.
 - scoring-service: Postgres through the injected psycopg `AsyncConnectionPool`, on the
   `scoring` schema. Alembic creates and updates the tables, running
   `scoring.migrate.upgrade_to_head` before the gRPC server starts.
