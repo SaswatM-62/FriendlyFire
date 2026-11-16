@@ -125,13 +125,10 @@ public class RoomSocketController {
                 .build());
     }
 
-    /**
-     * "PAUSE" is the frontend's name for the contract's WAIT option (ADR-026 turns it into
-     * a pause); "WAIT" is accepted too.
-     */
+    /** The vote options without their VOTE_OPTION_ prefix, as the frontend sends them. */
     static VoteOption voteOption(String option) {
         return switch (option == null ? "" : option) {
-            case "PAUSE", "WAIT" -> VoteOption.VOTE_OPTION_WAIT;
+            case "PAUSE" -> VoteOption.VOTE_OPTION_PAUSE;
             case "CONTINUE_WITHOUT_PLAYER" -> VoteOption.VOTE_OPTION_CONTINUE_WITHOUT_PLAYER;
             case "END_QUIZ" -> VoteOption.VOTE_OPTION_END_QUIZ;
             default -> throw invalid("That isn't one of the vote options.");
@@ -185,7 +182,7 @@ public class RoomSocketController {
     public record Answer(String questionId, String optionId) {
     }
 
-    /** /vote body: "PAUSE" (or "WAIT"), "CONTINUE_WITHOUT_PLAYER" or "END_QUIZ". */
+    /** /vote body: "PAUSE", "CONTINUE_WITHOUT_PLAYER" or "END_QUIZ". */
     public record Vote(String option) {
     }
 

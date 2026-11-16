@@ -172,7 +172,7 @@ services:
         condition: service_healthy
       scoring-service:
         condition: service_healthy
-      match-data-service:
+      account-service:
         condition: service_healthy
 
   gateway-service:

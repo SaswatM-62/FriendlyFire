@@ -32,6 +32,8 @@ private static final long serialVersionUID = 0L;
     displayName_ = "";
     status_ = 0;
     connectionQuality_ = 0;
+    dataStatus_ = 0;
+    riotTagLine_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -152,14 +154,17 @@ private static final long serialVersionUID = 0L;
   private boolean matchDataReady_ = false;
   /**
    * <pre>
-   * True once Match Data reports this player's sync as COMPLETE.
+   * Deprecated (ADR-010): use data_status. Room keeps it equal to
+   * data_status == PLAYER_DATA_STATUS_SYNCED.
    * </pre>
    *
-   * <code>bool match_data_ready = 4 [json_name = "matchDataReady"];</code>
+   * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
+   * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
+   *     See friendlyfire/room/v1/room_service.proto;l=242
    * @return The matchDataReady.
    */
   @java.lang.Override
-  public boolean getMatchDataReady() {
+  @java.lang.Deprecated public boolean getMatchDataReady() {
     return matchDataReady_;
   }
 
@@ -196,6 +201,115 @@ private static final long serialVersionUID = 0L;
     return answeredCurrentQuestion_;
   }
 
+  public static final int DATA_STATUS_FIELD_NUMBER = 7;
+  private int dataStatus_ = 0;
+  /**
+   * <pre>
+   * From AccountService.GetDataStatus. The quiz can start only when every
+   * player is SYNCED.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+   * @return The enum numeric value on the wire for dataStatus.
+   */
+  @java.lang.Override public int getDataStatusValue() {
+    return dataStatus_;
+  }
+  /**
+   * <pre>
+   * From AccountService.GetDataStatus. The quiz can start only when every
+   * player is SYNCED.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+   * @return The dataStatus.
+   */
+  @java.lang.Override public com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus getDataStatus() {
+    com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus result = com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.forNumber(dataStatus_);
+    return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.UNRECOGNIZED : result;
+  }
+
+  public static final int DATA_ESTIMATED_SECONDS_FIELD_NUMBER = 8;
+  private int dataEstimatedSeconds_ = 0;
+  /**
+   * <pre>
+   * While SYNCING: about how long until it's done; 0 if unknown.
+   * </pre>
+   *
+   * <code>int32 data_estimated_seconds = 8 [json_name = "dataEstimatedSeconds"];</code>
+   * @return The dataEstimatedSeconds.
+   */
+  @java.lang.Override
+  public int getDataEstimatedSeconds() {
+    return dataEstimatedSeconds_;
+  }
+
+  public static final int NOT_ENOUGH_MATCHES_FIELD_NUMBER = 9;
+  private boolean notEnoughMatches_ = false;
+  /**
+   * <pre>
+   * True when the player is synced but has fewer than 5 Competitive or
+   * Unrated matches in the last 30 days. They still play, answer and score,
+   * but no question is about them or uses their stats.
+   * </pre>
+   *
+   * <code>bool not_enough_matches = 9 [json_name = "notEnoughMatches"];</code>
+   * @return The notEnoughMatches.
+   */
+  @java.lang.Override
+  public boolean getNotEnoughMatches() {
+    return notEnoughMatches_;
+  }
+
+  public static final int RIOT_TAG_LINE_FIELD_NUMBER = 10;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object riotTagLine_ = "";
+  /**
+   * <pre>
+   * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+   * if they haven't linked a Riot account.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+   * @return The riotTagLine.
+   */
+  @java.lang.Override
+  public java.lang.String getRiotTagLine() {
+    java.lang.Object ref = riotTagLine_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      riotTagLine_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+   * if they haven't linked a Riot account.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+   * @return The bytes for riotTagLine.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getRiotTagLineBytes() {
+    java.lang.Object ref = riotTagLine_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      riotTagLine_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -228,6 +342,18 @@ private static final long serialVersionUID = 0L;
     if (answeredCurrentQuestion_ != false) {
       output.writeBool(6, answeredCurrentQuestion_);
     }
+    if (dataStatus_ != com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.PLAYER_DATA_STATUS_UNSPECIFIED.getNumber()) {
+      output.writeEnum(7, dataStatus_);
+    }
+    if (dataEstimatedSeconds_ != 0) {
+      output.writeInt32(8, dataEstimatedSeconds_);
+    }
+    if (notEnoughMatches_ != false) {
+      output.writeBool(9, notEnoughMatches_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(riotTagLine_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 10, riotTagLine_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -253,6 +379,21 @@ private static final long serialVersionUID = 0L;
     if (answeredCurrentQuestion_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(6, answeredCurrentQuestion_);
+    }
+    if (dataStatus_ != com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.PLAYER_DATA_STATUS_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(7, dataStatus_);
+    }
+    if (dataEstimatedSeconds_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(8, dataEstimatedSeconds_);
+    }
+    if (notEnoughMatches_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(9, notEnoughMatches_);
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(riotTagLine_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(10, riotTagLine_);
     }
     return size;
   }
@@ -288,6 +429,13 @@ private static final long serialVersionUID = 0L;
     if (connectionQuality_ != other.connectionQuality_) return false;
     if (getAnsweredCurrentQuestion()
         != other.getAnsweredCurrentQuestion()) return false;
+    if (dataStatus_ != other.dataStatus_) return false;
+    if (getDataEstimatedSeconds()
+        != other.getDataEstimatedSeconds()) return false;
+    if (getNotEnoughMatches()
+        != other.getNotEnoughMatches()) return false;
+    if (!getRiotTagLine()
+        .equals(other.getRiotTagLine())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -313,6 +461,15 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + ANSWERED_CURRENT_QUESTION_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getAnsweredCurrentQuestion());
+    hash = (37 * hash) + DATA_STATUS_FIELD_NUMBER;
+    hash = (53 * hash) + dataStatus_;
+    hash = (37 * hash) + DATA_ESTIMATED_SECONDS_FIELD_NUMBER;
+    hash = (53 * hash) + getDataEstimatedSeconds();
+    hash = (37 * hash) + NOT_ENOUGH_MATCHES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getNotEnoughMatches());
+    hash = (37 * hash) + RIOT_TAG_LINE_FIELD_NUMBER;
+    hash = (53 * hash) + getRiotTagLine().hashCode();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -450,6 +607,10 @@ private static final long serialVersionUID = 0L;
       matchDataReady_ = false;
       connectionQuality_ = 0;
       answeredCurrentQuestion_ = false;
+      dataStatus_ = 0;
+      dataEstimatedSeconds_ = 0;
+      notEnoughMatches_ = false;
+      riotTagLine_ = "";
       return this;
     }
 
@@ -501,6 +662,18 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000020) != 0)) {
         result.answeredCurrentQuestion_ = answeredCurrentQuestion_;
       }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.dataStatus_ = dataStatus_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.dataEstimatedSeconds_ = dataEstimatedSeconds_;
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.notEnoughMatches_ = notEnoughMatches_;
+      }
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.riotTagLine_ = riotTagLine_;
+      }
     }
 
     @java.lang.Override
@@ -536,6 +709,20 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getAnsweredCurrentQuestion() != false) {
         setAnsweredCurrentQuestion(other.getAnsweredCurrentQuestion());
+      }
+      if (other.dataStatus_ != 0) {
+        setDataStatusValue(other.getDataStatusValue());
+      }
+      if (other.getDataEstimatedSeconds() != 0) {
+        setDataEstimatedSeconds(other.getDataEstimatedSeconds());
+      }
+      if (other.getNotEnoughMatches() != false) {
+        setNotEnoughMatches(other.getNotEnoughMatches());
+      }
+      if (!other.getRiotTagLine().isEmpty()) {
+        riotTagLine_ = other.riotTagLine_;
+        bitField0_ |= 0x00000200;
+        onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -591,6 +778,26 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000020;
               break;
             } // case 48
+            case 56: {
+              dataStatus_ = input.readEnum();
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 56
+            case 64: {
+              dataEstimatedSeconds_ = input.readInt32();
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 64
+            case 72: {
+              notEnoughMatches_ = input.readBool();
+              bitField0_ |= 0x00000100;
+              break;
+            } // case 72
+            case 82: {
+              riotTagLine_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000200;
+              break;
+            } // case 82
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -807,26 +1014,32 @@ private static final long serialVersionUID = 0L;
     private boolean matchDataReady_ ;
     /**
      * <pre>
-     * True once Match Data reports this player's sync as COMPLETE.
+     * Deprecated (ADR-010): use data_status. Room keeps it equal to
+     * data_status == PLAYER_DATA_STATUS_SYNCED.
      * </pre>
      *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady"];</code>
+     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=242
      * @return The matchDataReady.
      */
     @java.lang.Override
-    public boolean getMatchDataReady() {
+    @java.lang.Deprecated public boolean getMatchDataReady() {
       return matchDataReady_;
     }
     /**
      * <pre>
-     * True once Match Data reports this player's sync as COMPLETE.
+     * Deprecated (ADR-010): use data_status. Room keeps it equal to
+     * data_status == PLAYER_DATA_STATUS_SYNCED.
      * </pre>
      *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady"];</code>
+     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=242
      * @param value The matchDataReady to set.
      * @return This builder for chaining.
      */
-    public Builder setMatchDataReady(boolean value) {
+    @java.lang.Deprecated public Builder setMatchDataReady(boolean value) {
 
       matchDataReady_ = value;
       bitField0_ |= 0x00000008;
@@ -835,13 +1048,16 @@ private static final long serialVersionUID = 0L;
     }
     /**
      * <pre>
-     * True once Match Data reports this player's sync as COMPLETE.
+     * Deprecated (ADR-010): use data_status. Room keeps it equal to
+     * data_status == PLAYER_DATA_STATUS_SYNCED.
      * </pre>
      *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady"];</code>
+     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=242
      * @return This builder for chaining.
      */
-    public Builder clearMatchDataReady() {
+    @java.lang.Deprecated public Builder clearMatchDataReady() {
       bitField0_ = (bitField0_ & ~0x00000008);
       matchDataReady_ = false;
       onChanged();
@@ -940,6 +1156,274 @@ private static final long serialVersionUID = 0L;
     public Builder clearAnsweredCurrentQuestion() {
       bitField0_ = (bitField0_ & ~0x00000020);
       answeredCurrentQuestion_ = false;
+      onChanged();
+      return this;
+    }
+
+    private int dataStatus_ = 0;
+    /**
+     * <pre>
+     * From AccountService.GetDataStatus. The quiz can start only when every
+     * player is SYNCED.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+     * @return The enum numeric value on the wire for dataStatus.
+     */
+    @java.lang.Override public int getDataStatusValue() {
+      return dataStatus_;
+    }
+    /**
+     * <pre>
+     * From AccountService.GetDataStatus. The quiz can start only when every
+     * player is SYNCED.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+     * @param value The enum numeric value on the wire for dataStatus to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDataStatusValue(int value) {
+      dataStatus_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * From AccountService.GetDataStatus. The quiz can start only when every
+     * player is SYNCED.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+     * @return The dataStatus.
+     */
+    @java.lang.Override
+    public com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus getDataStatus() {
+      com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus result = com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.forNumber(dataStatus_);
+      return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus.UNRECOGNIZED : result;
+    }
+    /**
+     * <pre>
+     * From AccountService.GetDataStatus. The quiz can start only when every
+     * player is SYNCED.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+     * @param value The dataStatus to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder setDataStatus(com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus value) {
+      java.util.Objects.requireNonNull(value);
+      bitField0_ |= 0x00000040;
+      dataStatus_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * From AccountService.GetDataStatus. The quiz can start only when every
+     * player is SYNCED.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDataStatus() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      dataStatus_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int dataEstimatedSeconds_ ;
+    /**
+     * <pre>
+     * While SYNCING: about how long until it's done; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 data_estimated_seconds = 8 [json_name = "dataEstimatedSeconds"];</code>
+     * @return The dataEstimatedSeconds.
+     */
+    @java.lang.Override
+    public int getDataEstimatedSeconds() {
+      return dataEstimatedSeconds_;
+    }
+    /**
+     * <pre>
+     * While SYNCING: about how long until it's done; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 data_estimated_seconds = 8 [json_name = "dataEstimatedSeconds"];</code>
+     * @param value The dataEstimatedSeconds to set.
+     * @return This builder for chaining.
+     */
+    public Builder setDataEstimatedSeconds(int value) {
+
+      dataEstimatedSeconds_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * While SYNCING: about how long until it's done; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 data_estimated_seconds = 8 [json_name = "dataEstimatedSeconds"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearDataEstimatedSeconds() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      dataEstimatedSeconds_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private boolean notEnoughMatches_ ;
+    /**
+     * <pre>
+     * True when the player is synced but has fewer than 5 Competitive or
+     * Unrated matches in the last 30 days. They still play, answer and score,
+     * but no question is about them or uses their stats.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 9 [json_name = "notEnoughMatches"];</code>
+     * @return The notEnoughMatches.
+     */
+    @java.lang.Override
+    public boolean getNotEnoughMatches() {
+      return notEnoughMatches_;
+    }
+    /**
+     * <pre>
+     * True when the player is synced but has fewer than 5 Competitive or
+     * Unrated matches in the last 30 days. They still play, answer and score,
+     * but no question is about them or uses their stats.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 9 [json_name = "notEnoughMatches"];</code>
+     * @param value The notEnoughMatches to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNotEnoughMatches(boolean value) {
+
+      notEnoughMatches_ = value;
+      bitField0_ |= 0x00000100;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * True when the player is synced but has fewer than 5 Competitive or
+     * Unrated matches in the last 30 days. They still play, answer and score,
+     * but no question is about them or uses their stats.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 9 [json_name = "notEnoughMatches"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearNotEnoughMatches() {
+      bitField0_ = (bitField0_ & ~0x00000100);
+      notEnoughMatches_ = false;
+      onChanged();
+      return this;
+    }
+
+    private java.lang.Object riotTagLine_ = "";
+    /**
+     * <pre>
+     * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+     * if they haven't linked a Riot account.
+     * </pre>
+     *
+     * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+     * @return The riotTagLine.
+     */
+    public java.lang.String getRiotTagLine() {
+      java.lang.Object ref = riotTagLine_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        riotTagLine_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+     * if they haven't linked a Riot account.
+     * </pre>
+     *
+     * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+     * @return The bytes for riotTagLine.
+     */
+    public com.google.protobuf.ByteString
+        getRiotTagLineBytes() {
+      java.lang.Object ref = riotTagLine_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        riotTagLine_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+     * if they haven't linked a Riot account.
+     * </pre>
+     *
+     * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+     * @param value The riotTagLine to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRiotTagLine(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      riotTagLine_ = value;
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+     * if they haven't linked a Riot account.
+     * </pre>
+     *
+     * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearRiotTagLine() {
+      riotTagLine_ = getDefaultInstance().getRiotTagLine();
+      bitField0_ = (bitField0_ & ~0x00000200);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+     * if they haven't linked a Riot account.
+     * </pre>
+     *
+     * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+     * @param value The bytes for riotTagLine to set.
+     * @return This builder for chaining.
+     */
+    public Builder setRiotTagLineBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      riotTagLine_ = value;
+      bitField0_ |= 0x00000200;
       onChanged();
       return this;
     }

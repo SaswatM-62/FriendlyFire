@@ -46,10 +46,16 @@ public interface VoteOrBuilder extends
   com.google.protobuf.TimestampOrBuilder getDeadlineOrBuilder();
 
   /**
-   * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+   * <pre>
+   * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
+   * </pre>
+   *
+   * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
+   * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
+   *     See friendlyfire/room/v1/room_service.proto;l=303
    * @return The waitVotes.
    */
-  int getWaitVotes();
+  @java.lang.Deprecated int getWaitVotes();
 
   /**
    * <code>int32 continue_votes = 4 [json_name = "continueVotes"];</code>
@@ -103,4 +109,25 @@ public interface VoteOrBuilder extends
    */
   com.google.protobuf.ByteString
       getVotedUserIdsBytes(int index);
+
+  /**
+   * <pre>
+   * False once the quiz's 3 minutes of pauses are used up: then only
+   * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+   * </pre>
+   *
+   * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+   * @return The pauseAllowed.
+   */
+  boolean getPauseAllowed();
+
+  /**
+   * <pre>
+   * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
+   * </pre>
+   *
+   * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
+   * @return The pauseVotes.
+   */
+  int getPauseVotes();
 }

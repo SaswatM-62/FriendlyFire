@@ -4,7 +4,8 @@
 // finished quizzes for the history page. It owns the `scoring` tables.
 //
 // Callers: RoomService (StartQuiz, RecordRound, FinalizeQuiz),
-//          Gateway (GetQuizResult, GetPlayerHistory).
+//          Gateway (GetQuizResult, GetPlayerHistory),
+//          AccountService (AnonymizePlayer).
 syntax = "proto3";
 
 package friendlyfire.scoring.v1;
@@ -33,6 +34,13 @@ service ScoringService {
 
   // A player's past quizzes, newest first.
   rpc GetPlayerHistory(GetPlayerHistoryRequest) returns (GetPlayerHistoryResponse);
+
+  // Called by AccountService when a user deletes their account (ADR-027).
+  // In every past quiz, replaces their display name with "Deleted player"
+  // and removes the link to their user_id, keeping their scores so other
+  // players' scoreboards don't change. Safe to call again; not an error if
+  // they never played.
+  rpc AnonymizePlayer(AnonymizePlayerRequest) returns (AnonymizePlayerResponse);
 }
 
 enum EndReason {
@@ -136,3 +144,9 @@ message GetPlayerHistoryResponse {
   // Empty when there are no more pages.
   string next_page_token = 2;
 }
+
+message AnonymizePlayerRequest {
+  string user_id = 1;
+}
+
+message AnonymizePlayerResponse {}

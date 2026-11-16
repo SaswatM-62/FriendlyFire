@@ -33,4 +33,24 @@ public interface CreateRoomRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getHostDisplayNameBytes();
+
+  /**
+   * <pre>
+   * From the host's Riot link (Player.riot_tag_line); empty if not linked.
+   * </pre>
+   *
+   * <code>string host_riot_tag_line = 3 [json_name = "hostRiotTagLine"];</code>
+   * @return The hostRiotTagLine.
+   */
+  java.lang.String getHostRiotTagLine();
+  /**
+   * <pre>
+   * From the host's Riot link (Player.riot_tag_line); empty if not linked.
+   * </pre>
+   *
+   * <code>string host_riot_tag_line = 3 [json_name = "hostRiotTagLine"];</code>
+   * @return The bytes for hostRiotTagLine.
+   */
+  com.google.protobuf.ByteString
+      getHostRiotTagLineBytes();
 }

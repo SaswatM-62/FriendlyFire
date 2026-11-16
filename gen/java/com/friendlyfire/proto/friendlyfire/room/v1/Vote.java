@@ -128,11 +128,17 @@ private static final long serialVersionUID = 0L;
   public static final int WAIT_VOTES_FIELD_NUMBER = 3;
   private int waitVotes_ = 0;
   /**
-   * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+   * <pre>
+   * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
+   * </pre>
+   *
+   * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
+   * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
+   *     See friendlyfire/room/v1/room_service.proto;l=303
    * @return The waitVotes.
    */
   @java.lang.Override
-  public int getWaitVotes() {
+  @java.lang.Deprecated public int getWaitVotes() {
     return waitVotes_;
   }
 
@@ -211,6 +217,37 @@ private static final long serialVersionUID = 0L;
     return votedUserIds_.getByteString(index);
   }
 
+  public static final int PAUSE_ALLOWED_FIELD_NUMBER = 7;
+  private boolean pauseAllowed_ = false;
+  /**
+   * <pre>
+   * False once the quiz's 3 minutes of pauses are used up: then only
+   * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+   * </pre>
+   *
+   * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+   * @return The pauseAllowed.
+   */
+  @java.lang.Override
+  public boolean getPauseAllowed() {
+    return pauseAllowed_;
+  }
+
+  public static final int PAUSE_VOTES_FIELD_NUMBER = 8;
+  private int pauseVotes_ = 0;
+  /**
+   * <pre>
+   * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
+   * </pre>
+   *
+   * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
+   * @return The pauseVotes.
+   */
+  @java.lang.Override
+  public int getPauseVotes() {
+    return pauseVotes_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -243,6 +280,12 @@ private static final long serialVersionUID = 0L;
     for (int i = 0; i < votedUserIds_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 6, votedUserIds_.getRaw(i));
     }
+    if (pauseAllowed_ != false) {
+      output.writeBool(7, pauseAllowed_);
+    }
+    if (pauseVotes_ != 0) {
+      output.writeInt32(8, pauseVotes_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -273,6 +316,14 @@ private static final long serialVersionUID = 0L;
       }
       size += dataSize;
       size += 1 * getVotedUserIdsList().size();
+    }
+    if (pauseAllowed_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(7, pauseAllowed_);
+    }
+    if (pauseVotes_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(8, pauseVotes_);
     }
     return size;
   }
@@ -313,6 +364,10 @@ private static final long serialVersionUID = 0L;
         != other.getEndVotes()) return false;
     if (!getVotedUserIdsList()
         .equals(other.getVotedUserIdsList())) return false;
+    if (getPauseAllowed()
+        != other.getPauseAllowed()) return false;
+    if (getPauseVotes()
+        != other.getPauseVotes()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -340,6 +395,11 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + VOTED_USER_IDS_FIELD_NUMBER;
       hash = (53 * hash) + getVotedUserIdsList().hashCode();
     }
+    hash = (37 * hash) + PAUSE_ALLOWED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getPauseAllowed());
+    hash = (37 * hash) + PAUSE_VOTES_FIELD_NUMBER;
+    hash = (53 * hash) + getPauseVotes();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -488,6 +548,8 @@ private static final long serialVersionUID = 0L;
       endVotes_ = 0;
       votedUserIds_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
+      pauseAllowed_ = false;
+      pauseVotes_ = 0;
       return this;
     }
 
@@ -544,6 +606,12 @@ private static final long serialVersionUID = 0L;
         votedUserIds_.makeImmutable();
         result.votedUserIds_ = votedUserIds_;
       }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.pauseAllowed_ = pauseAllowed_;
+      }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.pauseVotes_ = pauseVotes_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -585,6 +653,12 @@ private static final long serialVersionUID = 0L;
           votedUserIds_.addAll(other.votedUserIds_);
         }
         onChanged();
+      }
+      if (other.getPauseAllowed() != false) {
+        setPauseAllowed(other.getPauseAllowed());
+      }
+      if (other.getPauseVotes() != 0) {
+        setPauseVotes(other.getPauseVotes());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -642,6 +716,16 @@ private static final long serialVersionUID = 0L;
               votedUserIds_.add(input.readStringRequireUtf8());
               break;
             } // case 50
+            case 56: {
+              pauseAllowed_ = input.readBool();
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 56
+            case 64: {
+              pauseVotes_ = input.readInt32();
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 64
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -872,19 +956,31 @@ private static final long serialVersionUID = 0L;
 
     private int waitVotes_ ;
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+     * <pre>
+     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
+     * </pre>
+     *
+     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=303
      * @return The waitVotes.
      */
     @java.lang.Override
-    public int getWaitVotes() {
+    @java.lang.Deprecated public int getWaitVotes() {
       return waitVotes_;
     }
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+     * <pre>
+     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
+     * </pre>
+     *
+     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=303
      * @param value The waitVotes to set.
      * @return This builder for chaining.
      */
-    public Builder setWaitVotes(int value) {
+    @java.lang.Deprecated public Builder setWaitVotes(int value) {
 
       waitVotes_ = value;
       bitField0_ |= 0x00000004;
@@ -892,10 +988,16 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+     * <pre>
+     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
+     * </pre>
+     *
+     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
+     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
+     *     See friendlyfire/room/v1/room_service.proto;l=303
      * @return This builder for chaining.
      */
-    public Builder clearWaitVotes() {
+    @java.lang.Deprecated public Builder clearWaitVotes() {
       bitField0_ = (bitField0_ & ~0x00000004);
       waitVotes_ = 0;
       onChanged();
@@ -1109,6 +1211,97 @@ private static final long serialVersionUID = 0L;
       ensureVotedUserIdsIsMutable();
       votedUserIds_.add(value);
       bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    private boolean pauseAllowed_ ;
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @return The pauseAllowed.
+     */
+    @java.lang.Override
+    public boolean getPauseAllowed() {
+      return pauseAllowed_;
+    }
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @param value The pauseAllowed to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPauseAllowed(boolean value) {
+
+      pauseAllowed_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPauseAllowed() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      pauseAllowed_ = false;
+      onChanged();
+      return this;
+    }
+
+    private int pauseVotes_ ;
+    /**
+     * <pre>
+     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
+     * </pre>
+     *
+     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
+     * @return The pauseVotes.
+     */
+    @java.lang.Override
+    public int getPauseVotes() {
+      return pauseVotes_;
+    }
+    /**
+     * <pre>
+     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
+     * </pre>
+     *
+     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
+     * @param value The pauseVotes to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPauseVotes(int value) {
+
+      pauseVotes_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
+     * </pre>
+     *
+     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPauseVotes() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      pauseVotes_ = 0;
       onChanged();
       return this;
     }

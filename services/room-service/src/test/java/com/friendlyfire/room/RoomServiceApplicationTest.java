@@ -10,6 +10,6 @@ class RoomServiceApplicationTest {
 
     @Test
     void contextLoads() {
-        // Starts even though quiz-engine, scoring and match-data aren't running.
+        // Starts even though quiz-engine, scoring and account aren't running.
     }
 }

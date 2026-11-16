@@ -19,8 +19,8 @@ spring:
           target: ${QUIZ_GRPC_ADDR:localhost:9093}
         scoring:
           target: ${SCORING_GRPC_ADDR:localhost:9094}
-        matchdata:
-          target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
+        account:
+          target: ${ACCOUNT_GRPC_ADDR:localhost:9091}
   devtools:
     livereload:
       enabled: false

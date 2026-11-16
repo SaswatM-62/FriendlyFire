@@ -3,6 +3,8 @@
 import grpc
 from friendlyfire.scoring.v1 import scoring_service_pb2_grpc
 from friendlyfire.scoring.v1.scoring_service_pb2 import (
+    AnonymizePlayerRequest,
+    AnonymizePlayerResponse,
     FinalizeQuizRequest,
     FinalizeQuizResponse,
     GetPlayerHistoryRequest,
@@ -79,6 +81,19 @@ class ScoringServicer(scoring_service_pb2_grpc.ScoringServiceServicer):
         # TODO(ff): a player's past quizzes, newest first, one page at a time
         #   - page_size 0 means 20, maximum 50; page_token is the last call's
         #     next_page_token; next_page_token is empty on the last page
+        #   - errors: none in the contract
+        #   - uses: self._quizzes
+        await context.abort(grpc.StatusCode.UNIMPLEMENTED, "not implemented yet")
+
+    async def AnonymizePlayer(
+        self,
+        request: AnonymizePlayerRequest,
+        context: grpc.aio.ServicerContext[AnonymizePlayerRequest, AnonymizePlayerResponse],
+    ) -> AnonymizePlayerResponse:
+        # TODO(ff): "Deleted player" in every past quiz of a user who deleted their account
+        #   - replace their display name with "Deleted player" and remove the link to their
+        #     user_id, keeping their scores (ADR-027); safe to call again
+        #   - called by AccountService.DeleteAccount
         #   - errors: none in the contract
         #   - uses: self._quizzes
         await context.abort(grpc.StatusCode.UNIMPLEMENTED, "not implemented yet")

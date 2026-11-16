@@ -172,7 +172,7 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -182,7 +182,7 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -192,7 +192,7 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -269,4 +269,34 @@ public interface RoomSnapshotOrBuilder extends
    * <code>.friendlyfire.room.v1.Vote active_vote = 11 [json_name = "activeVote"];</code>
    */
   com.friendlyfire.proto.friendlyfire.room.v1.VoteOrBuilder getActiveVoteOrBuilder();
+
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The waitingForUserId.
+   */
+  java.lang.String getWaitingForUserId();
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The bytes for waitingForUserId.
+   */
+  com.google.protobuf.ByteString
+      getWaitingForUserIdBytes();
+
+  /**
+   * <pre>
+   * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+   * </pre>
+   *
+   * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+   * @return The pauseSecondsLeft.
+   */
+  int getPauseSecondsLeft();
 }

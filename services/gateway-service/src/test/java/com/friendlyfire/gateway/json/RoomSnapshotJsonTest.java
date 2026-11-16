@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
+import com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.QuestionOption;
@@ -48,8 +49,44 @@ class RoomSnapshotJsonTest {
                 "userId", "user-maya",
                 "displayName", "Maya",
                 "status", "CONNECTED",
-                "matchDataReady", false,
+                "notEnoughMatches", false,
                 "answeredCurrentQuestion", false)));
+    }
+
+    @Test
+    void aPlayerCarriesTheirDataStatusAndRiotTag() {
+        Map<String, Object> json = json(RoomSnapshot.newBuilder()
+                .setPhase(RoomPhase.ROOM_PHASE_LOBBY)
+                .addPlayers(Player.newBuilder()
+                        .setUserId("user-sam")
+                        .setDisplayName("Sam")
+                        .setRiotTagLine("NA1")
+                        .setDataStatus(PlayerDataStatus.PLAYER_DATA_STATUS_SYNCING)
+                        .setDataEstimatedSeconds(120))
+                .addPlayers(Player.newBuilder()
+                        .setUserId("user-jordan")
+                        .setDisplayName("Jordan")
+                        .setDataStatus(PlayerDataStatus.PLAYER_DATA_STATUS_SYNCED)
+                        .setNotEnoughMatches(true))
+                .build());
+
+        assertThat(json.get("players")).isEqualTo(List.of(
+                Map.of(
+                        "userId", "user-sam",
+                        "displayName", "Sam",
+                        "riotTagLine", "NA1",
+                        "dataStatus", "SYNCING",
+                        "dataEstimatedSeconds", 120,
+                        "notEnoughMatches", false,
+                        "answeredCurrentQuestion", false),
+                Map.of(
+                        "userId", "user-jordan",
+                        "displayName", "Jordan",
+                        "dataStatus", "SYNCED",
+                        "notEnoughMatches", true,
+                        "answeredCurrentQuestion", false)));
+        // Pause time only counts once a quiz has started.
+        assertThat(json).doesNotContainKey("pauseSecondsLeft");
     }
 
     @Test
@@ -82,7 +119,7 @@ class RoomSnapshotJsonTest {
         assertThat(json.get("players")).isEqualTo(List.of(Map.of(
                 "userId", "user-sam",
                 "displayName", "",
-                "matchDataReady", false,
+                "notEnoughMatches", false,
                 "connectionQuality", "GOOD",
                 "answeredCurrentQuestion", true)));
         assertThat(json.get("scoreboard")).isEqualTo(List.of(Map.of(
@@ -114,15 +151,18 @@ class RoomSnapshotJsonTest {
     }
 
     @Test
-    void theVoteCallsWaitVotesPauseVotesLikeTheFrontend() {
+    void theVoteCountsPauseVotesAndSaysWhetherPausingIsStillAllowed() {
         Map<String, Object> json = json(RoomSnapshot.newBuilder()
                 .setPhase(RoomPhase.ROOM_PHASE_VOTE)
+                .setQuizId("quiz-1")
+                .setPauseSecondsLeft(120)
                 .setActiveVote(Vote.newBuilder()
                         .setAboutUserId("user-sam")
                         .setDeadline(DEADLINE)
-                        .setWaitVotes(2)
+                        .setPauseVotes(2)
                         .setContinueVotes(1)
-                        .addVotedUserIds("user-maya"))
+                        .addVotedUserIds("user-maya")
+                        .setPauseAllowed(true))
                 .build());
 
         assertThat(json.get("activeVote")).isEqualTo(Map.of(
@@ -131,7 +171,25 @@ class RoomSnapshotJsonTest {
                 "pauseVotes", 2,
                 "continueVotes", 1,
                 "endVotes", 0,
-                "votedUserIds", List.of("user-maya")));
+                "votedUserIds", List.of("user-maya"),
+                "pauseAllowed", true));
+        assertThat(json).containsEntry("pauseSecondsLeft", 120);
+    }
+
+    @Test
+    void aPausedRoomSaysWhoItIsWaitingFor() {
+        Map<String, Object> json = json(RoomSnapshot.newBuilder()
+                .setPhase(RoomPhase.ROOM_PHASE_PAUSED)
+                .setQuizId("quiz-1")
+                .setWaitingForUserId("user-sam")
+                .setPauseSecondsLeft(60)
+                .setPhaseDeadline(DEADLINE)
+                .build());
+
+        assertThat(json).containsEntry("phase", "PAUSED")
+                .containsEntry("waitingForUserId", "user-sam")
+                .containsEntry("pauseSecondsLeft", 60)
+                .containsEntry("phaseDeadline", "2025-11-09T14:53:20.120Z");
     }
 
     @Test

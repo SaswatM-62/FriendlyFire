@@ -107,58 +107,60 @@ public final class MatchDataServiceProto extends com.google.protobuf.GeneratedFi
       "\n\010user_ids\030\001 \003(\tR\007userIds\"`\n\025GetSyncStat" +
       "usResponse\022G\n\010statuses\030\001 \003(\0132+.friendlyf" +
       "ire.matchdata.v1.PlayerSyncStatusR\010statu" +
-      "ses\"\370\001\n\020PlayerSyncStatus\022\027\n\007user_id\030\001 \001(" +
+      "ses\"\314\002\n\020PlayerSyncStatus\022\027\n\007user_id\030\001 \001(" +
       "\tR\006userId\022=\n\006status\030\002 \001(\0162%.friendlyfire" +
       ".matchdata.v1.SyncStatusR\006status\022%\n\016matc" +
       "hes_stored\030\003 \001(\005R\rmatchesStored\022@\n\016last_" +
       "synced_at\030\004 \001(\0132\032.google.protobuf.Timest" +
       "ampR\014lastSyncedAt\022#\n\rerror_message\030\005 \001(\t" +
-      "R\014errorMessage\"\236\001\n\032GetPlayerMatchStatsRe" +
-      "quest\022\031\n\010user_ids\030\001 \003(\tR\007userIds\0220\n\005sinc" +
-      "e\030\002 \001(\0132\032.google.protobuf.TimestampR\005sin" +
-      "ce\0223\n\026max_matches_per_player\030\003 \001(\005R\023maxM" +
-      "atchesPerPlayer\"`\n\033GetPlayerMatchStatsRe" +
-      "sponse\022A\n\005stats\030\001 \003(\0132+.friendlyfire.mat" +
-      "chdata.v1.PlayerMatchStatsR\005stats\"\211\004\n\020Pl" +
-      "ayerMatchStats\022\031\n\010match_id\030\001 \001(\tR\007matchI" +
-      "d\022\027\n\007user_id\030\002 \001(\tR\006userId\022\022\n\004game\030\003 \001(\t" +
-      "R\004game\0227\n\tplayed_at\030\004 \001(\0132\032.google.proto" +
-      "buf.TimestampR\010playedAt\022\020\n\003won\030\005 \001(\010R\003wo" +
-      "n\022\024\n\005kills\030\006 \001(\005R\005kills\022\026\n\006deaths\030\007 \001(\005R" +
-      "\006deaths\022\030\n\007assists\030\010 \001(\005R\007assists\022O\n\006lab" +
-      "els\030\t \003(\01327.friendlyfire.matchdata.v1.Pl" +
-      "ayerMatchStats.LabelsEntryR\006labels\022R\n\007nu" +
-      "mbers\030\n \003(\01328.friendlyfire.matchdata.v1." +
-      "PlayerMatchStats.NumbersEntryR\007numbers\0329" +
-      "\n\013LabelsEntry\022\020\n\003key\030\001 \001(\tR\003key\022\024\n\005value" +
-      "\030\002 \001(\tR\005value:\0028\001\032:\n\014NumbersEntry\022\020\n\003key" +
-      "\030\001 \001(\tR\003key\022\024\n\005value\030\002 \001(\001R\005value:\0028\001\"2\n" +
-      "\027DeletePlayerDataRequest\022\027\n\007user_id\030\001 \001(" +
-      "\tR\006userId\"\032\n\030DeletePlayerDataResponse*\224\001" +
-      "\n\nSyncStatus\022\033\n\027SYNC_STATUS_UNSPECIFIED\020" +
-      "\000\022\032\n\026SYNC_STATUS_NOT_LINKED\020\001\022\033\n\027SYNC_ST" +
-      "ATUS_IN_PROGRESS\020\002\022\030\n\024SYNC_STATUS_COMPLE" +
-      "TE\020\003\022\026\n\022SYNC_STATUS_FAILED\020\0042\365\003\n\020MatchDa" +
-      "taService\022i\n\nSyncPlayer\022,.friendlyfire.m" +
-      "atchdata.v1.SyncPlayerRequest\032-.friendly" +
-      "fire.matchdata.v1.SyncPlayerResponse\022r\n\r" +
-      "GetSyncStatus\022/.friendlyfire.matchdata.v" +
-      "1.GetSyncStatusRequest\0320.friendlyfire.ma" +
-      "tchdata.v1.GetSyncStatusResponse\022\204\001\n\023Get" +
-      "PlayerMatchStats\0225.friendlyfire.matchdat" +
-      "a.v1.GetPlayerMatchStatsRequest\0326.friend" +
-      "lyfire.matchdata.v1.GetPlayerMatchStatsR" +
-      "esponse\022{\n\020DeletePlayerData\0222.friendlyfi" +
-      "re.matchdata.v1.DeletePlayerDataRequest\032" +
-      "3.friendlyfire.matchdata.v1.DeletePlayer" +
-      "DataResponseB\240\002\n0com.friendlyfire.proto." +
-      "friendlyfire.matchdata.v1B\025MatchDataServ" +
-      "iceProtoP\001ZOgithub.com/SaswatM-62/Friend" +
-      "lyFire/gen/go/friendlyfire/matchdata/v1;" +
-      "matchdatav1\242\002\003FMX\252\002\031Friendlyfire.Matchda" +
-      "ta.V1\312\002\031Friendlyfire\\Matchdata\\V1\342\002%Frie" +
-      "ndlyfire\\Matchdata\\V1\\GPBMetadata\352\002\033Frie" +
-      "ndlyfire::Matchdata::V1b\006proto3"
+      "R\014errorMessage\022+\n\021estimated_seconds\030\006 \001(" +
+      "\005R\020estimatedSeconds\022%\n\016queue_position\030\007 " +
+      "\001(\005R\rqueuePosition\"\236\001\n\032GetPlayerMatchSta" +
+      "tsRequest\022\031\n\010user_ids\030\001 \003(\tR\007userIds\0220\n\005" +
+      "since\030\002 \001(\0132\032.google.protobuf.TimestampR" +
+      "\005since\0223\n\026max_matches_per_player\030\003 \001(\005R\023" +
+      "maxMatchesPerPlayer\"`\n\033GetPlayerMatchSta" +
+      "tsResponse\022A\n\005stats\030\001 \003(\0132+.friendlyfire" +
+      ".matchdata.v1.PlayerMatchStatsR\005stats\"\211\004" +
+      "\n\020PlayerMatchStats\022\031\n\010match_id\030\001 \001(\tR\007ma" +
+      "tchId\022\027\n\007user_id\030\002 \001(\tR\006userId\022\022\n\004game\030\003" +
+      " \001(\tR\004game\0227\n\tplayed_at\030\004 \001(\0132\032.google.p" +
+      "rotobuf.TimestampR\010playedAt\022\020\n\003won\030\005 \001(\010" +
+      "R\003won\022\024\n\005kills\030\006 \001(\005R\005kills\022\026\n\006deaths\030\007 " +
+      "\001(\005R\006deaths\022\030\n\007assists\030\010 \001(\005R\007assists\022O\n" +
+      "\006labels\030\t \003(\01327.friendlyfire.matchdata.v" +
+      "1.PlayerMatchStats.LabelsEntryR\006labels\022R" +
+      "\n\007numbers\030\n \003(\01328.friendlyfire.matchdata" +
+      ".v1.PlayerMatchStats.NumbersEntryR\007numbe" +
+      "rs\0329\n\013LabelsEntry\022\020\n\003key\030\001 \001(\tR\003key\022\024\n\005v" +
+      "alue\030\002 \001(\tR\005value:\0028\001\032:\n\014NumbersEntry\022\020\n" +
+      "\003key\030\001 \001(\tR\003key\022\024\n\005value\030\002 \001(\001R\005value:\0028" +
+      "\001\"2\n\027DeletePlayerDataRequest\022\027\n\007user_id\030" +
+      "\001 \001(\tR\006userId\"\032\n\030DeletePlayerDataRespons" +
+      "e*\224\001\n\nSyncStatus\022\033\n\027SYNC_STATUS_UNSPECIF" +
+      "IED\020\000\022\032\n\026SYNC_STATUS_NOT_LINKED\020\001\022\033\n\027SYN" +
+      "C_STATUS_IN_PROGRESS\020\002\022\030\n\024SYNC_STATUS_CO" +
+      "MPLETE\020\003\022\026\n\022SYNC_STATUS_FAILED\020\0042\365\003\n\020Mat" +
+      "chDataService\022i\n\nSyncPlayer\022,.friendlyfi" +
+      "re.matchdata.v1.SyncPlayerRequest\032-.frie" +
+      "ndlyfire.matchdata.v1.SyncPlayerResponse" +
+      "\022r\n\rGetSyncStatus\022/.friendlyfire.matchda" +
+      "ta.v1.GetSyncStatusRequest\0320.friendlyfir" +
+      "e.matchdata.v1.GetSyncStatusResponse\022\204\001\n" +
+      "\023GetPlayerMatchStats\0225.friendlyfire.matc" +
+      "hdata.v1.GetPlayerMatchStatsRequest\0326.fr" +
+      "iendlyfire.matchdata.v1.GetPlayerMatchSt" +
+      "atsResponse\022{\n\020DeletePlayerData\0222.friend" +
+      "lyfire.matchdata.v1.DeletePlayerDataRequ" +
+      "est\0323.friendlyfire.matchdata.v1.DeletePl" +
+      "ayerDataResponseB\240\002\n0com.friendlyfire.pr" +
+      "oto.friendlyfire.matchdata.v1B\025MatchData" +
+      "ServiceProtoP\001ZOgithub.com/SaswatM-62/Fr" +
+      "iendlyFire/gen/go/friendlyfire/matchdata" +
+      "/v1;matchdatav1\242\002\003FMX\252\002\031Friendlyfire.Mat" +
+      "chdata.V1\312\002\031Friendlyfire\\Matchdata\\V1\342\002%" +
+      "Friendlyfire\\Matchdata\\V1\\GPBMetadata\352\002\033" +
+      "Friendlyfire::Matchdata::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -194,7 +196,7 @@ public final class MatchDataServiceProto extends com.google.protobuf.GeneratedFi
     internal_static_friendlyfire_matchdata_v1_PlayerSyncStatus_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_matchdata_v1_PlayerSyncStatus_descriptor,
-        new java.lang.String[] { "UserId", "Status", "MatchesStored", "LastSyncedAt", "ErrorMessage", });
+        new java.lang.String[] { "UserId", "Status", "MatchesStored", "LastSyncedAt", "ErrorMessage", "EstimatedSeconds", "QueuePosition", });
     internal_static_friendlyfire_matchdata_v1_GetPlayerMatchStatsRequest_descriptor =
       getDescriptor().getMessageType(5);
     internal_static_friendlyfire_matchdata_v1_GetPlayerMatchStatsRequest_fieldAccessorTable = new

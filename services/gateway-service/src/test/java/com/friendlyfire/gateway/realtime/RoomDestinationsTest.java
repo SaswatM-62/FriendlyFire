@@ -23,8 +23,7 @@ class RoomDestinationsTest {
 
     @Test
     void mapsTheFrontendsVoteNamesToTheContract() {
-        assertThat(RoomSocketController.voteOption("PAUSE")).isEqualTo(VoteOption.VOTE_OPTION_WAIT);
-        assertThat(RoomSocketController.voteOption("WAIT")).isEqualTo(VoteOption.VOTE_OPTION_WAIT);
+        assertThat(RoomSocketController.voteOption("PAUSE")).isEqualTo(VoteOption.VOTE_OPTION_PAUSE);
         assertThat(RoomSocketController.voteOption("CONTINUE_WITHOUT_PLAYER"))
                 .isEqualTo(VoteOption.VOTE_OPTION_CONTINUE_WITHOUT_PLAYER);
         assertThat(RoomSocketController.voteOption("END_QUIZ")).isEqualTo(VoteOption.VOTE_OPTION_END_QUIZ);

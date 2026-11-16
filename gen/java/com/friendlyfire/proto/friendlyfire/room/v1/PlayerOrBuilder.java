@@ -47,13 +47,16 @@ public interface PlayerOrBuilder extends
 
   /**
    * <pre>
-   * True once Match Data reports this player's sync as COMPLETE.
+   * Deprecated (ADR-010): use data_status. Room keeps it equal to
+   * data_status == PLAYER_DATA_STATUS_SYNCED.
    * </pre>
    *
-   * <code>bool match_data_ready = 4 [json_name = "matchDataReady"];</code>
+   * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
+   * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
+   *     See friendlyfire/room/v1/room_service.proto;l=242
    * @return The matchDataReady.
    */
-  boolean getMatchDataReady();
+  @java.lang.Deprecated boolean getMatchDataReady();
 
   /**
    * <code>.friendlyfire.room.v1.ConnectionQuality connection_quality = 5 [json_name = "connectionQuality"];</code>
@@ -75,4 +78,69 @@ public interface PlayerOrBuilder extends
    * @return The answeredCurrentQuestion.
    */
   boolean getAnsweredCurrentQuestion();
+
+  /**
+   * <pre>
+   * From AccountService.GetDataStatus. The quiz can start only when every
+   * player is SYNCED.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+   * @return The enum numeric value on the wire for dataStatus.
+   */
+  int getDataStatusValue();
+  /**
+   * <pre>
+   * From AccountService.GetDataStatus. The quiz can start only when every
+   * player is SYNCED.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerDataStatus data_status = 7 [json_name = "dataStatus"];</code>
+   * @return The dataStatus.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus getDataStatus();
+
+  /**
+   * <pre>
+   * While SYNCING: about how long until it's done; 0 if unknown.
+   * </pre>
+   *
+   * <code>int32 data_estimated_seconds = 8 [json_name = "dataEstimatedSeconds"];</code>
+   * @return The dataEstimatedSeconds.
+   */
+  int getDataEstimatedSeconds();
+
+  /**
+   * <pre>
+   * True when the player is synced but has fewer than 5 Competitive or
+   * Unrated matches in the last 30 days. They still play, answer and score,
+   * but no question is about them or uses their stats.
+   * </pre>
+   *
+   * <code>bool not_enough_matches = 9 [json_name = "notEnoughMatches"];</code>
+   * @return The notEnoughMatches.
+   */
+  boolean getNotEnoughMatches();
+
+  /**
+   * <pre>
+   * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+   * if they haven't linked a Riot account.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+   * @return The riotTagLine.
+   */
+  java.lang.String getRiotTagLine();
+  /**
+   * <pre>
+   * "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+   * if they haven't linked a Riot account.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 10 [json_name = "riotTagLine"];</code>
+   * @return The bytes for riotTagLine.
+   */
+  com.google.protobuf.ByteString
+      getRiotTagLineBytes();
 }

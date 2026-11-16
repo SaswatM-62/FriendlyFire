@@ -58,7 +58,6 @@ public class Room {
                 .setUserId(hostUserId)
                 .setDisplayName(hostDisplayName)
                 .setStatus(com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus.PLAYER_STATUS_CONNECTED)
-                .setMatchDataReady(false)
                 .setConnectionQuality(ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED)
                 .setAnsweredCurrentQuestion(false)
                 .build();

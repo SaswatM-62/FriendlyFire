@@ -36,7 +36,7 @@ compose.yaml, Makefile, mise.toml      local dev; mise.toml pins every tool vers
 | frontend | gateway-service (HTTP and WebSocket) |
 | gateway-service | account, room, scoring (gRPC) |
 | account-service | matchdata (gRPC), postgres (`account`), mock-rso-service (HTTP) |
-| room-service | quiz, scoring, matchdata (gRPC) |
+| room-service | account, quiz, scoring (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring`) |
 | match-data-service | postgres (`matchdata`); later HenrikDev / Riot over HTTPS |

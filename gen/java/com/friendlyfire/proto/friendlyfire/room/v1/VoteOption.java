@@ -17,11 +17,12 @@ public enum VoteOption
   VOTE_OPTION_UNSPECIFIED(0),
   /**
    * <pre>
-   * Wait another 30 seconds for the player to come back.
+   * Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
    * </pre>
    *
-   * <code>VOTE_OPTION_WAIT = 1;</code>
+   * <code>VOTE_OPTION_WAIT = 1 [deprecated = true];</code>
    */
+  @java.lang.Deprecated
   VOTE_OPTION_WAIT(1),
   /**
    * <pre>
@@ -39,6 +40,15 @@ public enum VoteOption
    * <code>VOTE_OPTION_END_QUIZ = 3;</code>
    */
   VOTE_OPTION_END_QUIZ(3),
+  /**
+   * <pre>
+   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+   * minutes per quiz; after that only the other two options remain.
+   * </pre>
+   *
+   * <code>VOTE_OPTION_PAUSE = 4;</code>
+   */
+  VOTE_OPTION_PAUSE(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -57,12 +67,12 @@ public enum VoteOption
   public static final int VOTE_OPTION_UNSPECIFIED_VALUE = 0;
   /**
    * <pre>
-   * Wait another 30 seconds for the player to come back.
+   * Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
    * </pre>
    *
-   * <code>VOTE_OPTION_WAIT = 1;</code>
+   * <code>VOTE_OPTION_WAIT = 1 [deprecated = true];</code>
    */
-  public static final int VOTE_OPTION_WAIT_VALUE = 1;
+  @java.lang.Deprecated public static final int VOTE_OPTION_WAIT_VALUE = 1;
   /**
    * <pre>
    * Keep playing without them.
@@ -79,6 +89,15 @@ public enum VoteOption
    * <code>VOTE_OPTION_END_QUIZ = 3;</code>
    */
   public static final int VOTE_OPTION_END_QUIZ_VALUE = 3;
+  /**
+   * <pre>
+   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+   * minutes per quiz; after that only the other two options remain.
+   * </pre>
+   *
+   * <code>VOTE_OPTION_PAUSE = 4;</code>
+   */
+  public static final int VOTE_OPTION_PAUSE_VALUE = 4;
 
 
   public final int getNumber() {
@@ -109,6 +128,7 @@ public enum VoteOption
       case 1: return VOTE_OPTION_WAIT;
       case 2: return VOTE_OPTION_CONTINUE_WITHOUT_PLAYER;
       case 3: return VOTE_OPTION_END_QUIZ;
+      case 4: return VOTE_OPTION_PAUSE;
       default: return null;
     }
   }
@@ -139,7 +159,7 @@ public enum VoteOption
   }
   public static com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceProto.getDescriptor().getEnumType(3);
+    return com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceProto.getDescriptor().getEnumType(4);
   }
 
   private static final VoteOption[] VALUES = values();

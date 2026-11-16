@@ -101,6 +101,16 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_scoring_v1_GetPlayerHistoryResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_scoring_v1_AnonymizePlayerRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_scoring_v1_AnonymizePlayerResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -163,32 +173,36 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
       "eToken\"\202\001\n\030GetPlayerHistoryResponse\022>\n\007q" +
       "uizzes\030\001 \003(\0132$.friendlyfire.scoring.v1.Q" +
       "uizSummaryR\007quizzes\022&\n\017next_page_token\030\002" +
-      " \001(\tR\rnextPageToken*\201\001\n\tEndReason\022\032\n\026END" +
-      "_REASON_UNSPECIFIED\020\000\022\030\n\024END_REASON_COMP" +
-      "LETED\020\001\022\033\n\027END_REASON_VOTED_TO_END\020\002\022!\n\035" +
-      "END_REASON_NOT_ENOUGH_PLAYERS\020\0032\264\004\n\016Scor" +
-      "ingService\022b\n\tStartQuiz\022).friendlyfire.s" +
-      "coring.v1.StartQuizRequest\032*.friendlyfir" +
-      "e.scoring.v1.StartQuizResponse\022h\n\013Record" +
-      "Round\022+.friendlyfire.scoring.v1.RecordRo" +
-      "undRequest\032,.friendlyfire.scoring.v1.Rec" +
-      "ordRoundResponse\022k\n\014FinalizeQuiz\022,.frien" +
-      "dlyfire.scoring.v1.FinalizeQuizRequest\032-" +
-      ".friendlyfire.scoring.v1.FinalizeQuizRes" +
-      "ponse\022n\n\rGetQuizResult\022-.friendlyfire.sc" +
-      "oring.v1.GetQuizResultRequest\032..friendly" +
-      "fire.scoring.v1.GetQuizResultResponse\022w\n" +
-      "\020GetPlayerHistory\0220.friendlyfire.scoring" +
-      ".v1.GetPlayerHistoryRequest\0321.friendlyfi" +
-      "re.scoring.v1.GetPlayerHistoryResponseB\220" +
-      "\002\n.com.friendlyfire.proto.friendlyfire.s" +
-      "coring.v1B\023ScoringServiceProtoP\001ZKgithub" +
-      ".com/SaswatM-62/FriendlyFire/gen/go/frie" +
-      "ndlyfire/scoring/v1;scoringv1\242\002\003FSX\252\002\027Fr" +
-      "iendlyfire.Scoring.V1\312\002\027Friendlyfire\\Sco" +
-      "ring\\V1\342\002#Friendlyfire\\Scoring\\V1\\GPBMet" +
-      "adata\352\002\031Friendlyfire::Scoring::V1b\006proto" +
-      "3"
+      " \001(\tR\rnextPageToken\"1\n\026AnonymizePlayerRe" +
+      "quest\022\027\n\007user_id\030\001 \001(\tR\006userId\"\031\n\027Anonym" +
+      "izePlayerResponse*\201\001\n\tEndReason\022\032\n\026END_R" +
+      "EASON_UNSPECIFIED\020\000\022\030\n\024END_REASON_COMPLE" +
+      "TED\020\001\022\033\n\027END_REASON_VOTED_TO_END\020\002\022!\n\035EN" +
+      "D_REASON_NOT_ENOUGH_PLAYERS\020\0032\252\005\n\016Scorin" +
+      "gService\022b\n\tStartQuiz\022).friendlyfire.sco" +
+      "ring.v1.StartQuizRequest\032*.friendlyfire." +
+      "scoring.v1.StartQuizResponse\022h\n\013RecordRo" +
+      "und\022+.friendlyfire.scoring.v1.RecordRoun" +
+      "dRequest\032,.friendlyfire.scoring.v1.Recor" +
+      "dRoundResponse\022k\n\014FinalizeQuiz\022,.friendl" +
+      "yfire.scoring.v1.FinalizeQuizRequest\032-.f" +
+      "riendlyfire.scoring.v1.FinalizeQuizRespo" +
+      "nse\022n\n\rGetQuizResult\022-.friendlyfire.scor" +
+      "ing.v1.GetQuizResultRequest\032..friendlyfi" +
+      "re.scoring.v1.GetQuizResultResponse\022w\n\020G" +
+      "etPlayerHistory\0220.friendlyfire.scoring.v" +
+      "1.GetPlayerHistoryRequest\0321.friendlyfire" +
+      ".scoring.v1.GetPlayerHistoryResponse\022t\n\017" +
+      "AnonymizePlayer\022/.friendlyfire.scoring.v" +
+      "1.AnonymizePlayerRequest\0320.friendlyfire." +
+      "scoring.v1.AnonymizePlayerResponseB\220\002\n.c" +
+      "om.friendlyfire.proto.friendlyfire.scori" +
+      "ng.v1B\023ScoringServiceProtoP\001ZKgithub.com" +
+      "/SaswatM-62/FriendlyFire/gen/go/friendly" +
+      "fire/scoring/v1;scoringv1\242\002\003FSX\252\002\027Friend" +
+      "lyfire.Scoring.V1\312\002\027Friendlyfire\\Scoring" +
+      "\\V1\342\002#Friendlyfire\\Scoring\\V1\\GPBMetadat" +
+      "a\352\002\031Friendlyfire::Scoring::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -285,6 +299,18 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_scoring_v1_GetPlayerHistoryResponse_descriptor,
         new java.lang.String[] { "Quizzes", "NextPageToken", });
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerRequest_descriptor =
+      getDescriptor().getMessageType(15);
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_scoring_v1_AnonymizePlayerRequest_descriptor,
+        new java.lang.String[] { "UserId", });
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerResponse_descriptor =
+      getDescriptor().getMessageType(16);
+    internal_static_friendlyfire_scoring_v1_AnonymizePlayerResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_scoring_v1_AnonymizePlayerResponse_descriptor,
+        new java.lang.String[] { });
     descriptor.resolveAllFeaturesImmutable();
     com.google.protobuf.TimestampProto.getDescriptor();
   }

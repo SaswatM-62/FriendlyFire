@@ -110,8 +110,11 @@ public final class QuizServiceGrpc {
      * <pre>
      * Builds every question for a quiz. Uses both matches the players played
      * together and each player's solo matches.
+     * Questions are only about players without not_enough_matches; the others
+     * still count when deciding which matches were played together.
      * Errors:
-     *   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+     *   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+     *                        not_enough_matches, or question_count outside 5–20
      *   FAILED_PRECONDITION  not enough match data to make question_count
      *                        different questions (the message says how many
      *                        could be made)
@@ -154,8 +157,11 @@ public final class QuizServiceGrpc {
      * <pre>
      * Builds every question for a quiz. Uses both matches the players played
      * together and each player's solo matches.
+     * Questions are only about players without not_enough_matches; the others
+     * still count when deciding which matches were played together.
      * Errors:
-     *   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+     *   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+     *                        not_enough_matches, or question_count outside 5–20
      *   FAILED_PRECONDITION  not enough match data to make question_count
      *                        different questions (the message says how many
      *                        could be made)
@@ -188,8 +194,11 @@ public final class QuizServiceGrpc {
      * <pre>
      * Builds every question for a quiz. Uses both matches the players played
      * together and each player's solo matches.
+     * Questions are only about players without not_enough_matches; the others
+     * still count when deciding which matches were played together.
      * Errors:
-     *   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+     *   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+     *                        not_enough_matches, or question_count outside 5–20
      *   FAILED_PRECONDITION  not enough match data to make question_count
      *                        different questions (the message says how many
      *                        could be made)
@@ -221,8 +230,11 @@ public final class QuizServiceGrpc {
      * <pre>
      * Builds every question for a quiz. Uses both matches the players played
      * together and each player's solo matches.
+     * Questions are only about players without not_enough_matches; the others
+     * still count when deciding which matches were played together.
      * Errors:
-     *   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+     *   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+     *                        not_enough_matches, or question_count outside 5–20
      *   FAILED_PRECONDITION  not enough match data to make question_count
      *                        different questions (the message says how many
      *                        could be made)
@@ -254,8 +266,11 @@ public final class QuizServiceGrpc {
      * <pre>
      * Builds every question for a quiz. Uses both matches the players played
      * together and each player's solo matches.
+     * Questions are only about players without not_enough_matches; the others
+     * still count when deciding which matches were played together.
      * Errors:
-     *   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+     *   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+     *                        not_enough_matches, or question_count outside 5–20
      *   FAILED_PRECONDITION  not enough match data to make question_count
      *                        different questions (the message says how many
      *                        could be made)

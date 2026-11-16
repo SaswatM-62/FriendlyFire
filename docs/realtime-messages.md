@@ -56,8 +56,8 @@ browser also works out its clock offset, so question timers match `phaseDeadline
   `/user/queue/errors` (codes `UNAUTHENTICATED`, `NOT_IN_ROOM`, `ROOM_NOT_FOUND`,
   `FORBIDDEN`). Subscribe to `/user/queue/errors` before the room topic to see why a
   room subscription was refused.
-- `vote` also accepts the contract's `"WAIT"`; the Gateway sends `"PAUSE"` as
-  `VOTE_OPTION_WAIT` until ADR-026 changes the contract.
+- `vote` takes `"PAUSE"`, `"CONTINUE_WITHOUT_PLAYER"` or `"END_QUIZ"` (the contract's
+  `VoteOption` without its prefix, ADR-026).
 
 ## RoomEvent
 
@@ -77,7 +77,7 @@ replaces its state with `snapshot` and uses `type` only for effects (a sound, a 
 `PLAYER_LEFT`, `PLAYER_KICKED`, `PLAYER_DISCONNECTED`, `PLAYER_RECONNECTED`, `HOST_CHANGED`,
 `SETTINGS_CHANGED`, `PLAYER_DATA_READY`, `CONNECTION_QUALITY_CHANGED`, `QUIZ_STARTING`,
 `QUESTION_STARTED`, `PLAYER_ANSWERED`, `QUESTION_REVEALED`, `VOTE_STARTED`, `VOTE_CAST`
-(planned: the counts changed), `VOTE_RESOLVED`, `QUIZ_PAUSED` (planned, ADR-026),
+(the counts changed), `VOTE_RESOLVED`, `QUIZ_PAUSED` (ADR-026),
 `QUIZ_FINISHED`, `ROOM_CLOSED` (the last message), and `CHAT_MESSAGE` (proposed, see
 [Room chat](#room-chat-proposed)).
 
@@ -119,8 +119,7 @@ yet; this is what the frontend and its fake backend do, for the stories that add
       "riotTagLine": "NA1",
       "status": "CONNECTED",
       "dataStatus": "SYNCED",
-      "dataEstimatedSeconds": 0,
-      "noRecentMatches": false,
+      "notEnoughMatches": false,
       "connectionQuality": "GOOD",
       "answeredCurrentQuestion": true
     }
@@ -141,23 +140,22 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 
 | Field | Notes |
 |---|---|
-| `phase` | `LOBBY`, `STARTING`, `QUESTION`, `REVEAL`, `VOTE`, `PAUSED` (planned, ADR-026), `FINISHED` |
+| `phase` | `LOBBY`, `STARTING`, `QUESTION`, `REVEAL`, `VOTE`, `PAUSED` (ADR-026), `FINISHED` |
 | `phase` = `STARTING` | The 3-second countdown before the first question (`roundNumber` 0). Proposed, needs FF-417 updated: the same 3 seconds before every later question and after a pause, with `roundNumber` still the question just played, so the browser shows "Get ready, question N+1". The design gives the reveal 10 seconds (FF-417 says 5) |
 | `players` | In the order they joined; the frontend gives player N the Nth character and colour |
 | `players[].status` | `CONNECTED`, `DISCONNECTED`, `SITTING_OUT` |
-| `players[].dataStatus` | Planned (FF-202, replaces `matchDataReady`): `SYNCED`, `SYNCING`, `NOT_SYNCED`, `NOT_LINKED`, `FAILED` |
-| `players[].dataEstimatedSeconds` | Planned (FF-202): while `SYNCING` |
-| `players[].riotTagLine` | Planned (FF-202): shown as "Sam (NA1)" when two players share a name |
-| `players[].noRecentMatches` | Planned (FF-307): synced, but no Competitive or Unrated match in 30 days |
-| `players[].matchDataReady` | Today's contract; the frontend reads it when `dataStatus` is missing |
+| `players[].dataStatus` | `SYNCED`, `SYNCING`, `NOT_SYNCED`, `NOT_LINKED`, `FAILED`, from Account (ADR-010; replaces `matchDataReady`). Left out until Room fills it (FF-307) |
+| `players[].dataEstimatedSeconds` | Only while `SYNCING` with an estimate |
+| `players[].riotTagLine` | Shown as "Sam (NA1)" when two players share a name; left out if not linked |
+| `players[].notEnoughMatches` | Synced, but fewer than 5 Competitive or Unrated matches in the last 30 days: they play, but no question is about them (FF-307). The frontend still reads the older `noRecentMatches` name |
 | `players[].look` | Proposed, needs a story: `{icon, colour, expression, random}`. Room hands out favourite icons and colours first come, first served (`random` when someone got a free one instead); `expression` is one of the 8 pickable faces and never changes. Without it the frontend uses the join order |
 | `currentQuestion.options[].optionId` | For "pick the player" questions, the player's `userId` |
 | `currentQuestion.reveal` | **Only during `REVEAL`**: `{correctOptionId, explanation, results: [{userId, chosenOptionId, correct, points}]}` |
 | `phaseDeadline` | When the countdown, question, reveal, vote or pause ends; not set in `LOBBY` and `FINISHED` |
 | `scoreboard` | Empty in the lobby; `rank` 1 is first, equal points share a rank; `correctAnswers` from Scoring |
-| `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseVotes` carries the contract's `wait_votes` until ADR-026 renames it; `pauseAllowed` is planned (ADR-026) |
-| `waitingForUserId` | Planned (ADR-026): during `PAUSED` |
-| `pauseSecondsLeft` | Planned (ADR-026): pause time left in this quiz, out of 180 |
+| `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseAllowed` is false once the quiz's 3 minutes of pauses are used (ADR-026) |
+| `waitingForUserId` | During `PAUSED`: the disconnected player the room is waiting for (ADR-026) |
+| `pauseSecondsLeft` | Pause time left in this quiz, out of 180; left out until a quiz starts (ADR-026) |
 | `endReason` | Planned: when `FINISHED`, `COMPLETED`, `VOTED_TO_END` or `NOT_ENOUGH_PLAYERS` |
 | `fastestAnswer` | Planned: `{userId, seconds}`, the quickest correct answer, for the podium |
 

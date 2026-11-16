@@ -74,6 +74,11 @@ class RoomServiceStub:
                 request_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsResponse.FromString,
                 _registered_method=True)
+        self.RemovePlayer = channel.unary_unary(
+                '/friendlyfire.room.v1.RoomService/RemovePlayer',
+                request_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.FromString,
+                _registered_method=True)
 
 
 class RoomServiceServicer:
@@ -122,10 +127,14 @@ class RoomServiceServicer:
 
     def StartQuiz(self, request, context):
         """Host only. Allowed in the lobby, or after a quiz finishes to play again.
-        Generates all questions, then starts a short countdown.
-        FAILED_PRECONDITION (with a message for the host) if there are fewer
-        than 2 players, someone's matches haven't finished syncing, or there
-        isn't enough match data for the chosen number of questions.
+        Checks every player's data status again, generates all questions, then
+        starts a short countdown.
+        FAILED_PRECONDITION (with a message for the host) if:
+        - there are fewer than 2 players
+        - someone's data status isn't SYNCED
+        - fewer than 2 players have enough matches, or more than half of the
+        room doesn't (Player.not_enough_matches)
+        - there isn't enough match data for the chosen number of questions
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -146,8 +155,8 @@ class RoomServiceServicer:
 
     def ReportDisconnected(self, request, context):
         """Called by the Gateway when a player's WebSocket connection drops.
-        During a quiz, if they don't come back within 15 seconds, the room
-        pauses and the others vote on what to do.
+        During a quiz the current question still finishes (ADR-026); after its
+        reveal, if they're still gone, the others vote on what to do.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -165,7 +174,8 @@ class RoomServiceServicer:
     def CastVote(self, request, context):
         """A connected player's vote while the room is in ROOM_PHASE_VOTE.
         The vote ends when everyone has voted or its deadline passes.
-        The option with the most votes wins; a tie means WAIT.
+        The option with the most votes wins. A tie pauses if pause time is left
+        in this quiz, and otherwise continues without the player.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -183,6 +193,16 @@ class RoomServiceServicer:
         always ROOM_EVENT_TYPE_SNAPSHOT. The stream ends when the room closes.
         The Gateway opens one stream per room and forwards each event to the
         STOMP topic /topic/room/{room_code}.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RemovePlayer(self, request, context):
+        """Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+        Takes the user out of the room they're in for good, like LeaveRoom
+        (the host role moves on, an empty room closes). Not an error if they
+        aren't in a room.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -250,6 +270,11 @@ def add_RoomServiceServicer_to_server(servicer, server):
                     servicer.StreamRoomEvents,
                     request_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsRequest.FromString,
                     response_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsResponse.SerializeToString,
+            ),
+            'RemovePlayer': grpc.unary_unary_rpc_method_handler(
+                    servicer.RemovePlayer,
+                    request_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.FromString,
+                    response_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -576,6 +601,33 @@ class RoomService:
             '/friendlyfire.room.v1.RoomService/StreamRoomEvents',
             friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsRequest.SerializeToString,
             friendlyfire_dot_room_dot_v1_dot_room__service__pb2.StreamRoomEventsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def RemovePlayer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.room.v1.RoomService/RemovePlayer',
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.SerializeToString,
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.FromString,
             options,
             channel_credentials,
             insecure,
