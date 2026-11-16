@@ -33,6 +33,11 @@ message GenerateQuizRequest {
   // Same seed + same data = same questions. Handy for tests.
   // 0 means pick a random seed.
   int64 seed = 3;
+  // Question.template_id of every question already asked in this room, ordered by
+  // when each template was last asked, oldest first (repeats are fine). The quiz
+  // uses unused templates first; when they run out it reuses these, the one asked
+  // longest ago first.
+  repeated string asked_template_ids = 4;
 }
 
 message QuizPlayer {
@@ -58,6 +63,9 @@ message Question {
   string explanation = 6;
   // The match the question came from.
   string source_match_id = 7;
+  // The template the question was made from. RoomService passes it back in
+  // GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+  string template_id = 8;
 }
 
 message AnswerOption {

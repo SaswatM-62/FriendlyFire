@@ -83,9 +83,14 @@ type GenerateQuizRequest struct {
 	QuestionCount int32                  `protobuf:"varint,2,opt,name=question_count,json=questionCount,proto3" json:"question_count,omitempty"`
 	// Same seed + same data = same questions. Handy for tests.
 	// 0 means pick a random seed.
-	Seed          int64 `protobuf:"varint,3,opt,name=seed,proto3" json:"seed,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Seed int64 `protobuf:"varint,3,opt,name=seed,proto3" json:"seed,omitempty"`
+	// Question.template_id of every question already asked in this room, ordered by
+	// when each template was last asked, oldest first (repeats are fine). The quiz
+	// uses unused templates first; when they run out it reuses these, the one asked
+	// longest ago first.
+	AskedTemplateIds []string `protobuf:"bytes,4,rep,name=asked_template_ids,json=askedTemplateIds,proto3" json:"asked_template_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *GenerateQuizRequest) Reset() {
@@ -137,6 +142,13 @@ func (x *GenerateQuizRequest) GetSeed() int64 {
 		return x.Seed
 	}
 	return 0
+}
+
+func (x *GenerateQuizRequest) GetAskedTemplateIds() []string {
+	if x != nil {
+		return x.AskedTemplateIds
+	}
+	return nil
 }
 
 type QuizPlayer struct {
@@ -250,6 +262,9 @@ type Question struct {
 	Explanation string `protobuf:"bytes,6,opt,name=explanation,proto3" json:"explanation,omitempty"`
 	// The match the question came from.
 	SourceMatchId string `protobuf:"bytes,7,opt,name=source_match_id,json=sourceMatchId,proto3" json:"source_match_id,omitempty"`
+	// The template the question was made from. RoomService passes it back in
+	// GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+	TemplateId    string `protobuf:"bytes,8,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -333,6 +348,13 @@ func (x *Question) GetSourceMatchId() string {
 	return ""
 }
 
+func (x *Question) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
 type AnswerOption struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// For PICK_THE_PLAYER this is the player's user_id.
@@ -391,17 +413,18 @@ var File_friendlyfire_quiz_v1_quiz_service_proto protoreflect.FileDescriptor
 
 const file_friendlyfire_quiz_v1_quiz_service_proto_rawDesc = "" +
 	"\n" +
-	"'friendlyfire/quiz/v1/quiz_service.proto\x12\x14friendlyfire.quiz.v1\"\x8c\x01\n" +
+	"'friendlyfire/quiz/v1/quiz_service.proto\x12\x14friendlyfire.quiz.v1\"\xba\x01\n" +
 	"\x13GenerateQuizRequest\x12:\n" +
 	"\aplayers\x18\x01 \x03(\v2 .friendlyfire.quiz.v1.QuizPlayerR\aplayers\x12%\n" +
 	"\x0equestion_count\x18\x02 \x01(\x05R\rquestionCount\x12\x12\n" +
-	"\x04seed\x18\x03 \x01(\x03R\x04seed\"H\n" +
+	"\x04seed\x18\x03 \x01(\x03R\x04seed\x12,\n" +
+	"\x12asked_template_ids\x18\x04 \x03(\tR\x10askedTemplateIds\"H\n" +
 	"\n" +
 	"QuizPlayer\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"T\n" +
 	"\x14GenerateQuizResponse\x12<\n" +
-	"\tquestions\x18\x01 \x03(\v2\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xab\x02\n" +
+	"\tquestions\x18\x01 \x03(\v2\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xcc\x02\n" +
 	"\bQuestion\x12\x1f\n" +
 	"\vquestion_id\x18\x01 \x01(\tR\n" +
 	"questionId\x126\n" +
@@ -410,7 +433,9 @@ const file_friendlyfire_quiz_v1_quiz_service_proto_rawDesc = "" +
 	"\aoptions\x18\x04 \x03(\v2\".friendlyfire.quiz.v1.AnswerOptionR\aoptions\x12*\n" +
 	"\x11correct_option_id\x18\x05 \x01(\tR\x0fcorrectOptionId\x12 \n" +
 	"\vexplanation\x18\x06 \x01(\tR\vexplanation\x12&\n" +
-	"\x0fsource_match_id\x18\a \x01(\tR\rsourceMatchId\"A\n" +
+	"\x0fsource_match_id\x18\a \x01(\tR\rsourceMatchId\x12\x1f\n" +
+	"\vtemplate_id\x18\b \x01(\tR\n" +
+	"templateId\"A\n" +
 	"\fAnswerOption\x12\x1b\n" +
 	"\toption_id\x18\x01 \x01(\tR\boptionId\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label*P\n" +

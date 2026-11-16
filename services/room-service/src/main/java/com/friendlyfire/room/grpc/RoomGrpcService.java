@@ -120,6 +120,9 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
         //   - check every player's sync is COMPLETE (MatchDataService.GetSyncStatus), get
         //     the questions (QuizService.GenerateQuiz), register the quiz
         //     (ScoringService.StartQuiz), then hand the room to QuizRunner (STARTING)
+        //   - send GenerateQuiz the template_id of every question already asked in this
+        //     room, oldest first (asked_template_ids), and remember the new questions'
+        //     template_ids for the next quiz
         //   - errors: FAILED_PRECONDITION, with a message for the host, if there are fewer
         //     than 2 players, someone's matches haven't finished syncing, or there isn't
         //     enough match data; NOT_FOUND; PERMISSION_DENIED if not the host
