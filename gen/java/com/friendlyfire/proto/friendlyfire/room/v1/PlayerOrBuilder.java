@@ -46,19 +46,6 @@ public interface PlayerOrBuilder extends
   com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus getStatus();
 
   /**
-   * <pre>
-   * Deprecated (ADR-010): use data_status. Room keeps it equal to
-   * data_status == PLAYER_DATA_STATUS_SYNCED.
-   * </pre>
-   *
-   * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
-   * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
-   *     See friendlyfire/room/v1/room_service.proto;l=242
-   * @return The matchDataReady.
-   */
-  @java.lang.Deprecated boolean getMatchDataReady();
-
-  /**
    * <code>.friendlyfire.room.v1.ConnectionQuality connection_quality = 5 [json_name = "connectionQuality"];</code>
    * @return The enum numeric value on the wire for connectionQuality.
    */

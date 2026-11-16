@@ -47,10 +47,9 @@ class PlayerDataStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
 class VoteOption(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
     VOTE_OPTION_UNSPECIFIED: _ClassVar[VoteOption]
-    VOTE_OPTION_WAIT: _ClassVar[VoteOption]
+    VOTE_OPTION_PAUSE: _ClassVar[VoteOption]
     VOTE_OPTION_CONTINUE_WITHOUT_PLAYER: _ClassVar[VoteOption]
     VOTE_OPTION_END_QUIZ: _ClassVar[VoteOption]
-    VOTE_OPTION_PAUSE: _ClassVar[VoteOption]
 
 class RoomEventType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -98,10 +97,9 @@ PLAYER_DATA_STATUS_NOT_SYNCED: PlayerDataStatus
 PLAYER_DATA_STATUS_NOT_LINKED: PlayerDataStatus
 PLAYER_DATA_STATUS_FAILED: PlayerDataStatus
 VOTE_OPTION_UNSPECIFIED: VoteOption
-VOTE_OPTION_WAIT: VoteOption
+VOTE_OPTION_PAUSE: VoteOption
 VOTE_OPTION_CONTINUE_WITHOUT_PLAYER: VoteOption
 VOTE_OPTION_END_QUIZ: VoteOption
-VOTE_OPTION_PAUSE: VoteOption
 ROOM_EVENT_TYPE_UNSPECIFIED: RoomEventType
 ROOM_EVENT_TYPE_SNAPSHOT: RoomEventType
 ROOM_EVENT_TYPE_PLAYER_JOINED: RoomEventType
@@ -163,11 +161,10 @@ class RoomSettings(_message.Message):
     def __init__(self, question_count: _Optional[int] = ..., seconds_per_question: _Optional[int] = ...) -> None: ...
 
 class Player(_message.Message):
-    __slots__ = ("user_id", "display_name", "status", "match_data_ready", "connection_quality", "answered_current_question", "data_status", "data_estimated_seconds", "not_enough_matches", "riot_tag_line")
+    __slots__ = ("user_id", "display_name", "status", "connection_quality", "answered_current_question", "data_status", "data_estimated_seconds", "not_enough_matches", "riot_tag_line")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
-    MATCH_DATA_READY_FIELD_NUMBER: _ClassVar[int]
     CONNECTION_QUALITY_FIELD_NUMBER: _ClassVar[int]
     ANSWERED_CURRENT_QUESTION_FIELD_NUMBER: _ClassVar[int]
     DATA_STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -177,14 +174,13 @@ class Player(_message.Message):
     user_id: str
     display_name: str
     status: PlayerStatus
-    match_data_ready: bool
     connection_quality: ConnectionQuality
     answered_current_question: bool
     data_status: PlayerDataStatus
     data_estimated_seconds: int
     not_enough_matches: bool
     riot_tag_line: str
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., status: _Optional[_Union[PlayerStatus, str]] = ..., match_data_ready: _Optional[bool] = ..., connection_quality: _Optional[_Union[ConnectionQuality, str]] = ..., answered_current_question: _Optional[bool] = ..., data_status: _Optional[_Union[PlayerDataStatus, str]] = ..., data_estimated_seconds: _Optional[int] = ..., not_enough_matches: _Optional[bool] = ..., riot_tag_line: _Optional[str] = ...) -> None: ...
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., status: _Optional[_Union[PlayerStatus, str]] = ..., connection_quality: _Optional[_Union[ConnectionQuality, str]] = ..., answered_current_question: _Optional[bool] = ..., data_status: _Optional[_Union[PlayerDataStatus, str]] = ..., data_estimated_seconds: _Optional[int] = ..., not_enough_matches: _Optional[bool] = ..., riot_tag_line: _Optional[str] = ...) -> None: ...
 
 class QuestionView(_message.Message):
     __slots__ = ("question_id", "text", "options", "reveal")
@@ -243,24 +239,22 @@ class ScoreEntry(_message.Message):
     def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., total_points: _Optional[int] = ..., rank: _Optional[int] = ..., points_last_round: _Optional[int] = ...) -> None: ...
 
 class Vote(_message.Message):
-    __slots__ = ("about_user_id", "deadline", "wait_votes", "continue_votes", "end_votes", "voted_user_ids", "pause_allowed", "pause_votes")
+    __slots__ = ("about_user_id", "deadline", "pause_votes", "continue_votes", "end_votes", "voted_user_ids", "pause_allowed")
     ABOUT_USER_ID_FIELD_NUMBER: _ClassVar[int]
     DEADLINE_FIELD_NUMBER: _ClassVar[int]
-    WAIT_VOTES_FIELD_NUMBER: _ClassVar[int]
+    PAUSE_VOTES_FIELD_NUMBER: _ClassVar[int]
     CONTINUE_VOTES_FIELD_NUMBER: _ClassVar[int]
     END_VOTES_FIELD_NUMBER: _ClassVar[int]
     VOTED_USER_IDS_FIELD_NUMBER: _ClassVar[int]
     PAUSE_ALLOWED_FIELD_NUMBER: _ClassVar[int]
-    PAUSE_VOTES_FIELD_NUMBER: _ClassVar[int]
     about_user_id: str
     deadline: _timestamp_pb2.Timestamp
-    wait_votes: int
+    pause_votes: int
     continue_votes: int
     end_votes: int
     voted_user_ids: _containers.RepeatedScalarFieldContainer[str]
     pause_allowed: bool
-    pause_votes: int
-    def __init__(self, about_user_id: _Optional[str] = ..., deadline: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., wait_votes: _Optional[int] = ..., continue_votes: _Optional[int] = ..., end_votes: _Optional[int] = ..., voted_user_ids: _Optional[_Iterable[str]] = ..., pause_allowed: _Optional[bool] = ..., pause_votes: _Optional[int] = ...) -> None: ...
+    def __init__(self, about_user_id: _Optional[str] = ..., deadline: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., pause_votes: _Optional[int] = ..., continue_votes: _Optional[int] = ..., end_votes: _Optional[int] = ..., voted_user_ids: _Optional[_Iterable[str]] = ..., pause_allowed: _Optional[bool] = ...) -> None: ...
 
 class RoomEvent(_message.Message):
     __slots__ = ("type", "subject_user_id", "occurred_at", "snapshot")

@@ -17,13 +17,13 @@ public enum VoteOption
   VOTE_OPTION_UNSPECIFIED(0),
   /**
    * <pre>
-   * Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
+   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+   * minutes per quiz; after that only the other two options remain.
    * </pre>
    *
-   * <code>VOTE_OPTION_WAIT = 1 [deprecated = true];</code>
+   * <code>VOTE_OPTION_PAUSE = 1;</code>
    */
-  @java.lang.Deprecated
-  VOTE_OPTION_WAIT(1),
+  VOTE_OPTION_PAUSE(1),
   /**
    * <pre>
    * Keep playing without them.
@@ -40,15 +40,6 @@ public enum VoteOption
    * <code>VOTE_OPTION_END_QUIZ = 3;</code>
    */
   VOTE_OPTION_END_QUIZ(3),
-  /**
-   * <pre>
-   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
-   * minutes per quiz; after that only the other two options remain.
-   * </pre>
-   *
-   * <code>VOTE_OPTION_PAUSE = 4;</code>
-   */
-  VOTE_OPTION_PAUSE(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -67,12 +58,13 @@ public enum VoteOption
   public static final int VOTE_OPTION_UNSPECIFIED_VALUE = 0;
   /**
    * <pre>
-   * Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
+   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+   * minutes per quiz; after that only the other two options remain.
    * </pre>
    *
-   * <code>VOTE_OPTION_WAIT = 1 [deprecated = true];</code>
+   * <code>VOTE_OPTION_PAUSE = 1;</code>
    */
-  @java.lang.Deprecated public static final int VOTE_OPTION_WAIT_VALUE = 1;
+  public static final int VOTE_OPTION_PAUSE_VALUE = 1;
   /**
    * <pre>
    * Keep playing without them.
@@ -89,15 +81,6 @@ public enum VoteOption
    * <code>VOTE_OPTION_END_QUIZ = 3;</code>
    */
   public static final int VOTE_OPTION_END_QUIZ_VALUE = 3;
-  /**
-   * <pre>
-   * Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
-   * minutes per quiz; after that only the other two options remain.
-   * </pre>
-   *
-   * <code>VOTE_OPTION_PAUSE = 4;</code>
-   */
-  public static final int VOTE_OPTION_PAUSE_VALUE = 4;
 
 
   public final int getNumber() {
@@ -125,10 +108,9 @@ public enum VoteOption
   public static VoteOption forNumber(int value) {
     switch (value) {
       case 0: return VOTE_OPTION_UNSPECIFIED;
-      case 1: return VOTE_OPTION_WAIT;
+      case 1: return VOTE_OPTION_PAUSE;
       case 2: return VOTE_OPTION_CONTINUE_WITHOUT_PLAYER;
       case 3: return VOTE_OPTION_END_QUIZ;
-      case 4: return VOTE_OPTION_PAUSE;
       default: return null;
     }
   }

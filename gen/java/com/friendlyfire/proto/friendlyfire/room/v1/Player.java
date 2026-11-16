@@ -150,24 +150,6 @@ private static final long serialVersionUID = 0L;
     return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus.UNRECOGNIZED : result;
   }
 
-  public static final int MATCH_DATA_READY_FIELD_NUMBER = 4;
-  private boolean matchDataReady_ = false;
-  /**
-   * <pre>
-   * Deprecated (ADR-010): use data_status. Room keeps it equal to
-   * data_status == PLAYER_DATA_STATUS_SYNCED.
-   * </pre>
-   *
-   * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
-   * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
-   *     See friendlyfire/room/v1/room_service.proto;l=242
-   * @return The matchDataReady.
-   */
-  @java.lang.Override
-  @java.lang.Deprecated public boolean getMatchDataReady() {
-    return matchDataReady_;
-  }
-
   public static final int CONNECTION_QUALITY_FIELD_NUMBER = 5;
   private int connectionQuality_ = 0;
   /**
@@ -333,9 +315,6 @@ private static final long serialVersionUID = 0L;
     if (status_ != com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus.PLAYER_STATUS_UNSPECIFIED.getNumber()) {
       output.writeEnum(3, status_);
     }
-    if (matchDataReady_ != false) {
-      output.writeBool(4, matchDataReady_);
-    }
     if (connectionQuality_ != com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED.getNumber()) {
       output.writeEnum(5, connectionQuality_);
     }
@@ -367,10 +346,6 @@ private static final long serialVersionUID = 0L;
     if (status_ != com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus.PLAYER_STATUS_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(3, status_);
-    }
-    if (matchDataReady_ != false) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeBoolSize(4, matchDataReady_);
     }
     if (connectionQuality_ != com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
@@ -424,8 +399,6 @@ private static final long serialVersionUID = 0L;
     if (!getDisplayName()
         .equals(other.getDisplayName())) return false;
     if (status_ != other.status_) return false;
-    if (getMatchDataReady()
-        != other.getMatchDataReady()) return false;
     if (connectionQuality_ != other.connectionQuality_) return false;
     if (getAnsweredCurrentQuestion()
         != other.getAnsweredCurrentQuestion()) return false;
@@ -453,9 +426,6 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getDisplayName().hashCode();
     hash = (37 * hash) + STATUS_FIELD_NUMBER;
     hash = (53 * hash) + status_;
-    hash = (37 * hash) + MATCH_DATA_READY_FIELD_NUMBER;
-    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-        getMatchDataReady());
     hash = (37 * hash) + CONNECTION_QUALITY_FIELD_NUMBER;
     hash = (53 * hash) + connectionQuality_;
     hash = (37 * hash) + ANSWERED_CURRENT_QUESTION_FIELD_NUMBER;
@@ -604,7 +574,6 @@ private static final long serialVersionUID = 0L;
       userId_ = "";
       displayName_ = "";
       status_ = 0;
-      matchDataReady_ = false;
       connectionQuality_ = 0;
       answeredCurrentQuestion_ = false;
       dataStatus_ = 0;
@@ -654,24 +623,21 @@ private static final long serialVersionUID = 0L;
         result.status_ = status_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
-        result.matchDataReady_ = matchDataReady_;
-      }
-      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.connectionQuality_ = connectionQuality_;
       }
-      if (((from_bitField0_ & 0x00000020) != 0)) {
+      if (((from_bitField0_ & 0x00000010) != 0)) {
         result.answeredCurrentQuestion_ = answeredCurrentQuestion_;
       }
-      if (((from_bitField0_ & 0x00000040) != 0)) {
+      if (((from_bitField0_ & 0x00000020) != 0)) {
         result.dataStatus_ = dataStatus_;
       }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
+      if (((from_bitField0_ & 0x00000040) != 0)) {
         result.dataEstimatedSeconds_ = dataEstimatedSeconds_;
       }
-      if (((from_bitField0_ & 0x00000100) != 0)) {
+      if (((from_bitField0_ & 0x00000080) != 0)) {
         result.notEnoughMatches_ = notEnoughMatches_;
       }
-      if (((from_bitField0_ & 0x00000200) != 0)) {
+      if (((from_bitField0_ & 0x00000100) != 0)) {
         result.riotTagLine_ = riotTagLine_;
       }
     }
@@ -701,9 +667,6 @@ private static final long serialVersionUID = 0L;
       if (other.status_ != 0) {
         setStatusValue(other.getStatusValue());
       }
-      if (other.getMatchDataReady() != false) {
-        setMatchDataReady(other.getMatchDataReady());
-      }
       if (other.connectionQuality_ != 0) {
         setConnectionQualityValue(other.getConnectionQualityValue());
       }
@@ -721,7 +684,7 @@ private static final long serialVersionUID = 0L;
       }
       if (!other.getRiotTagLine().isEmpty()) {
         riotTagLine_ = other.riotTagLine_;
-        bitField0_ |= 0x00000200;
+        bitField0_ |= 0x00000100;
         onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
@@ -763,39 +726,34 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 24
-            case 32: {
-              matchDataReady_ = input.readBool();
-              bitField0_ |= 0x00000008;
-              break;
-            } // case 32
             case 40: {
               connectionQuality_ = input.readEnum();
-              bitField0_ |= 0x00000010;
+              bitField0_ |= 0x00000008;
               break;
             } // case 40
             case 48: {
               answeredCurrentQuestion_ = input.readBool();
-              bitField0_ |= 0x00000020;
+              bitField0_ |= 0x00000010;
               break;
             } // case 48
             case 56: {
               dataStatus_ = input.readEnum();
-              bitField0_ |= 0x00000040;
+              bitField0_ |= 0x00000020;
               break;
             } // case 56
             case 64: {
               dataEstimatedSeconds_ = input.readInt32();
-              bitField0_ |= 0x00000080;
+              bitField0_ |= 0x00000040;
               break;
             } // case 64
             case 72: {
               notEnoughMatches_ = input.readBool();
-              bitField0_ |= 0x00000100;
+              bitField0_ |= 0x00000080;
               break;
             } // case 72
             case 82: {
               riotTagLine_ = input.readStringRequireUtf8();
-              bitField0_ |= 0x00000200;
+              bitField0_ |= 0x00000100;
               break;
             } // case 82
             default: {
@@ -1011,59 +969,6 @@ private static final long serialVersionUID = 0L;
       return this;
     }
 
-    private boolean matchDataReady_ ;
-    /**
-     * <pre>
-     * Deprecated (ADR-010): use data_status. Room keeps it equal to
-     * data_status == PLAYER_DATA_STATUS_SYNCED.
-     * </pre>
-     *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=242
-     * @return The matchDataReady.
-     */
-    @java.lang.Override
-    @java.lang.Deprecated public boolean getMatchDataReady() {
-      return matchDataReady_;
-    }
-    /**
-     * <pre>
-     * Deprecated (ADR-010): use data_status. Room keeps it equal to
-     * data_status == PLAYER_DATA_STATUS_SYNCED.
-     * </pre>
-     *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=242
-     * @param value The matchDataReady to set.
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder setMatchDataReady(boolean value) {
-
-      matchDataReady_ = value;
-      bitField0_ |= 0x00000008;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Deprecated (ADR-010): use data_status. Room keeps it equal to
-     * data_status == PLAYER_DATA_STATUS_SYNCED.
-     * </pre>
-     *
-     * <code>bool match_data_ready = 4 [json_name = "matchDataReady", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Player.match_data_ready is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=242
-     * @return This builder for chaining.
-     */
-    @java.lang.Deprecated public Builder clearMatchDataReady() {
-      bitField0_ = (bitField0_ & ~0x00000008);
-      matchDataReady_ = false;
-      onChanged();
-      return this;
-    }
-
     private int connectionQuality_ = 0;
     /**
      * <code>.friendlyfire.room.v1.ConnectionQuality connection_quality = 5 [json_name = "connectionQuality"];</code>
@@ -1079,7 +984,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setConnectionQualityValue(int value) {
       connectionQuality_ = value;
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }
@@ -1100,7 +1005,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setConnectionQuality(com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality value) {
       java.util.Objects.requireNonNull(value);
-      bitField0_ |= 0x00000010;
+      bitField0_ |= 0x00000008;
       connectionQuality_ = value.getNumber();
       onChanged();
       return this;
@@ -1110,7 +1015,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearConnectionQuality() {
-      bitField0_ = (bitField0_ & ~0x00000010);
+      bitField0_ = (bitField0_ & ~0x00000008);
       connectionQuality_ = 0;
       onChanged();
       return this;
@@ -1141,7 +1046,7 @@ private static final long serialVersionUID = 0L;
     public Builder setAnsweredCurrentQuestion(boolean value) {
 
       answeredCurrentQuestion_ = value;
-      bitField0_ |= 0x00000020;
+      bitField0_ |= 0x00000010;
       onChanged();
       return this;
     }
@@ -1154,7 +1059,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearAnsweredCurrentQuestion() {
-      bitField0_ = (bitField0_ & ~0x00000020);
+      bitField0_ = (bitField0_ & ~0x00000010);
       answeredCurrentQuestion_ = false;
       onChanged();
       return this;
@@ -1185,7 +1090,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setDataStatusValue(int value) {
       dataStatus_ = value;
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000020;
       onChanged();
       return this;
     }
@@ -1216,7 +1121,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder setDataStatus(com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus value) {
       java.util.Objects.requireNonNull(value);
-      bitField0_ |= 0x00000040;
+      bitField0_ |= 0x00000020;
       dataStatus_ = value.getNumber();
       onChanged();
       return this;
@@ -1231,7 +1136,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearDataStatus() {
-      bitField0_ = (bitField0_ & ~0x00000040);
+      bitField0_ = (bitField0_ & ~0x00000020);
       dataStatus_ = 0;
       onChanged();
       return this;
@@ -1262,7 +1167,7 @@ private static final long serialVersionUID = 0L;
     public Builder setDataEstimatedSeconds(int value) {
 
       dataEstimatedSeconds_ = value;
-      bitField0_ |= 0x00000080;
+      bitField0_ |= 0x00000040;
       onChanged();
       return this;
     }
@@ -1275,7 +1180,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearDataEstimatedSeconds() {
-      bitField0_ = (bitField0_ & ~0x00000080);
+      bitField0_ = (bitField0_ & ~0x00000040);
       dataEstimatedSeconds_ = 0;
       onChanged();
       return this;
@@ -1310,7 +1215,7 @@ private static final long serialVersionUID = 0L;
     public Builder setNotEnoughMatches(boolean value) {
 
       notEnoughMatches_ = value;
-      bitField0_ |= 0x00000100;
+      bitField0_ |= 0x00000080;
       onChanged();
       return this;
     }
@@ -1325,7 +1230,7 @@ private static final long serialVersionUID = 0L;
      * @return This builder for chaining.
      */
     public Builder clearNotEnoughMatches() {
-      bitField0_ = (bitField0_ & ~0x00000100);
+      bitField0_ = (bitField0_ & ~0x00000080);
       notEnoughMatches_ = false;
       onChanged();
       return this;
@@ -1389,7 +1294,7 @@ private static final long serialVersionUID = 0L;
         java.lang.String value) {
       java.util.Objects.requireNonNull(value);
       riotTagLine_ = value;
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }
@@ -1404,7 +1309,7 @@ private static final long serialVersionUID = 0L;
      */
     public Builder clearRiotTagLine() {
       riotTagLine_ = getDefaultInstance().getRiotTagLine();
-      bitField0_ = (bitField0_ & ~0x00000200);
+      bitField0_ = (bitField0_ & ~0x00000100);
       onChanged();
       return this;
     }
@@ -1423,7 +1328,7 @@ private static final long serialVersionUID = 0L;
       java.util.Objects.requireNonNull(value);
       checkByteStringIsUtf8(value);
       riotTagLine_ = value;
-      bitField0_ |= 0x00000200;
+      bitField0_ |= 0x00000100;
       onChanged();
       return this;
     }

@@ -125,21 +125,15 @@ private static final long serialVersionUID = 0L;
     return deadline_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : deadline_;
   }
 
-  public static final int WAIT_VOTES_FIELD_NUMBER = 3;
-  private int waitVotes_ = 0;
+  public static final int PAUSE_VOTES_FIELD_NUMBER = 3;
+  private int pauseVotes_ = 0;
   /**
-   * <pre>
-   * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-   * </pre>
-   *
-   * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
-   * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
-   *     See friendlyfire/room/v1/room_service.proto;l=303
-   * @return The waitVotes.
+   * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+   * @return The pauseVotes.
    */
   @java.lang.Override
-  @java.lang.Deprecated public int getWaitVotes() {
-    return waitVotes_;
+  public int getPauseVotes() {
+    return pauseVotes_;
   }
 
   public static final int CONTINUE_VOTES_FIELD_NUMBER = 4;
@@ -233,21 +227,6 @@ private static final long serialVersionUID = 0L;
     return pauseAllowed_;
   }
 
-  public static final int PAUSE_VOTES_FIELD_NUMBER = 8;
-  private int pauseVotes_ = 0;
-  /**
-   * <pre>
-   * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-   * </pre>
-   *
-   * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
-   * @return The pauseVotes.
-   */
-  @java.lang.Override
-  public int getPauseVotes() {
-    return pauseVotes_;
-  }
-
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -268,8 +247,8 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getDeadline());
     }
-    if (waitVotes_ != 0) {
-      output.writeInt32(3, waitVotes_);
+    if (pauseVotes_ != 0) {
+      output.writeInt32(3, pauseVotes_);
     }
     if (continueVotes_ != 0) {
       output.writeInt32(4, continueVotes_);
@@ -283,9 +262,6 @@ private static final long serialVersionUID = 0L;
     if (pauseAllowed_ != false) {
       output.writeBool(7, pauseAllowed_);
     }
-    if (pauseVotes_ != 0) {
-      output.writeInt32(8, pauseVotes_);
-    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -297,9 +273,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getDeadline());
     }
-    if (waitVotes_ != 0) {
+    if (pauseVotes_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, waitVotes_);
+        .computeInt32Size(3, pauseVotes_);
     }
     if (continueVotes_ != 0) {
       size += com.google.protobuf.CodedOutputStream
@@ -320,10 +296,6 @@ private static final long serialVersionUID = 0L;
     if (pauseAllowed_ != false) {
       size += com.google.protobuf.CodedOutputStream
         .computeBoolSize(7, pauseAllowed_);
-    }
-    if (pauseVotes_ != 0) {
-      size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(8, pauseVotes_);
     }
     return size;
   }
@@ -356,8 +328,8 @@ private static final long serialVersionUID = 0L;
       if (!getDeadline()
           .equals(other.getDeadline())) return false;
     }
-    if (getWaitVotes()
-        != other.getWaitVotes()) return false;
+    if (getPauseVotes()
+        != other.getPauseVotes()) return false;
     if (getContinueVotes()
         != other.getContinueVotes()) return false;
     if (getEndVotes()
@@ -366,8 +338,6 @@ private static final long serialVersionUID = 0L;
         .equals(other.getVotedUserIdsList())) return false;
     if (getPauseAllowed()
         != other.getPauseAllowed()) return false;
-    if (getPauseVotes()
-        != other.getPauseVotes()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -385,8 +355,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + DEADLINE_FIELD_NUMBER;
       hash = (53 * hash) + getDeadline().hashCode();
     }
-    hash = (37 * hash) + WAIT_VOTES_FIELD_NUMBER;
-    hash = (53 * hash) + getWaitVotes();
+    hash = (37 * hash) + PAUSE_VOTES_FIELD_NUMBER;
+    hash = (53 * hash) + getPauseVotes();
     hash = (37 * hash) + CONTINUE_VOTES_FIELD_NUMBER;
     hash = (53 * hash) + getContinueVotes();
     hash = (37 * hash) + END_VOTES_FIELD_NUMBER;
@@ -398,8 +368,6 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + PAUSE_ALLOWED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
         getPauseAllowed());
-    hash = (37 * hash) + PAUSE_VOTES_FIELD_NUMBER;
-    hash = (53 * hash) + getPauseVotes();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -543,13 +511,12 @@ private static final long serialVersionUID = 0L;
         deadlineBuilder_.dispose();
         deadlineBuilder_ = null;
       }
-      waitVotes_ = 0;
+      pauseVotes_ = 0;
       continueVotes_ = 0;
       endVotes_ = 0;
       votedUserIds_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
       pauseAllowed_ = false;
-      pauseVotes_ = 0;
       return this;
     }
 
@@ -594,7 +561,7 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.waitVotes_ = waitVotes_;
+        result.pauseVotes_ = pauseVotes_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.continueVotes_ = continueVotes_;
@@ -608,9 +575,6 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.pauseAllowed_ = pauseAllowed_;
-      }
-      if (((from_bitField0_ & 0x00000080) != 0)) {
-        result.pauseVotes_ = pauseVotes_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -635,8 +599,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasDeadline()) {
         mergeDeadline(other.getDeadline());
       }
-      if (other.getWaitVotes() != 0) {
-        setWaitVotes(other.getWaitVotes());
+      if (other.getPauseVotes() != 0) {
+        setPauseVotes(other.getPauseVotes());
       }
       if (other.getContinueVotes() != 0) {
         setContinueVotes(other.getContinueVotes());
@@ -656,9 +620,6 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getPauseAllowed() != false) {
         setPauseAllowed(other.getPauseAllowed());
-      }
-      if (other.getPauseVotes() != 0) {
-        setPauseVotes(other.getPauseVotes());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -697,7 +658,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 24: {
-              waitVotes_ = input.readInt32();
+              pauseVotes_ = input.readInt32();
               bitField0_ |= 0x00000004;
               break;
             } // case 24
@@ -721,11 +682,6 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000040;
               break;
             } // case 56
-            case 64: {
-              pauseVotes_ = input.readInt32();
-              bitField0_ |= 0x00000080;
-              break;
-            } // case 64
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -954,52 +910,34 @@ private static final long serialVersionUID = 0L;
       return deadlineBuilder_;
     }
 
-    private int waitVotes_ ;
+    private int pauseVotes_ ;
     /**
-     * <pre>
-     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-     * </pre>
-     *
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=303
-     * @return The waitVotes.
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+     * @return The pauseVotes.
      */
     @java.lang.Override
-    @java.lang.Deprecated public int getWaitVotes() {
-      return waitVotes_;
+    public int getPauseVotes() {
+      return pauseVotes_;
     }
     /**
-     * <pre>
-     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-     * </pre>
-     *
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=303
-     * @param value The waitVotes to set.
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+     * @param value The pauseVotes to set.
      * @return This builder for chaining.
      */
-    @java.lang.Deprecated public Builder setWaitVotes(int value) {
+    public Builder setPauseVotes(int value) {
 
-      waitVotes_ = value;
+      pauseVotes_ = value;
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
     /**
-     * <pre>
-     * Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-     * </pre>
-     *
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes", deprecated = true];</code>
-     * @deprecated friendlyfire.room.v1.Vote.wait_votes is deprecated.
-     *     See friendlyfire/room/v1/room_service.proto;l=303
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
      * @return This builder for chaining.
      */
-    @java.lang.Deprecated public Builder clearWaitVotes() {
+    public Builder clearPauseVotes() {
       bitField0_ = (bitField0_ & ~0x00000004);
-      waitVotes_ = 0;
+      pauseVotes_ = 0;
       onChanged();
       return this;
     }
@@ -1258,50 +1196,6 @@ private static final long serialVersionUID = 0L;
     public Builder clearPauseAllowed() {
       bitField0_ = (bitField0_ & ~0x00000040);
       pauseAllowed_ = false;
-      onChanged();
-      return this;
-    }
-
-    private int pauseVotes_ ;
-    /**
-     * <pre>
-     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-     * </pre>
-     *
-     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
-     * @return The pauseVotes.
-     */
-    @java.lang.Override
-    public int getPauseVotes() {
-      return pauseVotes_;
-    }
-    /**
-     * <pre>
-     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-     * </pre>
-     *
-     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
-     * @param value The pauseVotes to set.
-     * @return This builder for chaining.
-     */
-    public Builder setPauseVotes(int value) {
-
-      pauseVotes_ = value;
-      bitField0_ |= 0x00000080;
-      onChanged();
-      return this;
-    }
-    /**
-     * <pre>
-     * Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-     * </pre>
-     *
-     * <code>int32 pause_votes = 8 [json_name = "pauseVotes"];</code>
-     * @return This builder for chaining.
-     */
-    public Builder clearPauseVotes() {
-      bitField0_ = (bitField0_ & ~0x00000080);
-      pauseVotes_ = 0;
       onChanged();
       return this;
     }

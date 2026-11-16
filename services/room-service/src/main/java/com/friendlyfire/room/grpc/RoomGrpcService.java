@@ -69,8 +69,7 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
         //     20 seconds each), the host as the only player
         //   - the host's data status from Account (GetDataStatus): data_status,
         //     data_estimated_seconds, and not_enough_matches (fewer than 5 matches stored);
-        //     riot_tag_line from the request; keep the deprecated match_data_ready equal to
-        //     data_status == SYNCED
+        //     riot_tag_line from the request
         //   - errors: none in the contract
         //   - uses: rooms, RoomCodeGenerator, accounts (GetDataStatus)
         notImplemented(responseObserver);
@@ -176,8 +175,6 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
     @Override
     public void castVote(CastVoteRequest request, StreamObserver<CastVoteResponse> responseObserver) {
         // TODO(ff): a connected player's vote while the room is in the VOTE phase
-        //   - treat the deprecated VOTE_OPTION_WAIT as PAUSE, and keep the deprecated
-        //     Vote.wait_votes equal to pause_votes
         //   - publish VOTE_CAST with the new counts; the vote ends when everyone has voted
         //     or its deadline passes; most votes wins; a tie pauses if pause time is left,
         //     otherwise continues; publish VOTE_RESOLVED

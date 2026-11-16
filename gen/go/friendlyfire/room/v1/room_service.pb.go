@@ -293,34 +293,28 @@ type VoteOption int32
 
 const (
 	VoteOption_VOTE_OPTION_UNSPECIFIED VoteOption = 0
-	// Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
-	//
-	// Deprecated: Marked as deprecated in friendlyfire/room/v1/room_service.proto.
-	VoteOption_VOTE_OPTION_WAIT VoteOption = 1
+	// Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+	// minutes per quiz; after that only the other two options remain.
+	VoteOption_VOTE_OPTION_PAUSE VoteOption = 1
 	// Keep playing without them.
 	VoteOption_VOTE_OPTION_CONTINUE_WITHOUT_PLAYER VoteOption = 2
 	// End the quiz now; scores so far are final.
 	VoteOption_VOTE_OPTION_END_QUIZ VoteOption = 3
-	// Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
-	// minutes per quiz; after that only the other two options remain.
-	VoteOption_VOTE_OPTION_PAUSE VoteOption = 4
 )
 
 // Enum value maps for VoteOption.
 var (
 	VoteOption_name = map[int32]string{
 		0: "VOTE_OPTION_UNSPECIFIED",
-		1: "VOTE_OPTION_WAIT",
+		1: "VOTE_OPTION_PAUSE",
 		2: "VOTE_OPTION_CONTINUE_WITHOUT_PLAYER",
 		3: "VOTE_OPTION_END_QUIZ",
-		4: "VOTE_OPTION_PAUSE",
 	}
 	VoteOption_value = map[string]int32{
 		"VOTE_OPTION_UNSPECIFIED":             0,
-		"VOTE_OPTION_WAIT":                    1,
+		"VOTE_OPTION_PAUSE":                   1,
 		"VOTE_OPTION_CONTINUE_WITHOUT_PLAYER": 2,
 		"VOTE_OPTION_END_QUIZ":                3,
-		"VOTE_OPTION_PAUSE":                   4,
 	}
 )
 
@@ -667,16 +661,11 @@ func (x *RoomSettings) GetSecondsPerQuestion() int32 {
 }
 
 type Player struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	UserId      string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	DisplayName string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Status      PlayerStatus           `protobuf:"varint,3,opt,name=status,proto3,enum=friendlyfire.room.v1.PlayerStatus" json:"status,omitempty"`
-	// Deprecated (ADR-010): use data_status. Room keeps it equal to
-	// data_status == PLAYER_DATA_STATUS_SYNCED.
-	//
-	// Deprecated: Marked as deprecated in friendlyfire/room/v1/room_service.proto.
-	MatchDataReady    bool              `protobuf:"varint,4,opt,name=match_data_ready,json=matchDataReady,proto3" json:"match_data_ready,omitempty"`
-	ConnectionQuality ConnectionQuality `protobuf:"varint,5,opt,name=connection_quality,json=connectionQuality,proto3,enum=friendlyfire.room.v1.ConnectionQuality" json:"connection_quality,omitempty"`
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	UserId            string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	DisplayName       string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	Status            PlayerStatus           `protobuf:"varint,3,opt,name=status,proto3,enum=friendlyfire.room.v1.PlayerStatus" json:"status,omitempty"`
+	ConnectionQuality ConnectionQuality      `protobuf:"varint,5,opt,name=connection_quality,json=connectionQuality,proto3,enum=friendlyfire.room.v1.ConnectionQuality" json:"connection_quality,omitempty"`
 	// True if they've answered the current question. Reset each question.
 	AnsweredCurrentQuestion bool `protobuf:"varint,6,opt,name=answered_current_question,json=answeredCurrentQuestion,proto3" json:"answered_current_question,omitempty"`
 	// From AccountService.GetDataStatus. The quiz can start only when every
@@ -744,14 +733,6 @@ func (x *Player) GetStatus() PlayerStatus {
 		return x.Status
 	}
 	return PlayerStatus_PLAYER_STATUS_UNSPECIFIED
-}
-
-// Deprecated: Marked as deprecated in friendlyfire/room/v1/room_service.proto.
-func (x *Player) GetMatchDataReady() bool {
-	if x != nil {
-		return x.MatchDataReady
-	}
-	return false
 }
 
 func (x *Player) GetConnectionQuality() ConnectionQuality {
@@ -1128,21 +1109,16 @@ func (x *ScoreEntry) GetPointsLastRound() int32 {
 type Vote struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The disconnected player the vote is about.
-	AboutUserId string                 `protobuf:"bytes,1,opt,name=about_user_id,json=aboutUserId,proto3" json:"about_user_id,omitempty"`
-	Deadline    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=deadline,proto3" json:"deadline,omitempty"`
-	// Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-	//
-	// Deprecated: Marked as deprecated in friendlyfire/room/v1/room_service.proto.
-	WaitVotes     int32 `protobuf:"varint,3,opt,name=wait_votes,json=waitVotes,proto3" json:"wait_votes,omitempty"`
-	ContinueVotes int32 `protobuf:"varint,4,opt,name=continue_votes,json=continueVotes,proto3" json:"continue_votes,omitempty"`
-	EndVotes      int32 `protobuf:"varint,5,opt,name=end_votes,json=endVotes,proto3" json:"end_votes,omitempty"`
+	AboutUserId   string                 `protobuf:"bytes,1,opt,name=about_user_id,json=aboutUserId,proto3" json:"about_user_id,omitempty"`
+	Deadline      *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=deadline,proto3" json:"deadline,omitempty"`
+	PauseVotes    int32                  `protobuf:"varint,3,opt,name=pause_votes,json=pauseVotes,proto3" json:"pause_votes,omitempty"`
+	ContinueVotes int32                  `protobuf:"varint,4,opt,name=continue_votes,json=continueVotes,proto3" json:"continue_votes,omitempty"`
+	EndVotes      int32                  `protobuf:"varint,5,opt,name=end_votes,json=endVotes,proto3" json:"end_votes,omitempty"`
 	// Who has voted so far (not what they voted).
 	VotedUserIds []string `protobuf:"bytes,6,rep,name=voted_user_ids,json=votedUserIds,proto3" json:"voted_user_ids,omitempty"`
 	// False once the quiz's 3 minutes of pauses are used up: then only
 	// CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
-	PauseAllowed bool `protobuf:"varint,7,opt,name=pause_allowed,json=pauseAllowed,proto3" json:"pause_allowed,omitempty"`
-	// Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-	PauseVotes    int32 `protobuf:"varint,8,opt,name=pause_votes,json=pauseVotes,proto3" json:"pause_votes,omitempty"`
+	PauseAllowed  bool `protobuf:"varint,7,opt,name=pause_allowed,json=pauseAllowed,proto3" json:"pause_allowed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1191,10 +1167,9 @@ func (x *Vote) GetDeadline() *timestamppb.Timestamp {
 	return nil
 }
 
-// Deprecated: Marked as deprecated in friendlyfire/room/v1/room_service.proto.
-func (x *Vote) GetWaitVotes() int32 {
+func (x *Vote) GetPauseVotes() int32 {
 	if x != nil {
-		return x.WaitVotes
+		return x.PauseVotes
 	}
 	return 0
 }
@@ -1225,13 +1200,6 @@ func (x *Vote) GetPauseAllowed() bool {
 		return x.PauseAllowed
 	}
 	return false
-}
-
-func (x *Vote) GetPauseVotes() int32 {
-	if x != nil {
-		return x.PauseVotes
-	}
-	return 0
 }
 
 type RoomEvent struct {
@@ -2594,12 +2562,11 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x12pause_seconds_left\x18\r \x01(\x05R\x10pauseSecondsLeft\"g\n" +
 	"\fRoomSettings\x12%\n" +
 	"\x0equestion_count\x18\x01 \x01(\x05R\rquestionCount\x120\n" +
-	"\x14seconds_per_question\x18\x02 \x01(\x05R\x12secondsPerQuestion\"\x93\x04\n" +
+	"\x14seconds_per_question\x18\x02 \x01(\x05R\x12secondsPerQuestion\"\xfd\x03\n" +
 	"\x06Player\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12:\n" +
-	"\x06status\x18\x03 \x01(\x0e2\".friendlyfire.room.v1.PlayerStatusR\x06status\x12,\n" +
-	"\x10match_data_ready\x18\x04 \x01(\bB\x02\x18\x01R\x0ematchDataReady\x12V\n" +
+	"\x06status\x18\x03 \x01(\x0e2\".friendlyfire.room.v1.PlayerStatusR\x06status\x12V\n" +
 	"\x12connection_quality\x18\x05 \x01(\x0e2'.friendlyfire.room.v1.ConnectionQualityR\x11connectionQuality\x12:\n" +
 	"\x19answered_current_question\x18\x06 \x01(\bR\x17answeredCurrentQuestion\x12G\n" +
 	"\vdata_status\x18\a \x01(\x0e2&.friendlyfire.room.v1.PlayerDataStatusR\n" +
@@ -2607,7 +2574,7 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x16data_estimated_seconds\x18\b \x01(\x05R\x14dataEstimatedSeconds\x12,\n" +
 	"\x12not_enough_matches\x18\t \x01(\bR\x10notEnoughMatches\x12\"\n" +
 	"\rriot_tag_line\x18\n" +
-	" \x01(\tR\vriotTagLine\"\xb9\x01\n" +
+	" \x01(\tR\vriotTagLineJ\x04\b\x04\x10\x05R\x10match_data_ready\"\xb9\x01\n" +
 	"\fQuestionView\x12\x1f\n" +
 	"\vquestion_id\x18\x01 \x01(\tR\n" +
 	"questionId\x12\x12\n" +
@@ -2632,18 +2599,16 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12!\n" +
 	"\ftotal_points\x18\x03 \x01(\x05R\vtotalPoints\x12\x12\n" +
 	"\x04rank\x18\x04 \x01(\x05R\x04rank\x12*\n" +
-	"\x11points_last_round\x18\x05 \x01(\x05R\x0fpointsLastRound\"\xb5\x02\n" +
+	"\x11points_last_round\x18\x05 \x01(\x05R\x0fpointsLastRound\"\x92\x02\n" +
 	"\x04Vote\x12\"\n" +
 	"\rabout_user_id\x18\x01 \x01(\tR\vaboutUserId\x126\n" +
-	"\bdeadline\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bdeadline\x12!\n" +
-	"\n" +
-	"wait_votes\x18\x03 \x01(\x05B\x02\x18\x01R\twaitVotes\x12%\n" +
+	"\bdeadline\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\bdeadline\x12\x1f\n" +
+	"\vpause_votes\x18\x03 \x01(\x05R\n" +
+	"pauseVotes\x12%\n" +
 	"\x0econtinue_votes\x18\x04 \x01(\x05R\rcontinueVotes\x12\x1b\n" +
 	"\tend_votes\x18\x05 \x01(\x05R\bendVotes\x12$\n" +
 	"\x0evoted_user_ids\x18\x06 \x03(\tR\fvotedUserIds\x12#\n" +
-	"\rpause_allowed\x18\a \x01(\bR\fpauseAllowed\x12\x1f\n" +
-	"\vpause_votes\x18\b \x01(\x05R\n" +
-	"pauseVotes\"\xe9\x01\n" +
+	"\rpause_allowed\x18\a \x01(\bR\fpauseAllowed\"\xe9\x01\n" +
 	"\tRoomEvent\x127\n" +
 	"\x04type\x18\x01 \x01(\x0e2#.friendlyfire.room.v1.RoomEventTypeR\x04type\x12&\n" +
 	"\x0fsubject_user_id\x18\x02 \x01(\tR\rsubjectUserId\x12;\n" +
@@ -2743,14 +2708,13 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x1aPLAYER_DATA_STATUS_SYNCING\x10\x02\x12!\n" +
 	"\x1dPLAYER_DATA_STATUS_NOT_SYNCED\x10\x03\x12!\n" +
 	"\x1dPLAYER_DATA_STATUS_NOT_LINKED\x10\x04\x12\x1d\n" +
-	"\x19PLAYER_DATA_STATUS_FAILED\x10\x05*\x9d\x01\n" +
+	"\x19PLAYER_DATA_STATUS_FAILED\x10\x05*\x83\x01\n" +
 	"\n" +
 	"VoteOption\x12\x1b\n" +
-	"\x17VOTE_OPTION_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x10VOTE_OPTION_WAIT\x10\x01\x1a\x02\b\x01\x12'\n" +
+	"\x17VOTE_OPTION_UNSPECIFIED\x10\x00\x12\x15\n" +
+	"\x11VOTE_OPTION_PAUSE\x10\x01\x12'\n" +
 	"#VOTE_OPTION_CONTINUE_WITHOUT_PLAYER\x10\x02\x12\x18\n" +
-	"\x14VOTE_OPTION_END_QUIZ\x10\x03\x12\x15\n" +
-	"\x11VOTE_OPTION_PAUSE\x10\x04*\x83\x06\n" +
+	"\x14VOTE_OPTION_END_QUIZ\x10\x03*\x83\x06\n" +
 	"\rRoomEventType\x12\x1f\n" +
 	"\x1bROOM_EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ROOM_EVENT_TYPE_SNAPSHOT\x10\x01\x12!\n" +

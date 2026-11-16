@@ -156,15 +156,13 @@ enum PlayerDataStatus {
 
 enum VoteOption {
   VOTE_OPTION_UNSPECIFIED = 0;
-  // Deprecated (ADR-026): send VOTE_OPTION_PAUSE. Room treats WAIT as PAUSE.
-  VOTE_OPTION_WAIT = 1 [deprecated = true];
+  // Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+  // minutes per quiz; after that only the other two options remain.
+  VOTE_OPTION_PAUSE = 1;
   // Keep playing without them.
   VOTE_OPTION_CONTINUE_WITHOUT_PLAYER = 2;
   // End the quiz now; scores so far are final.
   VOTE_OPTION_END_QUIZ = 3;
-  // Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
-  // minutes per quiz; after that only the other two options remain.
-  VOTE_OPTION_PAUSE = 4;
 }
 
 enum RoomEventType {
@@ -235,12 +233,13 @@ message RoomSettings {
 }
 
 message Player {
+  // match_data_ready was replaced by data_status (ADR-010).
+  reserved 4;
+  reserved "match_data_ready";
+
   string user_id = 1;
   string display_name = 2;
   PlayerStatus status = 3;
-  // Deprecated (ADR-010): use data_status. Room keeps it equal to
-  // data_status == PLAYER_DATA_STATUS_SYNCED.
-  bool match_data_ready = 4 [deprecated = true];
   ConnectionQuality connection_quality = 5;
   // True if they've answered the current question. Reset each question.
   bool answered_current_question = 6;
@@ -300,8 +299,7 @@ message Vote {
   // The disconnected player the vote is about.
   string about_user_id = 1;
   google.protobuf.Timestamp deadline = 2;
-  // Deprecated (ADR-026): use pause_votes. Room keeps the two equal.
-  int32 wait_votes = 3 [deprecated = true];
+  int32 pause_votes = 3;
   int32 continue_votes = 4;
   int32 end_votes = 5;
   // Who has voted so far (not what they voted).
@@ -309,8 +307,6 @@ message Vote {
   // False once the quiz's 3 minutes of pauses are used up: then only
   // CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
   bool pause_allowed = 7;
-  // Votes for VOTE_OPTION_PAUSE (and the deprecated WAIT).
-  int32 pause_votes = 8;
 }
 
 message RoomEvent {
