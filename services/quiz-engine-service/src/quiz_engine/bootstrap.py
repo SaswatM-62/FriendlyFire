@@ -16,7 +16,8 @@ from quiz_engine.dependency_health import (
     DependencyHealthServicer,
     GrpcDependencyCheck,
 )
-from quiz_engine.servicer import QuizServicer
+from quiz_engine.question_generator import QuestionGenerator
+from quiz_engine.servicer import MatchDataClient, QuizServicer, random_seed
 from quiz_engine.settings import Settings
 
 SERVICE_NAME = "quiz-engine-service"
@@ -34,6 +35,9 @@ class Overrides:
 
     match_data_channel: grpc.aio.Channel | None = None
     dependency_checks: Sequence[DependencyCheck] | None = None
+    match_data: MatchDataClient | None = None
+    generator: QuestionGenerator | None = None
+    seed: Callable[[], int] | None = None
 
 
 @dataclass
@@ -72,8 +76,13 @@ async def build_server(settings: Settings, overrides: Overrides | None = None) -
         checks = [GrpcDependencyCheck("match-data-service", match_data_health)]
     checker = DependencyHealthChecker(SERVICE_NAME, checks)
 
+    quiz = QuizServicer(
+        overrides.match_data or match_data,
+        overrides.generator or QuestionGenerator(),
+        seed=overrides.seed or random_seed,
+    )
     server = grpc.aio.server()
-    quiz_service_pb2_grpc.add_QuizServiceServicer_to_server(QuizServicer(match_data), server)
+    quiz_service_pb2_grpc.add_QuizServiceServicer_to_server(quiz, server)
     dependency_health_pb2_grpc.add_DependencyHealthServiceServicer_to_server(
         DependencyHealthServicer(checker), server
     )
