@@ -112,6 +112,11 @@ private static final long serialVersionUID = 0L;
   public static final int MATCHES_STORED_FIELD_NUMBER = 3;
   private int matchesStored_ = 0;
   /**
+   * <pre>
+   * Matches stored for the player, all from the 30 days before their last
+   * successful sync.
+   * </pre>
+   *
    * <code>int32 matches_stored = 3 [json_name = "matchesStored"];</code>
    * @return The matchesStored.
    */
@@ -205,6 +210,38 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int ESTIMATED_SECONDS_FIELD_NUMBER = 6;
+  private int estimatedSeconds_ = 0;
+  /**
+   * <pre>
+   * While IN_PROGRESS: about how long until the sync is done, including any
+   * wait in the queue; 0 if unknown.
+   * </pre>
+   *
+   * <code>int32 estimated_seconds = 6 [json_name = "estimatedSeconds"];</code>
+   * @return The estimatedSeconds.
+   */
+  @java.lang.Override
+  public int getEstimatedSeconds() {
+    return estimatedSeconds_;
+  }
+
+  public static final int QUEUE_POSITION_FIELD_NUMBER = 7;
+  private int queuePosition_ = 0;
+  /**
+   * <pre>
+   * While IN_PROGRESS: syncs waiting ahead of this one (HenrikDev's rate
+   * limit runs them one at a time); 0 once it's running.
+   * </pre>
+   *
+   * <code>int32 queue_position = 7 [json_name = "queuePosition"];</code>
+   * @return The queuePosition.
+   */
+  @java.lang.Override
+  public int getQueuePosition() {
+    return queuePosition_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -234,6 +271,12 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(errorMessage_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 5, errorMessage_);
     }
+    if (estimatedSeconds_ != 0) {
+      output.writeInt32(6, estimatedSeconds_);
+    }
+    if (queuePosition_ != 0) {
+      output.writeInt32(7, queuePosition_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -255,6 +298,14 @@ private static final long serialVersionUID = 0L;
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(errorMessage_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(5, errorMessage_);
+    }
+    if (estimatedSeconds_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(6, estimatedSeconds_);
+    }
+    if (queuePosition_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(7, queuePosition_);
     }
     return size;
   }
@@ -292,6 +343,10 @@ private static final long serialVersionUID = 0L;
     }
     if (!getErrorMessage()
         .equals(other.getErrorMessage())) return false;
+    if (getEstimatedSeconds()
+        != other.getEstimatedSeconds()) return false;
+    if (getQueuePosition()
+        != other.getQueuePosition()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -315,6 +370,10 @@ private static final long serialVersionUID = 0L;
     }
     hash = (37 * hash) + ERROR_MESSAGE_FIELD_NUMBER;
     hash = (53 * hash) + getErrorMessage().hashCode();
+    hash = (37 * hash) + ESTIMATED_SECONDS_FIELD_NUMBER;
+    hash = (53 * hash) + getEstimatedSeconds();
+    hash = (37 * hash) + QUEUE_POSITION_FIELD_NUMBER;
+    hash = (53 * hash) + getQueuePosition();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -461,6 +520,8 @@ private static final long serialVersionUID = 0L;
         lastSyncedAtBuilder_ = null;
       }
       errorMessage_ = "";
+      estimatedSeconds_ = 0;
+      queuePosition_ = 0;
       return this;
     }
 
@@ -513,6 +574,12 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000010) != 0)) {
         result.errorMessage_ = errorMessage_;
       }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.estimatedSeconds_ = estimatedSeconds_;
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.queuePosition_ = queuePosition_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -546,6 +613,12 @@ private static final long serialVersionUID = 0L;
         errorMessage_ = other.errorMessage_;
         bitField0_ |= 0x00000010;
         onChanged();
+      }
+      if (other.getEstimatedSeconds() != 0) {
+        setEstimatedSeconds(other.getEstimatedSeconds());
+      }
+      if (other.getQueuePosition() != 0) {
+        setQueuePosition(other.getQueuePosition());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -598,6 +671,16 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000010;
               break;
             } // case 42
+            case 48: {
+              estimatedSeconds_ = input.readInt32();
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 48
+            case 56: {
+              queuePosition_ = input.readInt32();
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 56
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -741,6 +824,11 @@ private static final long serialVersionUID = 0L;
 
     private int matchesStored_ ;
     /**
+     * <pre>
+     * Matches stored for the player, all from the 30 days before their last
+     * successful sync.
+     * </pre>
+     *
      * <code>int32 matches_stored = 3 [json_name = "matchesStored"];</code>
      * @return The matchesStored.
      */
@@ -749,6 +837,11 @@ private static final long serialVersionUID = 0L;
       return matchesStored_;
     }
     /**
+     * <pre>
+     * Matches stored for the player, all from the 30 days before their last
+     * successful sync.
+     * </pre>
+     *
      * <code>int32 matches_stored = 3 [json_name = "matchesStored"];</code>
      * @param value The matchesStored to set.
      * @return This builder for chaining.
@@ -761,6 +854,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Matches stored for the player, all from the 30 days before their last
+     * successful sync.
+     * </pre>
+     *
      * <code>int32 matches_stored = 3 [json_name = "matchesStored"];</code>
      * @return This builder for chaining.
      */
@@ -1014,6 +1112,100 @@ private static final long serialVersionUID = 0L;
       checkByteStringIsUtf8(value);
       errorMessage_ = value;
       bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    private int estimatedSeconds_ ;
+    /**
+     * <pre>
+     * While IN_PROGRESS: about how long until the sync is done, including any
+     * wait in the queue; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 estimated_seconds = 6 [json_name = "estimatedSeconds"];</code>
+     * @return The estimatedSeconds.
+     */
+    @java.lang.Override
+    public int getEstimatedSeconds() {
+      return estimatedSeconds_;
+    }
+    /**
+     * <pre>
+     * While IN_PROGRESS: about how long until the sync is done, including any
+     * wait in the queue; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 estimated_seconds = 6 [json_name = "estimatedSeconds"];</code>
+     * @param value The estimatedSeconds to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEstimatedSeconds(int value) {
+
+      estimatedSeconds_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * While IN_PROGRESS: about how long until the sync is done, including any
+     * wait in the queue; 0 if unknown.
+     * </pre>
+     *
+     * <code>int32 estimated_seconds = 6 [json_name = "estimatedSeconds"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEstimatedSeconds() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      estimatedSeconds_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int queuePosition_ ;
+    /**
+     * <pre>
+     * While IN_PROGRESS: syncs waiting ahead of this one (HenrikDev's rate
+     * limit runs them one at a time); 0 once it's running.
+     * </pre>
+     *
+     * <code>int32 queue_position = 7 [json_name = "queuePosition"];</code>
+     * @return The queuePosition.
+     */
+    @java.lang.Override
+    public int getQueuePosition() {
+      return queuePosition_;
+    }
+    /**
+     * <pre>
+     * While IN_PROGRESS: syncs waiting ahead of this one (HenrikDev's rate
+     * limit runs them one at a time); 0 once it's running.
+     * </pre>
+     *
+     * <code>int32 queue_position = 7 [json_name = "queuePosition"];</code>
+     * @param value The queuePosition to set.
+     * @return This builder for chaining.
+     */
+    public Builder setQueuePosition(int value) {
+
+      queuePosition_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * While IN_PROGRESS: syncs waiting ahead of this one (HenrikDev's rate
+     * limit runs them one at a time); 0 once it's running.
+     * </pre>
+     *
+     * <code>int32 queue_position = 7 [json_name = "queuePosition"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearQueuePosition() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      queuePosition_ = 0;
       onChanged();
       return this;
     }

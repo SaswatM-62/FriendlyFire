@@ -65,7 +65,8 @@ public class MeController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccount(SignedInUser me) {
         // TODO(ff): take the player out of any room first (FF-111, ADR-027)
-        //   - call RoomService.RemovePlayer before DeleteAccount, once FF-202 adds it
+        //   - call RoomService.RemovePlayer before DeleteAccount (in the contract; Room
+        //     still answers UNIMPLEMENTED)
         //   - uses: a RoomServiceBlockingStub
         accounts.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(me.userId()).build());
         users.evict(me.subject());

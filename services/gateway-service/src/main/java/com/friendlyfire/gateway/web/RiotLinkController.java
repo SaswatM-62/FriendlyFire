@@ -93,8 +93,8 @@ public class RiotLinkController {
     @GetMapping("/status")
     public ResponseEntity<?> status() {
         // TODO(ff): the sync banner's status (FF-112)
-        //   - calls Account's sync-status RPC for the signed-in user (added by FF-202;
-        //     Account owns the 24-hour rule, ADR-010), never Match Data
+        //   - calls AccountService.GetDataStatus for the signed-in user (Account owns the
+        //     24-hour rule, ADR-010), never Match Data
         //   - 200 {"status": "SYNCING", "estimatedSeconds": 120, "lastSyncedAt": ...,
         //     "matchesStored": 41, "errorMessage": ...} (SyncStatusResponse in
         //     frontend/src/lib/api-types.ts)

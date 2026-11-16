@@ -13,8 +13,11 @@ package friendlyfire.quiz.v1;
 service QuizService {
   // Builds every question for a quiz. Uses both matches the players played
   // together and each player's solo matches.
+  // Questions are only about players without not_enough_matches; the others
+  // still count when deciding which matches were played together.
   // Errors:
-  //   INVALID_ARGUMENT     fewer than 2 players, or question_count outside 5–20
+  //   INVALID_ARGUMENT     fewer than 2 players, fewer than 2 players without
+  //                        not_enough_matches, or question_count outside 5–20
   //   FAILED_PRECONDITION  not enough match data to make question_count
   //                        different questions (the message says how many
   //                        could be made)
@@ -44,6 +47,11 @@ message QuizPlayer {
   string user_id = 1;
   // Used as the option text in PICK_THE_PLAYER questions.
   string display_name = 2;
+  // From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+  // or Unrated matches. Such a player is never an option, the answer or the
+  // source of a stat, but their matches still count when deciding which
+  // matches the room played together.
+  bool not_enough_matches = 3;
 }
 
 message GenerateQuizResponse {

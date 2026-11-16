@@ -29,7 +29,9 @@ public record RoomSnapshotJson(
         QuestionJson currentQuestion,
         String phaseDeadline,
         List<ScoreEntryJson> scoreboard,
-        VoteJson activeVote) {
+        VoteJson activeVote,
+        String waitingForUserId,
+        Integer pauseSecondsLeft) {
 
     public static RoomSnapshotJson from(RoomSnapshot room) {
         return new RoomSnapshotJson(
@@ -43,7 +45,10 @@ public record RoomSnapshotJson(
                 room.hasCurrentQuestion() ? QuestionJson.from(room.getCurrentQuestion()) : null,
                 ProtoJson.timestamp(room.hasPhaseDeadline(), room.getPhaseDeadline()),
                 room.getScoreboardList().stream().map(ScoreEntryJson::from).toList(),
-                room.hasActiveVote() ? VoteJson.from(room.getActiveVote()) : null);
+                room.hasActiveVote() ? VoteJson.from(room.getActiveVote()) : null,
+                ProtoJson.text(room.getWaitingForUserId()),
+                // Pause time left in this quiz: only once a quiz has started.
+                room.getQuizId().isEmpty() ? null : room.getPauseSecondsLeft());
     }
 
     public record SettingsJson(int questionCount, int secondsPerQuestion) {
@@ -53,12 +58,16 @@ public record RoomSnapshotJson(
         }
     }
 
+    /** {@code dataEstimatedSeconds} only while SYNCING with an estimate. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record PlayerJson(
             String userId,
             String displayName,
+            String riotTagLine,
             String status,
-            boolean matchDataReady,
+            String dataStatus,
+            Integer dataEstimatedSeconds,
+            boolean notEnoughMatches,
             String connectionQuality,
             boolean answeredCurrentQuestion) {
 
@@ -66,8 +75,11 @@ public record RoomSnapshotJson(
             return new PlayerJson(
                     player.getUserId(),
                     player.getDisplayName(),
+                    ProtoJson.text(player.getRiotTagLine()),
                     ProtoJson.enumName(player.getStatus(), "PLAYER_STATUS_"),
-                    player.getMatchDataReady(),
+                    ProtoJson.enumName(player.getDataStatus(), "PLAYER_DATA_STATUS_"),
+                    player.getDataEstimatedSeconds() > 0 ? player.getDataEstimatedSeconds() : null,
+                    player.getNotEnoughMatches(),
                     ProtoJson.enumName(player.getConnectionQuality(), "CONNECTION_QUALITY_"),
                     player.getAnsweredCurrentQuestion());
         }
@@ -125,11 +137,7 @@ public record RoomSnapshotJson(
         }
     }
 
-    /**
-     * During VOTE. {@code pauseVotes} carries the contract's {@code wait_votes}: the
-     * frontend already uses the name from ADR-026, where the WAIT option becomes a pause,
-     * and RoomSocketController accepts its "PAUSE" vote as VOTE_OPTION_WAIT.
-     */
+    /** During VOTE. {@code pauseAllowed} is false once the quiz's 3 minutes of pauses are used. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public record VoteJson(
             String aboutUserId,
@@ -137,16 +145,18 @@ public record RoomSnapshotJson(
             int pauseVotes,
             int continueVotes,
             int endVotes,
-            List<String> votedUserIds) {
+            List<String> votedUserIds,
+            boolean pauseAllowed) {
 
         static VoteJson from(Vote vote) {
             return new VoteJson(
                     vote.getAboutUserId(),
                     ProtoJson.timestamp(vote.hasDeadline(), vote.getDeadline()),
-                    vote.getWaitVotes(),
+                    vote.getPauseVotes(),
                     vote.getContinueVotes(),
                     vote.getEndVotes(),
-                    List.copyOf(vote.getVotedUserIdsList()));
+                    List.copyOf(vote.getVotedUserIdsList()),
+                    vote.getPauseAllowed());
         }
     }
 }

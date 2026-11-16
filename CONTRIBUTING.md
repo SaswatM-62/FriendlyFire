@@ -537,7 +537,10 @@ and jumps the room to any screen. `K7QM2X` is a room you join as a guest; `PACKE
 - The comments are the spec: say what each RPC does and which errors it returns. They
   become the `TODO(ff)` checklists.
 - Never change, reuse or remove field numbers, fields or RPCs in `v1`; add new ones
-  instead (CI runs `buf breaking`). A real breaking change means a new `v2` package.
+  instead (CI runs `buf breaking`). Until the first release, a project manager can
+  approve a deliberate break by adding the `breaking-change` label to the pull request,
+  which skips `buf breaking`; reserve a removed field's number and name. After the first
+  release, a breaking change means a new `v2` package.
 - Run `make proto` and commit `proto/` and `gen/` together; a project manager approves.
 
 ## 6. Troubleshooting

@@ -155,9 +155,14 @@ type QuizPlayer struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// Used as the option text in PICK_THE_PLAYER questions.
-	DisplayName   string `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	DisplayName string `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+	// or Unrated matches. Such a player is never an option, the answer or the
+	// source of a stat, but their matches still count when deciding which
+	// matches the room played together.
+	NotEnoughMatches bool `protobuf:"varint,3,opt,name=not_enough_matches,json=notEnoughMatches,proto3" json:"not_enough_matches,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *QuizPlayer) Reset() {
@@ -202,6 +207,13 @@ func (x *QuizPlayer) GetDisplayName() string {
 		return x.DisplayName
 	}
 	return ""
+}
+
+func (x *QuizPlayer) GetNotEnoughMatches() bool {
+	if x != nil {
+		return x.NotEnoughMatches
+	}
+	return false
 }
 
 type GenerateQuizResponse struct {
@@ -418,11 +430,12 @@ const file_friendlyfire_quiz_v1_quiz_service_proto_rawDesc = "" +
 	"\aplayers\x18\x01 \x03(\v2 .friendlyfire.quiz.v1.QuizPlayerR\aplayers\x12%\n" +
 	"\x0equestion_count\x18\x02 \x01(\x05R\rquestionCount\x12\x12\n" +
 	"\x04seed\x18\x03 \x01(\x03R\x04seed\x12,\n" +
-	"\x12asked_template_ids\x18\x04 \x03(\tR\x10askedTemplateIds\"H\n" +
+	"\x12asked_template_ids\x18\x04 \x03(\tR\x10askedTemplateIds\"v\n" +
 	"\n" +
 	"QuizPlayer\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"T\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12,\n" +
+	"\x12not_enough_matches\x18\x03 \x01(\bR\x10notEnoughMatches\"T\n" +
 	"\x14GenerateQuizResponse\x12<\n" +
 	"\tquestions\x18\x01 \x03(\v2\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xcc\x02\n" +
 	"\bQuestion\x12\x1f\n" +

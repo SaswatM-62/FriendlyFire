@@ -53,7 +53,8 @@ public enum RoomEventType
   ROOM_EVENT_TYPE_SETTINGS_CHANGED(8),
   /**
    * <pre>
-   * A player's match sync finished, so they're ready to play.
+   * A player's data status or match count changed (e.g. their sync
+   * finished).
    * </pre>
    *
    * <code>ROOM_EVENT_TYPE_PLAYER_DATA_READY = 9;</code>
@@ -103,6 +104,22 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_ROOM_CLOSED = 18;</code>
    */
   ROOM_EVENT_TYPE_ROOM_CLOSED(18),
+  /**
+   * <pre>
+   * Someone voted, so the counts changed (never what they voted).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_VOTE_CAST = 19;</code>
+   */
+  ROOM_EVENT_TYPE_VOTE_CAST(19),
+  /**
+   * <pre>
+   * The room started a pause (ROOM_PHASE_PAUSED).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;</code>
+   */
+  ROOM_EVENT_TYPE_QUIZ_PAUSED(20),
   UNRECOGNIZED(-1),
   ;
 
@@ -157,7 +174,8 @@ public enum RoomEventType
   public static final int ROOM_EVENT_TYPE_SETTINGS_CHANGED_VALUE = 8;
   /**
    * <pre>
-   * A player's match sync finished, so they're ready to play.
+   * A player's data status or match count changed (e.g. their sync
+   * finished).
    * </pre>
    *
    * <code>ROOM_EVENT_TYPE_PLAYER_DATA_READY = 9;</code>
@@ -207,6 +225,22 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_ROOM_CLOSED = 18;</code>
    */
   public static final int ROOM_EVENT_TYPE_ROOM_CLOSED_VALUE = 18;
+  /**
+   * <pre>
+   * Someone voted, so the counts changed (never what they voted).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_VOTE_CAST = 19;</code>
+   */
+  public static final int ROOM_EVENT_TYPE_VOTE_CAST_VALUE = 19;
+  /**
+   * <pre>
+   * The room started a pause (ROOM_PHASE_PAUSED).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;</code>
+   */
+  public static final int ROOM_EVENT_TYPE_QUIZ_PAUSED_VALUE = 20;
 
 
   public final int getNumber() {
@@ -252,6 +286,8 @@ public enum RoomEventType
       case 16: return ROOM_EVENT_TYPE_VOTE_RESOLVED;
       case 17: return ROOM_EVENT_TYPE_QUIZ_FINISHED;
       case 18: return ROOM_EVENT_TYPE_ROOM_CLOSED;
+      case 19: return ROOM_EVENT_TYPE_VOTE_CAST;
+      case 20: return ROOM_EVENT_TYPE_QUIZ_PAUSED;
       default: return null;
     }
   }
@@ -282,7 +318,7 @@ public enum RoomEventType
   }
   public static com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceProto.getDescriptor().getEnumType(4);
+    return com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceProto.getDescriptor().getEnumType(5);
   }
 
   private static final RoomEventType[] VALUES = values();

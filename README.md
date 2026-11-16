@@ -29,7 +29,7 @@ link your Riot account, open a room with up to 7 friends, and answer questions b
 | frontend | gateway-service (HTTP and WebSocket) |
 | gateway-service | account, room, scoring (gRPC) |
 | account-service | matchdata (gRPC), postgres (`account` schema), mock-rso-service (HTTP) |
-| room-service | quiz, scoring, matchdata (gRPC) |
+| room-service | account, quiz, scoring (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring` schema) |
 | match-data-service | postgres (`matchdata` schema). Later also HenrikDev / Riot over HTTPS |

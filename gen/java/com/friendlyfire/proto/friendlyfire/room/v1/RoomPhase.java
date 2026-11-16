@@ -49,7 +49,7 @@ public enum RoomPhase
   ROOM_PHASE_REVEAL(4),
   /**
    * <pre>
-   * The quiz is paused while players vote about someone who disconnected.
+   * After a reveal, the others vote about someone who disconnected.
    * </pre>
    *
    * <code>ROOM_PHASE_VOTE = 5;</code>
@@ -63,6 +63,16 @@ public enum RoomPhase
    * <code>ROOM_PHASE_FINISHED = 6;</code>
    */
   ROOM_PHASE_FINISHED(6),
+  /**
+   * <pre>
+   * The room voted to wait up to a minute for a disconnected player
+   * (RoomSnapshot.waiting_for_user_id). If they come back, the next question
+   * starts; if not, the room votes again.
+   * </pre>
+   *
+   * <code>ROOM_PHASE_PAUSED = 7;</code>
+   */
+  ROOM_PHASE_PAUSED(7),
   UNRECOGNIZED(-1),
   ;
 
@@ -113,7 +123,7 @@ public enum RoomPhase
   public static final int ROOM_PHASE_REVEAL_VALUE = 4;
   /**
    * <pre>
-   * The quiz is paused while players vote about someone who disconnected.
+   * After a reveal, the others vote about someone who disconnected.
    * </pre>
    *
    * <code>ROOM_PHASE_VOTE = 5;</code>
@@ -127,6 +137,16 @@ public enum RoomPhase
    * <code>ROOM_PHASE_FINISHED = 6;</code>
    */
   public static final int ROOM_PHASE_FINISHED_VALUE = 6;
+  /**
+   * <pre>
+   * The room voted to wait up to a minute for a disconnected player
+   * (RoomSnapshot.waiting_for_user_id). If they come back, the next question
+   * starts; if not, the room votes again.
+   * </pre>
+   *
+   * <code>ROOM_PHASE_PAUSED = 7;</code>
+   */
+  public static final int ROOM_PHASE_PAUSED_VALUE = 7;
 
 
   public final int getNumber() {
@@ -160,6 +180,7 @@ public enum RoomPhase
       case 4: return ROOM_PHASE_REVEAL;
       case 5: return ROOM_PHASE_VOTE;
       case 6: return ROOM_PHASE_FINISHED;
+      case 7: return ROOM_PHASE_PAUSED;
       default: return null;
     }
   }

@@ -41,17 +41,19 @@ class MatchDataServiceServicer:
 
     def SyncPlayer(self, request, context):
         """Starts fetching a player's matches in the background and returns right
-        away. The first sync fetches the last 30 days; later syncs only fetch
-        matches newer than the last one stored. Calling it while a sync is
-        already running does nothing.
+        away. Every sync fetches the player's matches from the last 30 days and,
+        once the fetch succeeds, replaces everything stored for them; if it
+        fails, the old data stays. Calling it while a sync is already queued or
+        running does nothing.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetSyncStatus(self, request, context):
-        """Sync status for one or more players. Players we know nothing about come
-        back as SYNC_STATUS_NOT_LINKED.
+        """Raw sync status for one or more players. AccountService turns it into
+        the data status the app shows (the 24-hour rule lives there). Players we
+        know nothing about come back as SYNC_STATUS_NOT_LINKED.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')

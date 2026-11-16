@@ -162,3 +162,13 @@ class GetPlayerHistoryResponse(_message.Message):
     quizzes: _containers.RepeatedCompositeFieldContainer[QuizSummary]
     next_page_token: str
     def __init__(self, quizzes: _Optional[_Iterable[_Union[QuizSummary, _Mapping]]] = ..., next_page_token: _Optional[str] = ...) -> None: ...
+
+class AnonymizePlayerRequest(_message.Message):
+    __slots__ = ("user_id",)
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ...) -> None: ...
+
+class AnonymizePlayerResponse(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...

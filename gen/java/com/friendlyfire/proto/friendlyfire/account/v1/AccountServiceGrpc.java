@@ -229,6 +229,37 @@ public final class AccountServiceGrpc {
     return getDeleteAccountMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> getGetDataStatusMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetDataStatus",
+      requestType = com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> getGetDataStatusMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest, com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> getGetDataStatusMethod;
+    if ((getGetDataStatusMethod = AccountServiceGrpc.getGetDataStatusMethod) == null) {
+      synchronized (AccountServiceGrpc.class) {
+        if ((getGetDataStatusMethod = AccountServiceGrpc.getGetDataStatusMethod) == null) {
+          AccountServiceGrpc.getGetDataStatusMethod = getGetDataStatusMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest, com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetDataStatus"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new AccountServiceMethodDescriptorSupplier("GetDataStatus"))
+              .build();
+        }
+      }
+    }
+    return getGetDataStatusMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -295,8 +326,9 @@ public final class AccountServiceGrpc {
     /**
      * <pre>
      * Finds the user for an Auth0 subject, or creates one on their first visit.
-     * If the user has a linked Riot account, this also asks Match Data to
-     * fetch any new matches.
+     * Runs at every sign-in and app load: if the user has a linked Riot account
+     * and their data isn't SYNCED, it also starts a sync. A Match Data failure
+     * never fails the sign-in.
      * </pre>
      */
     default void ensureUser(com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest request,
@@ -365,12 +397,28 @@ public final class AccountServiceGrpc {
 
     /**
      * <pre>
-     * Deletes the user, their Riot link and their match data.
+     * Deletes the user, their Riot link and their match data, and asks
+     * ScoringService to show them as "Deleted player" in past quizzes
+     * (ADR-027). The Gateway takes them out of any room first
+     * (RoomService.RemovePlayer).
      * </pre>
      */
     default void deleteAccount(com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest request,
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeleteAccountMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     * Each user's match data status, for the lobby, the profile and the sync
+     * banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+     * Data's raw sync status into the DataStatus below. Users it doesn't know
+     * come back as DATA_STATUS_NOT_LINKED.
+     * </pre>
+     */
+    default void getDataStatus(com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetDataStatusMethod(), responseObserver);
     }
   }
 
@@ -404,8 +452,9 @@ public final class AccountServiceGrpc {
     /**
      * <pre>
      * Finds the user for an Auth0 subject, or creates one on their first visit.
-     * If the user has a linked Riot account, this also asks Match Data to
-     * fetch any new matches.
+     * Runs at every sign-in and app load: if the user has a linked Riot account
+     * and their data isn't SYNCED, it also starts a sync. A Match Data failure
+     * never fails the sign-in.
      * </pre>
      */
     public void ensureUser(com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest request,
@@ -480,13 +529,30 @@ public final class AccountServiceGrpc {
 
     /**
      * <pre>
-     * Deletes the user, their Riot link and their match data.
+     * Deletes the user, their Riot link and their match data, and asks
+     * ScoringService to show them as "Deleted player" in past quizzes
+     * (ADR-027). The Gateway takes them out of any room first
+     * (RoomService.RemovePlayer).
      * </pre>
      */
     public void deleteAccount(com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest request,
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeleteAccountMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * Each user's match data status, for the lobby, the profile and the sync
+     * banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+     * Data's raw sync status into the DataStatus below. Users it doesn't know
+     * come back as DATA_STATUS_NOT_LINKED.
+     * </pre>
+     */
+    public void getDataStatus(com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetDataStatusMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -509,8 +575,9 @@ public final class AccountServiceGrpc {
     /**
      * <pre>
      * Finds the user for an Auth0 subject, or creates one on their first visit.
-     * If the user has a linked Riot account, this also asks Match Data to
-     * fetch any new matches.
+     * Runs at every sign-in and app load: if the user has a linked Riot account
+     * and their data isn't SYNCED, it also starts a sync. A Match Data failure
+     * never fails the sign-in.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse ensureUser(com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest request) throws io.grpc.StatusException {
@@ -579,12 +646,28 @@ public final class AccountServiceGrpc {
 
     /**
      * <pre>
-     * Deletes the user, their Riot link and their match data.
+     * Deletes the user, their Riot link and their match data, and asks
+     * ScoringService to show them as "Deleted player" in past quizzes
+     * (ADR-027). The Gateway takes them out of any room first
+     * (RoomService.RemovePlayer).
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse deleteAccount(com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest request) throws io.grpc.StatusException {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getDeleteAccountMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Each user's match data status, for the lobby, the profile and the sync
+     * banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+     * Data's raw sync status into the DataStatus below. Users it doesn't know
+     * come back as DATA_STATUS_NOT_LINKED.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse getDataStatus(com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getGetDataStatusMethod(), getCallOptions(), request);
     }
   }
 
@@ -607,8 +690,9 @@ public final class AccountServiceGrpc {
     /**
      * <pre>
      * Finds the user for an Auth0 subject, or creates one on their first visit.
-     * If the user has a linked Riot account, this also asks Match Data to
-     * fetch any new matches.
+     * Runs at every sign-in and app load: if the user has a linked Riot account
+     * and their data isn't SYNCED, it also starts a sync. A Match Data failure
+     * never fails the sign-in.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse ensureUser(com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest request) {
@@ -677,12 +761,28 @@ public final class AccountServiceGrpc {
 
     /**
      * <pre>
-     * Deletes the user, their Riot link and their match data.
+     * Deletes the user, their Riot link and their match data, and asks
+     * ScoringService to show them as "Deleted player" in past quizzes
+     * (ADR-027). The Gateway takes them out of any room first
+     * (RoomService.RemovePlayer).
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse deleteAccount(com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDeleteAccountMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Each user's match data status, for the lobby, the profile and the sync
+     * banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+     * Data's raw sync status into the DataStatus below. Users it doesn't know
+     * come back as DATA_STATUS_NOT_LINKED.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse getDataStatus(com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetDataStatusMethod(), getCallOptions(), request);
     }
   }
 
@@ -705,8 +805,9 @@ public final class AccountServiceGrpc {
     /**
      * <pre>
      * Finds the user for an Auth0 subject, or creates one on their first visit.
-     * If the user has a linked Riot account, this also asks Match Data to
-     * fetch any new matches.
+     * Runs at every sign-in and app load: if the user has a linked Riot account
+     * and their data isn't SYNCED, it also starts a sync. A Match Data failure
+     * never fails the sign-in.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse> ensureUser(
@@ -781,13 +882,30 @@ public final class AccountServiceGrpc {
 
     /**
      * <pre>
-     * Deletes the user, their Riot link and their match data.
+     * Deletes the user, their Riot link and their match data, and asks
+     * ScoringService to show them as "Deleted player" in past quizzes
+     * (ADR-027). The Gateway takes them out of any room first
+     * (RoomService.RemovePlayer).
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse> deleteAccount(
         com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeleteAccountMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
+     * Each user's match data status, for the lobby, the profile and the sync
+     * banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+     * Data's raw sync status into the DataStatus below. Users it doesn't know
+     * come back as DATA_STATUS_NOT_LINKED.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> getDataStatus(
+        com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetDataStatusMethod(), getCallOptions()), request);
     }
   }
 
@@ -798,6 +916,7 @@ public final class AccountServiceGrpc {
   private static final int METHODID_COMPLETE_RIOT_LINK = 4;
   private static final int METHODID_UNLINK_RIOT = 5;
   private static final int METHODID_DELETE_ACCOUNT = 6;
+  private static final int METHODID_GET_DATA_STATUS = 7;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -843,6 +962,10 @@ public final class AccountServiceGrpc {
         case METHODID_DELETE_ACCOUNT:
           serviceImpl.deleteAccount((com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest) request,
               (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse>) responseObserver);
+          break;
+        case METHODID_GET_DATA_STATUS:
+          serviceImpl.getDataStatus((com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -911,6 +1034,13 @@ public final class AccountServiceGrpc {
               com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest,
               com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse>(
                 service, METHODID_DELETE_ACCOUNT)))
+        .addMethod(
+          getGetDataStatusMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest,
+              com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse>(
+                service, METHODID_GET_DATA_STATUS)))
         .build();
   }
 
@@ -966,6 +1096,7 @@ public final class AccountServiceGrpc {
               .addMethod(getCompleteRiotLinkMethod())
               .addMethod(getUnlinkRiotMethod())
               .addMethod(getDeleteAccountMethod())
+              .addMethod(getGetDataStatusMethod())
               .build();
         }
       }

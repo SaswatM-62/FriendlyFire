@@ -27,12 +27,12 @@ public class HealthConfig {
             @Qualifier("quizChannel") ManagedChannel quizChannel,
             @Qualifier("scoringHealth") DependencyHealthServiceBlockingStub scoringHealth,
             @Qualifier("scoringChannel") ManagedChannel scoringChannel,
-            @Qualifier("matchDataHealth") DependencyHealthServiceBlockingStub matchDataHealth,
-            @Qualifier("matchDataChannel") ManagedChannel matchDataChannel) {
+            @Qualifier("accountHealth") DependencyHealthServiceBlockingStub accountHealth,
+            @Qualifier("accountChannel") ManagedChannel accountChannel) {
         return new DependencyHealthChecker(serviceName, List.of(
                 new GrpcDependencyCheck("quiz-engine-service", quizHealth, quizChannel),
                 new GrpcDependencyCheck("scoring-service", scoringHealth, scoringChannel),
-                new GrpcDependencyCheck("match-data-service", matchDataHealth, matchDataChannel)),
+                new GrpcDependencyCheck("account-service", accountHealth, accountChannel)),
                 DEADLINE);
     }
 }

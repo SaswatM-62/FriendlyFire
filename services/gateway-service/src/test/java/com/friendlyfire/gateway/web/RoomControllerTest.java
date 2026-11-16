@@ -34,7 +34,7 @@ class RoomControllerTest extends GatewayTestBase {
                 .andExpect(jsonPath("$.settings.secondsPerQuestion").value(20))
                 .andExpect(jsonPath("$.players[0].displayName").value("Riley"))
                 .andExpect(jsonPath("$.players[0].status").value("CONNECTED"))
-                .andExpect(jsonPath("$.players[0].matchDataReady").value(false))
+                .andExpect(jsonPath("$.players[0].notEnoughMatches").value(false))
                 .andExpect(jsonPath("$.roundNumber").value(0))
                 .andExpect(jsonPath("$.scoreboard").isEmpty())
                 .andExpect(jsonPath("$.quizId").doesNotExist())

@@ -66,32 +66,33 @@ public final class QuizServiceProto extends com.google.protobuf.GeneratedFile {
       "quiz.v1.QuizPlayerR\007players\022%\n\016question_" +
       "count\030\002 \001(\005R\rquestionCount\022\022\n\004seed\030\003 \001(\003" +
       "R\004seed\022,\n\022asked_template_ids\030\004 \003(\tR\020aske" +
-      "dTemplateIds\"H\n\nQuizPlayer\022\027\n\007user_id\030\001 " +
+      "dTemplateIds\"v\n\nQuizPlayer\022\027\n\007user_id\030\001 " +
       "\001(\tR\006userId\022!\n\014display_name\030\002 \001(\tR\013displ" +
-      "ayName\"T\n\024GenerateQuizResponse\022<\n\tquesti" +
-      "ons\030\001 \003(\0132\036.friendlyfire.quiz.v1.Questio" +
-      "nR\tquestions\"\314\002\n\010Question\022\037\n\013question_id" +
-      "\030\001 \001(\tR\nquestionId\0226\n\004type\030\002 \001(\0162\".frien" +
-      "dlyfire.quiz.v1.QuestionTypeR\004type\022\022\n\004te" +
-      "xt\030\003 \001(\tR\004text\022<\n\007options\030\004 \003(\0132\".friend" +
-      "lyfire.quiz.v1.AnswerOptionR\007options\022*\n\021" +
-      "correct_option_id\030\005 \001(\tR\017correctOptionId" +
-      "\022 \n\013explanation\030\006 \001(\tR\013explanation\022&\n\017so" +
-      "urce_match_id\030\007 \001(\tR\rsourceMatchId\022\037\n\013te" +
-      "mplate_id\030\010 \001(\tR\ntemplateId\"A\n\014AnswerOpt" +
-      "ion\022\033\n\toption_id\030\001 \001(\tR\010optionId\022\024\n\005labe" +
-      "l\030\002 \001(\tR\005label*P\n\014QuestionType\022\035\n\031QUESTI" +
-      "ON_TYPE_UNSPECIFIED\020\000\022!\n\035QUESTION_TYPE_P" +
-      "ICK_THE_PLAYER\020\0012t\n\013QuizService\022e\n\014Gener" +
-      "ateQuiz\022).friendlyfire.quiz.v1.GenerateQ" +
-      "uizRequest\032*.friendlyfire.quiz.v1.Genera" +
-      "teQuizResponseB\370\001\n+com.friendlyfire.prot" +
-      "o.friendlyfire.quiz.v1B\020QuizServiceProto" +
-      "P\001ZEgithub.com/SaswatM-62/FriendlyFire/g" +
-      "en/go/friendlyfire/quiz/v1;quizv1\242\002\003FQX\252" +
-      "\002\024Friendlyfire.Quiz.V1\312\002\024Friendlyfire\\Qu" +
-      "iz\\V1\342\002 Friendlyfire\\Quiz\\V1\\GPBMetadata" +
-      "\352\002\026Friendlyfire::Quiz::V1b\006proto3"
+      "ayName\022,\n\022not_enough_matches\030\003 \001(\010R\020notE" +
+      "noughMatches\"T\n\024GenerateQuizResponse\022<\n\t" +
+      "questions\030\001 \003(\0132\036.friendlyfire.quiz.v1.Q" +
+      "uestionR\tquestions\"\314\002\n\010Question\022\037\n\013quest" +
+      "ion_id\030\001 \001(\tR\nquestionId\0226\n\004type\030\002 \001(\0162\"" +
+      ".friendlyfire.quiz.v1.QuestionTypeR\004type" +
+      "\022\022\n\004text\030\003 \001(\tR\004text\022<\n\007options\030\004 \003(\0132\"." +
+      "friendlyfire.quiz.v1.AnswerOptionR\007optio" +
+      "ns\022*\n\021correct_option_id\030\005 \001(\tR\017correctOp" +
+      "tionId\022 \n\013explanation\030\006 \001(\tR\013explanation" +
+      "\022&\n\017source_match_id\030\007 \001(\tR\rsourceMatchId" +
+      "\022\037\n\013template_id\030\010 \001(\tR\ntemplateId\"A\n\014Ans" +
+      "werOption\022\033\n\toption_id\030\001 \001(\tR\010optionId\022\024" +
+      "\n\005label\030\002 \001(\tR\005label*P\n\014QuestionType\022\035\n\031" +
+      "QUESTION_TYPE_UNSPECIFIED\020\000\022!\n\035QUESTION_" +
+      "TYPE_PICK_THE_PLAYER\020\0012t\n\013QuizService\022e\n" +
+      "\014GenerateQuiz\022).friendlyfire.quiz.v1.Gen" +
+      "erateQuizRequest\032*.friendlyfire.quiz.v1." +
+      "GenerateQuizResponseB\370\001\n+com.friendlyfir" +
+      "e.proto.friendlyfire.quiz.v1B\020QuizServic" +
+      "eProtoP\001ZEgithub.com/SaswatM-62/Friendly" +
+      "Fire/gen/go/friendlyfire/quiz/v1;quizv1\242" +
+      "\002\003FQX\252\002\024Friendlyfire.Quiz.V1\312\002\024Friendlyf" +
+      "ire\\Quiz\\V1\342\002 Friendlyfire\\Quiz\\V1\\GPBMe" +
+      "tadata\352\002\026Friendlyfire::Quiz::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -108,7 +109,7 @@ public final class QuizServiceProto extends com.google.protobuf.GeneratedFile {
     internal_static_friendlyfire_quiz_v1_QuizPlayer_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_quiz_v1_QuizPlayer_descriptor,
-        new java.lang.String[] { "UserId", "DisplayName", });
+        new java.lang.String[] { "UserId", "DisplayName", "NotEnoughMatches", });
     internal_static_friendlyfire_quiz_v1_GenerateQuizResponse_descriptor =
       getDescriptor().getMessageType(2);
     internal_static_friendlyfire_quiz_v1_GenerateQuizResponse_fieldAccessorTable = new

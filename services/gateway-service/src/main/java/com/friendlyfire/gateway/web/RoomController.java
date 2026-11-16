@@ -67,8 +67,8 @@ public class RoomController {
         rateLimiter.check(RateLimit.JOIN_ROOM, me.userId(), request.getRemoteAddr());
         // TODO(ff): pass the player's Riot tag line, so two players with the same name can
         //   be told apart (FF-303)
-        //   - JoinRoomRequest gets the field from FF-202; the tag line comes from the
-        //     cached user's Riot link (UserResolver)
+        //   - JoinRoomRequest.riot_tag_line (and CreateRoomRequest.host_riot_tag_line for the
+        //     host); the tag line comes from the cached user's Riot link (UserResolver)
         RoomSnapshot room = GrpcErrors.renaming(JOIN_ERRORS, () -> rooms.joinRoom(JoinRoomRequest.newBuilder()
                         .setRoomCode(roomCode)
                         .setUserId(me.userId())

@@ -125,15 +125,15 @@ private static final long serialVersionUID = 0L;
     return deadline_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : deadline_;
   }
 
-  public static final int WAIT_VOTES_FIELD_NUMBER = 3;
-  private int waitVotes_ = 0;
+  public static final int PAUSE_VOTES_FIELD_NUMBER = 3;
+  private int pauseVotes_ = 0;
   /**
-   * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
-   * @return The waitVotes.
+   * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+   * @return The pauseVotes.
    */
   @java.lang.Override
-  public int getWaitVotes() {
-    return waitVotes_;
+  public int getPauseVotes() {
+    return pauseVotes_;
   }
 
   public static final int CONTINUE_VOTES_FIELD_NUMBER = 4;
@@ -211,6 +211,22 @@ private static final long serialVersionUID = 0L;
     return votedUserIds_.getByteString(index);
   }
 
+  public static final int PAUSE_ALLOWED_FIELD_NUMBER = 7;
+  private boolean pauseAllowed_ = false;
+  /**
+   * <pre>
+   * False once the quiz's 3 minutes of pauses are used up: then only
+   * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+   * </pre>
+   *
+   * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+   * @return The pauseAllowed.
+   */
+  @java.lang.Override
+  public boolean getPauseAllowed() {
+    return pauseAllowed_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -231,8 +247,8 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000001) != 0)) {
       output.writeMessage(2, getDeadline());
     }
-    if (waitVotes_ != 0) {
-      output.writeInt32(3, waitVotes_);
+    if (pauseVotes_ != 0) {
+      output.writeInt32(3, pauseVotes_);
     }
     if (continueVotes_ != 0) {
       output.writeInt32(4, continueVotes_);
@@ -242,6 +258,9 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < votedUserIds_.size(); i++) {
       com.google.protobuf.GeneratedMessage.writeString(output, 6, votedUserIds_.getRaw(i));
+    }
+    if (pauseAllowed_ != false) {
+      output.writeBool(7, pauseAllowed_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -254,9 +273,9 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(2, getDeadline());
     }
-    if (waitVotes_ != 0) {
+    if (pauseVotes_ != 0) {
       size += com.google.protobuf.CodedOutputStream
-        .computeInt32Size(3, waitVotes_);
+        .computeInt32Size(3, pauseVotes_);
     }
     if (continueVotes_ != 0) {
       size += com.google.protobuf.CodedOutputStream
@@ -273,6 +292,10 @@ private static final long serialVersionUID = 0L;
       }
       size += dataSize;
       size += 1 * getVotedUserIdsList().size();
+    }
+    if (pauseAllowed_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(7, pauseAllowed_);
     }
     return size;
   }
@@ -305,14 +328,16 @@ private static final long serialVersionUID = 0L;
       if (!getDeadline()
           .equals(other.getDeadline())) return false;
     }
-    if (getWaitVotes()
-        != other.getWaitVotes()) return false;
+    if (getPauseVotes()
+        != other.getPauseVotes()) return false;
     if (getContinueVotes()
         != other.getContinueVotes()) return false;
     if (getEndVotes()
         != other.getEndVotes()) return false;
     if (!getVotedUserIdsList()
         .equals(other.getVotedUserIdsList())) return false;
+    if (getPauseAllowed()
+        != other.getPauseAllowed()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -330,8 +355,8 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + DEADLINE_FIELD_NUMBER;
       hash = (53 * hash) + getDeadline().hashCode();
     }
-    hash = (37 * hash) + WAIT_VOTES_FIELD_NUMBER;
-    hash = (53 * hash) + getWaitVotes();
+    hash = (37 * hash) + PAUSE_VOTES_FIELD_NUMBER;
+    hash = (53 * hash) + getPauseVotes();
     hash = (37 * hash) + CONTINUE_VOTES_FIELD_NUMBER;
     hash = (53 * hash) + getContinueVotes();
     hash = (37 * hash) + END_VOTES_FIELD_NUMBER;
@@ -340,6 +365,9 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + VOTED_USER_IDS_FIELD_NUMBER;
       hash = (53 * hash) + getVotedUserIdsList().hashCode();
     }
+    hash = (37 * hash) + PAUSE_ALLOWED_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getPauseAllowed());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -483,11 +511,12 @@ private static final long serialVersionUID = 0L;
         deadlineBuilder_.dispose();
         deadlineBuilder_ = null;
       }
-      waitVotes_ = 0;
+      pauseVotes_ = 0;
       continueVotes_ = 0;
       endVotes_ = 0;
       votedUserIds_ =
           com.google.protobuf.LazyStringArrayList.emptyList();
+      pauseAllowed_ = false;
       return this;
     }
 
@@ -532,7 +561,7 @@ private static final long serialVersionUID = 0L;
         to_bitField0_ |= 0x00000001;
       }
       if (((from_bitField0_ & 0x00000004) != 0)) {
-        result.waitVotes_ = waitVotes_;
+        result.pauseVotes_ = pauseVotes_;
       }
       if (((from_bitField0_ & 0x00000008) != 0)) {
         result.continueVotes_ = continueVotes_;
@@ -543,6 +572,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000020) != 0)) {
         votedUserIds_.makeImmutable();
         result.votedUserIds_ = votedUserIds_;
+      }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.pauseAllowed_ = pauseAllowed_;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -567,8 +599,8 @@ private static final long serialVersionUID = 0L;
       if (other.hasDeadline()) {
         mergeDeadline(other.getDeadline());
       }
-      if (other.getWaitVotes() != 0) {
-        setWaitVotes(other.getWaitVotes());
+      if (other.getPauseVotes() != 0) {
+        setPauseVotes(other.getPauseVotes());
       }
       if (other.getContinueVotes() != 0) {
         setContinueVotes(other.getContinueVotes());
@@ -585,6 +617,9 @@ private static final long serialVersionUID = 0L;
           votedUserIds_.addAll(other.votedUserIds_);
         }
         onChanged();
+      }
+      if (other.getPauseAllowed() != false) {
+        setPauseAllowed(other.getPauseAllowed());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -623,7 +658,7 @@ private static final long serialVersionUID = 0L;
               break;
             } // case 18
             case 24: {
-              waitVotes_ = input.readInt32();
+              pauseVotes_ = input.readInt32();
               bitField0_ |= 0x00000004;
               break;
             } // case 24
@@ -642,6 +677,11 @@ private static final long serialVersionUID = 0L;
               votedUserIds_.add(input.readStringRequireUtf8());
               break;
             } // case 50
+            case 56: {
+              pauseAllowed_ = input.readBool();
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 56
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -870,34 +910,34 @@ private static final long serialVersionUID = 0L;
       return deadlineBuilder_;
     }
 
-    private int waitVotes_ ;
+    private int pauseVotes_ ;
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
-     * @return The waitVotes.
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+     * @return The pauseVotes.
      */
     @java.lang.Override
-    public int getWaitVotes() {
-      return waitVotes_;
+    public int getPauseVotes() {
+      return pauseVotes_;
     }
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
-     * @param value The waitVotes to set.
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
+     * @param value The pauseVotes to set.
      * @return This builder for chaining.
      */
-    public Builder setWaitVotes(int value) {
+    public Builder setPauseVotes(int value) {
 
-      waitVotes_ = value;
+      pauseVotes_ = value;
       bitField0_ |= 0x00000004;
       onChanged();
       return this;
     }
     /**
-     * <code>int32 wait_votes = 3 [json_name = "waitVotes"];</code>
+     * <code>int32 pause_votes = 3 [json_name = "pauseVotes"];</code>
      * @return This builder for chaining.
      */
-    public Builder clearWaitVotes() {
+    public Builder clearPauseVotes() {
       bitField0_ = (bitField0_ & ~0x00000004);
-      waitVotes_ = 0;
+      pauseVotes_ = 0;
       onChanged();
       return this;
     }
@@ -1109,6 +1149,53 @@ private static final long serialVersionUID = 0L;
       ensureVotedUserIdsIsMutable();
       votedUserIds_.add(value);
       bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+
+    private boolean pauseAllowed_ ;
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @return The pauseAllowed.
+     */
+    @java.lang.Override
+    public boolean getPauseAllowed() {
+      return pauseAllowed_;
+    }
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @param value The pauseAllowed to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPauseAllowed(boolean value) {
+
+      pauseAllowed_ = value;
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * False once the quiz's 3 minutes of pauses are used up: then only
+     * CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+     * </pre>
+     *
+     * <code>bool pause_allowed = 7 [json_name = "pauseAllowed"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPauseAllowed() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      pauseAllowed_ = false;
       onChanged();
       return this;
     }

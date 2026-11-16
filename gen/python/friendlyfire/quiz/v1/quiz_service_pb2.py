@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'friendlyfire/quiz/v1/quiz_service.proto\x12\x14\x66riendlyfire.quiz.v1\"\xba\x01\n\x13GenerateQuizRequest\x12:\n\x07players\x18\x01 \x03(\x0b\x32 .friendlyfire.quiz.v1.QuizPlayerR\x07players\x12%\n\x0equestion_count\x18\x02 \x01(\x05R\rquestionCount\x12\x12\n\x04seed\x18\x03 \x01(\x03R\x04seed\x12,\n\x12\x61sked_template_ids\x18\x04 \x03(\tR\x10\x61skedTemplateIds\"H\n\nQuizPlayer\x12\x17\n\x07user_id\x18\x01 \x01(\tR\x06userId\x12!\n\x0c\x64isplay_name\x18\x02 \x01(\tR\x0b\x64isplayName\"T\n\x14GenerateQuizResponse\x12<\n\tquestions\x18\x01 \x03(\x0b\x32\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xcc\x02\n\x08Question\x12\x1f\n\x0bquestion_id\x18\x01 \x01(\tR\nquestionId\x12\x36\n\x04type\x18\x02 \x01(\x0e\x32\".friendlyfire.quiz.v1.QuestionTypeR\x04type\x12\x12\n\x04text\x18\x03 \x01(\tR\x04text\x12<\n\x07options\x18\x04 \x03(\x0b\x32\".friendlyfire.quiz.v1.AnswerOptionR\x07options\x12*\n\x11\x63orrect_option_id\x18\x05 \x01(\tR\x0f\x63orrectOptionId\x12 \n\x0b\x65xplanation\x18\x06 \x01(\tR\x0b\x65xplanation\x12&\n\x0fsource_match_id\x18\x07 \x01(\tR\rsourceMatchId\x12\x1f\n\x0btemplate_id\x18\x08 \x01(\tR\ntemplateId\"A\n\x0c\x41nswerOption\x12\x1b\n\toption_id\x18\x01 \x01(\tR\x08optionId\x12\x14\n\x05label\x18\x02 \x01(\tR\x05label*P\n\x0cQuestionType\x12\x1d\n\x19QUESTION_TYPE_UNSPECIFIED\x10\x00\x12!\n\x1dQUESTION_TYPE_PICK_THE_PLAYER\x10\x01\x32t\n\x0bQuizService\x12\x65\n\x0cGenerateQuiz\x12).friendlyfire.quiz.v1.GenerateQuizRequest\x1a*.friendlyfire.quiz.v1.GenerateQuizResponseB\xf8\x01\n+com.friendlyfire.proto.friendlyfire.quiz.v1B\x10QuizServiceProtoP\x01ZEgithub.com/SaswatM-62/FriendlyFire/gen/go/friendlyfire/quiz/v1;quizv1\xa2\x02\x03\x46QX\xaa\x02\x14\x46riendlyfire.Quiz.V1\xca\x02\x14\x46riendlyfire\\Quiz\\V1\xe2\x02 Friendlyfire\\Quiz\\V1\\GPBMetadata\xea\x02\x16\x46riendlyfire::Quiz::V1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\'friendlyfire/quiz/v1/quiz_service.proto\x12\x14\x66riendlyfire.quiz.v1\"\xba\x01\n\x13GenerateQuizRequest\x12:\n\x07players\x18\x01 \x03(\x0b\x32 .friendlyfire.quiz.v1.QuizPlayerR\x07players\x12%\n\x0equestion_count\x18\x02 \x01(\x05R\rquestionCount\x12\x12\n\x04seed\x18\x03 \x01(\x03R\x04seed\x12,\n\x12\x61sked_template_ids\x18\x04 \x03(\tR\x10\x61skedTemplateIds\"v\n\nQuizPlayer\x12\x17\n\x07user_id\x18\x01 \x01(\tR\x06userId\x12!\n\x0c\x64isplay_name\x18\x02 \x01(\tR\x0b\x64isplayName\x12,\n\x12not_enough_matches\x18\x03 \x01(\x08R\x10notEnoughMatches\"T\n\x14GenerateQuizResponse\x12<\n\tquestions\x18\x01 \x03(\x0b\x32\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xcc\x02\n\x08Question\x12\x1f\n\x0bquestion_id\x18\x01 \x01(\tR\nquestionId\x12\x36\n\x04type\x18\x02 \x01(\x0e\x32\".friendlyfire.quiz.v1.QuestionTypeR\x04type\x12\x12\n\x04text\x18\x03 \x01(\tR\x04text\x12<\n\x07options\x18\x04 \x03(\x0b\x32\".friendlyfire.quiz.v1.AnswerOptionR\x07options\x12*\n\x11\x63orrect_option_id\x18\x05 \x01(\tR\x0f\x63orrectOptionId\x12 \n\x0b\x65xplanation\x18\x06 \x01(\tR\x0b\x65xplanation\x12&\n\x0fsource_match_id\x18\x07 \x01(\tR\rsourceMatchId\x12\x1f\n\x0btemplate_id\x18\x08 \x01(\tR\ntemplateId\"A\n\x0c\x41nswerOption\x12\x1b\n\toption_id\x18\x01 \x01(\tR\x08optionId\x12\x14\n\x05label\x18\x02 \x01(\tR\x05label*P\n\x0cQuestionType\x12\x1d\n\x19QUESTION_TYPE_UNSPECIFIED\x10\x00\x12!\n\x1dQUESTION_TYPE_PICK_THE_PLAYER\x10\x01\x32t\n\x0bQuizService\x12\x65\n\x0cGenerateQuiz\x12).friendlyfire.quiz.v1.GenerateQuizRequest\x1a*.friendlyfire.quiz.v1.GenerateQuizResponseB\xf8\x01\n+com.friendlyfire.proto.friendlyfire.quiz.v1B\x10QuizServiceProtoP\x01ZEgithub.com/SaswatM-62/FriendlyFire/gen/go/friendlyfire/quiz/v1;quizv1\xa2\x02\x03\x46QX\xaa\x02\x14\x46riendlyfire.Quiz.V1\xca\x02\x14\x46riendlyfire\\Quiz\\V1\xe2\x02 Friendlyfire\\Quiz\\V1\\GPBMetadata\xea\x02\x16\x46riendlyfire::Quiz::V1b\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,18 +32,18 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'friendlyfire.quiz.v1.quiz_s
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'\n+com.friendlyfire.proto.friendlyfire.quiz.v1B\020QuizServiceProtoP\001ZEgithub.com/SaswatM-62/FriendlyFire/gen/go/friendlyfire/quiz/v1;quizv1\242\002\003FQX\252\002\024Friendlyfire.Quiz.V1\312\002\024Friendlyfire\\Quiz\\V1\342\002 Friendlyfire\\Quiz\\V1\\GPBMetadata\352\002\026Friendlyfire::Quiz::V1'
-  _globals['_QUESTIONTYPE']._serialized_start=816
-  _globals['_QUESTIONTYPE']._serialized_end=896
+  _globals['_QUESTIONTYPE']._serialized_start=862
+  _globals['_QUESTIONTYPE']._serialized_end=942
   _globals['_GENERATEQUIZREQUEST']._serialized_start=66
   _globals['_GENERATEQUIZREQUEST']._serialized_end=252
   _globals['_QUIZPLAYER']._serialized_start=254
-  _globals['_QUIZPLAYER']._serialized_end=326
-  _globals['_GENERATEQUIZRESPONSE']._serialized_start=328
-  _globals['_GENERATEQUIZRESPONSE']._serialized_end=412
-  _globals['_QUESTION']._serialized_start=415
-  _globals['_QUESTION']._serialized_end=747
-  _globals['_ANSWEROPTION']._serialized_start=749
-  _globals['_ANSWEROPTION']._serialized_end=814
-  _globals['_QUIZSERVICE']._serialized_start=898
-  _globals['_QUIZSERVICE']._serialized_end=1014
+  _globals['_QUIZPLAYER']._serialized_end=372
+  _globals['_GENERATEQUIZRESPONSE']._serialized_start=374
+  _globals['_GENERATEQUIZRESPONSE']._serialized_end=458
+  _globals['_QUESTION']._serialized_start=461
+  _globals['_QUESTION']._serialized_end=793
+  _globals['_ANSWEROPTION']._serialized_start=795
+  _globals['_ANSWEROPTION']._serialized_end=860
+  _globals['_QUIZSERVICE']._serialized_start=944
+  _globals['_QUIZSERVICE']._serialized_end=1060
 # @@protoc_insertion_point(module_scope)

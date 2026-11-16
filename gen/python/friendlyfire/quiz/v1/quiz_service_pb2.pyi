@@ -27,12 +27,14 @@ class GenerateQuizRequest(_message.Message):
     def __init__(self, players: _Optional[_Iterable[_Union[QuizPlayer, _Mapping]]] = ..., question_count: _Optional[int] = ..., seed: _Optional[int] = ..., asked_template_ids: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class QuizPlayer(_message.Message):
-    __slots__ = ("user_id", "display_name")
+    __slots__ = ("user_id", "display_name", "not_enough_matches")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    NOT_ENOUGH_MATCHES_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     display_name: str
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
+    not_enough_matches: bool
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., not_enough_matches: _Optional[bool] = ...) -> None: ...
 
 class GenerateQuizResponse(_message.Message):
     __slots__ = ("questions",)

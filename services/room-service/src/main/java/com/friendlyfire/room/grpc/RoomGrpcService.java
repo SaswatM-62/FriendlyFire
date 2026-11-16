@@ -1,6 +1,6 @@
 package com.friendlyfire.room.grpc;
 
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
+import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.quiz.v1.QuizServiceGrpc.QuizServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.CastVoteResponse;
@@ -14,6 +14,8 @@ import com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomResponse;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportConnectionQualityRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportConnectionQualityResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedRequest;
@@ -47,17 +49,17 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
     private final RoomRepository rooms;
     private final QuizServiceBlockingStub quiz;
     private final ScoringServiceBlockingStub scoring;
-    private final MatchDataServiceBlockingStub matchData;
+    private final AccountServiceBlockingStub accounts;
 
     public RoomGrpcService(
             RoomRepository rooms,
             QuizServiceBlockingStub quiz,
             ScoringServiceBlockingStub scoring,
-            MatchDataServiceBlockingStub matchData) {
+            AccountServiceBlockingStub accounts) {
         this.rooms = rooms;
         this.quiz = quiz;
         this.scoring = scoring;
-        this.matchData = matchData;
+        this.accounts = accounts;
     }
 
     @Override
@@ -65,9 +67,11 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
         // TODO(ff): create a room with the caller as host and return its snapshot
         //   - new code (RoomCodeGenerator), LOBBY phase, default settings (10 questions,
         //     20 seconds each), the host as the only player
-        //   - ask Match Data whether the host's matches are synced (match_data_ready)
+        //   - the host's data status from Account (GetDataStatus): data_status,
+        //     data_estimated_seconds, and not_enough_matches (fewer than 5 matches stored);
+        //     riot_tag_line from the request
         //   - errors: none in the contract
-        //   - uses: rooms, RoomCodeGenerator, matchData (GetSyncStatus)
+        //   - uses: rooms, RoomCodeGenerator, accounts (GetDataStatus)
         notImplemented(responseObserver);
     }
 
@@ -78,7 +82,9 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
         //   - publish PLAYER_JOINED or PLAYER_RECONNECTED
         //   - errors: NOT_FOUND; RESOURCE_EXHAUSTED if the room already has 8 players;
         //     FAILED_PRECONDITION if the quiz has started and the user wasn't in it
-        //   - uses: rooms, matchData (GetSyncStatus), RoomEventPublisher
+        //   - the player's data status from Account, as in createRoom; riot_tag_line from
+        //     the request
+        //   - uses: rooms, accounts (GetDataStatus), RoomEventPublisher
         notImplemented(responseObserver);
     }
 
@@ -117,16 +123,18 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
     public void startQuiz(StartQuizRequest request, StreamObserver<StartQuizResponse> responseObserver) {
         // TODO(ff): host only: generate every question, then start a short countdown
         //   - allowed in the lobby, or after a quiz finishes to play again
-        //   - check every player's sync is COMPLETE (MatchDataService.GetSyncStatus), get
-        //     the questions (QuizService.GenerateQuiz), register the quiz
-        //     (ScoringService.StartQuiz), then hand the room to QuizRunner (STARTING)
+        //   - check every player's data status again (AccountService.GetDataStatus): all
+        //     SYNCED, at least 2 with 5+ matches, at most half the room under 5
+        //   - get the questions (QuizService.GenerateQuiz, marking not_enough_matches),
+        //     register the quiz (ScoringService.StartQuiz), then hand the room to
+        //     QuizRunner (STARTING)
         //   - send GenerateQuiz the template_id of every question already asked in this
         //     room, oldest first (asked_template_ids), and remember the new questions'
         //     template_ids for the next quiz
         //   - errors: FAILED_PRECONDITION, with a message for the host, if there are fewer
-        //     than 2 players, someone's matches haven't finished syncing, or there isn't
+        //     than 2 players, one of the data checks above fails, or there isn't
         //     enough match data; NOT_FOUND; PERMISSION_DENIED if not the host
-        //   - uses: rooms, matchData, quiz, scoring, QuizRunner, RoomEventPublisher
+        //   - uses: rooms, accounts, quiz, scoring, QuizRunner, RoomEventPublisher
         notImplemented(responseObserver);
     }
 
@@ -147,8 +155,8 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
             ReportDisconnectedRequest request, StreamObserver<ReportDisconnectedResponse> responseObserver) {
         // TODO(ff): a player's WebSocket connection dropped (called by the Gateway)
         //   - mark them DISCONNECTED and publish PLAYER_DISCONNECTED
-        //   - during a quiz, if they don't come back within 15 seconds, pause the room
-        //     and start a vote (VOTE phase, VOTE_STARTED)
+        //   - during a quiz the current question finishes (ADR-026); after its reveal, if
+        //     they're still gone, start a vote (VOTE phase, VOTE_STARTED)
         //   - errors: NOT_FOUND; PERMISSION_DENIED if the user isn't in the room
         //   - uses: rooms, QuizRunner (timers), RoomEventPublisher
         notImplemented(responseObserver);
@@ -167,8 +175,12 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
     @Override
     public void castVote(CastVoteRequest request, StreamObserver<CastVoteResponse> responseObserver) {
         // TODO(ff): a connected player's vote while the room is in the VOTE phase
-        //   - the vote ends when everyone has voted or its deadline passes; most votes
-        //     wins, a tie means WAIT (another 30 seconds); publish VOTE_RESOLVED
+        //   - publish VOTE_CAST with the new counts; the vote ends when everyone has voted
+        //     or its deadline passes; most votes wins; a tie pauses if pause time is left,
+        //     otherwise continues; publish VOTE_RESOLVED
+        //   - PAUSE: ROOM_PHASE_PAUSED for up to 60 seconds (QUIZ_PAUSED), at most 180
+        //     seconds per quiz (pause_seconds_left, Vote.pause_allowed); if the minute ends
+        //     with the player still gone, vote again
         //   - END_QUIZ makes the scores so far final (ScoringService.FinalizeQuiz)
         //   - errors: FAILED_PRECONDITION outside the VOTE phase; NOT_FOUND;
         //     PERMISSION_DENIED if the user isn't in the room
@@ -193,6 +205,16 @@ public class RoomGrpcService extends RoomServiceGrpc.RoomServiceImplBase {
         //   - the Gateway opens one stream per room and forwards every event to the STOMP
         //     topic /topic/room/{room_code}
         //   - errors: NOT_FOUND
+        //   - uses: rooms, RoomEventPublisher
+        notImplemented(responseObserver);
+    }
+
+    @Override
+    public void removePlayer(RemovePlayerRequest request, StreamObserver<RemovePlayerResponse> responseObserver) {
+        // TODO(ff): take a user who is deleting their account out of their room (ADR-027)
+        //   - the Gateway calls this before AccountService.DeleteAccount
+        //   - like LeaveRoom: the host role moves on, an empty room closes; publish PLAYER_LEFT
+        //   - not an error if they aren't in a room
         //   - uses: rooms, RoomEventPublisher
         notImplemented(responseObserver);
     }

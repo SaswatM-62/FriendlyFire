@@ -14,6 +14,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
@@ -60,8 +62,9 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
     @Override
     public void ensureUser(EnsureUserRequest request, StreamObserver<EnsureUserResponse> responseObserver) {
-        // TODO(ff): if the user has a linked Riot account, ask Match Data to fetch new matches
-        //   (MatchDataService.SyncPlayer); don't fail the sign-in if that call fails
+        // TODO(ff): if the user has a linked Riot account and their data isn't SYNCED (see
+        //   getDataStatus), ask Match Data to sync (MatchDataService.SyncPlayer); don't
+        //   fail the sign-in if that call fails
         //   - uses: riotLinks, matchData
         EnsuredUser ensured = users.ensure(
                 request.getAuthSubject(),
@@ -140,8 +143,26 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
         // TODO(ff): delete the user, their Riot link and their match data
         //   - call MatchDataService.DeletePlayerData, then delete the link and the user
+        //   - then ScoringService.AnonymizePlayer, so past quizzes show "Deleted player"
+        //     (ADR-027; needs a scoring client and a scoring-service health check)
+        //   - the Gateway has already called RoomService.RemovePlayer; Account never calls
+        //     Room (Room calls Account, and a cycle would break the health checks)
         //   - errors: none in the contract
-        //   - uses: users, riotLinks, matchData
+        //   - uses: users, riotLinks, matchData, a ScoringServiceBlockingStub
+        notImplemented(responseObserver);
+    }
+
+    @Override
+    public void getDataStatus(GetDataStatusRequest request, StreamObserver<GetDataStatusResponse> responseObserver) {
+        // TODO(ff): each user's match data status (ADR-010: Account owns the 24-hour rule)
+        //   - one MatchDataService.GetSyncStatus call for all of them, then: no Riot link ->
+        //     NOT_LINKED; IN_PROGRESS -> SYNCING (with estimated_seconds); FAILED -> FAILED
+        //     (with error_message); last successful sync under 24 hours ago -> SYNCED;
+        //     otherwise NOT_SYNCED
+        //   - pass on matches_stored and last_synced_at; unknown users -> NOT_LINKED
+        //   - "24 hours ago" from an injected java.time.Clock
+        //   - errors: none in the contract
+        //   - uses: riotLinks, matchData, a Clock
         notImplemented(responseObserver);
     }
 

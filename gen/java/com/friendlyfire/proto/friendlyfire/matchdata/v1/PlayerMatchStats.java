@@ -293,8 +293,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Text facts specific to the game.
-   * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+   * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+   * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
    * </pre>
    *
    * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -315,8 +315,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Text facts specific to the game.
-   * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+   * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+   * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
    * </pre>
    *
    * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -327,8 +327,8 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Text facts specific to the game.
-   * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+   * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+   * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
    * </pre>
    *
    * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -346,8 +346,8 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * Text facts specific to the game.
-   * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+   * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+   * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
    * </pre>
    *
    * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -392,9 +392,10 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * Number facts specific to the game.
-   * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-   * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+   * Number facts specific to the game, e.g. VALORANT "headshots",
+   * "combat_score". Every key, and what each one counts:
+   * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+   * change.
    * </pre>
    *
    * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -415,9 +416,10 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * Number facts specific to the game.
-   * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-   * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+   * Number facts specific to the game, e.g. VALORANT "headshots",
+   * "combat_score". Every key, and what each one counts:
+   * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+   * change.
    * </pre>
    *
    * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -428,9 +430,10 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * Number facts specific to the game.
-   * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-   * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+   * Number facts specific to the game, e.g. VALORANT "headshots",
+   * "combat_score". Every key, and what each one counts:
+   * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+   * change.
    * </pre>
    *
    * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -446,9 +449,10 @@ java.lang.String defaultValue) {
   }
   /**
    * <pre>
-   * Number facts specific to the game.
-   * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-   * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+   * Number facts specific to the game, e.g. VALORANT "headshots",
+   * "combat_score". Every key, and what each one counts:
+   * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+   * change.
    * </pre>
    *
    * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1566,8 +1570,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1588,8 +1592,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1600,8 +1604,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1619,8 +1623,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1644,8 +1648,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1668,8 +1672,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1686,8 +1690,8 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Text facts specific to the game.
-     * VALORANT: "agent" -&gt; "Jett", "map" -&gt; "Ascent", "mode" -&gt; "Competitive".
+     * Text facts specific to the game, e.g. VALORANT "agent" -&gt; "Jett",
+     * "map" -&gt; "Ascent". Every key: docs/stats-catalogue.md.
      * </pre>
      *
      * <code>map&lt;string, string&gt; labels = 9 [json_name = "labels"];</code>
@@ -1728,9 +1732,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1751,9 +1756,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1764,9 +1770,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1782,9 +1789,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1808,9 +1816,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1833,9 +1842,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>
@@ -1852,9 +1862,10 @@ java.lang.String defaultValue) {
     }
     /**
      * <pre>
-     * Number facts specific to the game.
-     * VALORANT: "headshots", "bodyshots", "legshots", "damage_dealt",
-     * "damage_received", "combat_score", "rounds_won", "rounds_lost".
+     * Number facts specific to the game, e.g. VALORANT "headshots",
+     * "combat_score". Every key, and what each one counts:
+     * docs/stats-catalogue.md. A new stat is a new key there, not a contract
+     * change.
      * </pre>
      *
      * <code>map&lt;string, double&gt; numbers = 10 [json_name = "numbers"];</code>

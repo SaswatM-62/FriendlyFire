@@ -106,6 +106,21 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_account_v1_DeleteAccountResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_GetDataStatusRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_GetDataStatusResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_UserDataStatus_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_UserDataStatus_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -152,34 +167,52 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
       "iotRequest\022\027\n\007user_id\030\001 \001(\tR\006userId\"\024\n\022U" +
       "nlinkRiotResponse\"/\n\024DeleteAccountReques" +
       "t\022\027\n\007user_id\030\001 \001(\tR\006userId\"\027\n\025DeleteAcco" +
-      "untResponse2\221\006\n\016AccountService\022e\n\nEnsure" +
-      "User\022*.friendlyfire.account.v1.EnsureUse" +
-      "rRequest\032+.friendlyfire.account.v1.Ensur" +
-      "eUserResponse\022\\\n\007GetUser\022\'.friendlyfire." +
-      "account.v1.GetUserRequest\032(.friendlyfire" +
-      ".account.v1.GetUserResponse\022z\n\021UpdateDis" +
-      "playName\0221.friendlyfire.account.v1.Updat" +
-      "eDisplayNameRequest\0322.friendlyfire.accou" +
-      "nt.v1.UpdateDisplayNameResponse\022n\n\rStart" +
-      "RiotLink\022-.friendlyfire.account.v1.Start" +
-      "RiotLinkRequest\032..friendlyfire.account.v" +
-      "1.StartRiotLinkResponse\022w\n\020CompleteRiotL" +
-      "ink\0220.friendlyfire.account.v1.CompleteRi" +
-      "otLinkRequest\0321.friendlyfire.account.v1." +
-      "CompleteRiotLinkResponse\022e\n\nUnlinkRiot\022*" +
-      ".friendlyfire.account.v1.UnlinkRiotReque" +
-      "st\032+.friendlyfire.account.v1.UnlinkRiotR" +
-      "esponse\022n\n\rDeleteAccount\022-.friendlyfire." +
-      "account.v1.DeleteAccountRequest\032..friend" +
-      "lyfire.account.v1.DeleteAccountResponseB" +
-      "\220\002\n.com.friendlyfire.proto.friendlyfire." +
-      "account.v1B\023AccountServiceProtoP\001ZKgithu" +
-      "b.com/SaswatM-62/FriendlyFire/gen/go/fri" +
-      "endlyfire/account/v1;accountv1\242\002\003FAX\252\002\027F" +
-      "riendlyfire.Account.V1\312\002\027Friendlyfire\\Ac" +
-      "count\\V1\342\002#Friendlyfire\\Account\\V1\\GPBMe" +
-      "tadata\352\002\031Friendlyfire::Account::V1b\006prot" +
-      "o3"
+      "untResponse\"1\n\024GetDataStatusRequest\022\031\n\010u" +
+      "ser_ids\030\001 \003(\tR\007userIds\"\\\n\025GetDataStatusR" +
+      "esponse\022C\n\010statuses\030\001 \003(\0132\'.friendlyfire" +
+      ".account.v1.UserDataStatusR\010statuses\"\241\002\n" +
+      "\016UserDataStatus\022\027\n\007user_id\030\001 \001(\tR\006userId" +
+      "\022;\n\006status\030\002 \001(\0162#.friendlyfire.account." +
+      "v1.DataStatusR\006status\022+\n\021estimated_secon" +
+      "ds\030\003 \001(\005R\020estimatedSeconds\022%\n\016matches_st" +
+      "ored\030\004 \001(\005R\rmatchesStored\022@\n\016last_synced" +
+      "_at\030\005 \001(\0132\032.google.protobuf.TimestampR\014l" +
+      "astSyncedAt\022#\n\rerror_message\030\006 \001(\tR\014erro" +
+      "rMessage*\252\001\n\nDataStatus\022\033\n\027DATA_STATUS_U" +
+      "NSPECIFIED\020\000\022\026\n\022DATA_STATUS_SYNCED\020\001\022\027\n\023" +
+      "DATA_STATUS_SYNCING\020\002\022\032\n\026DATA_STATUS_NOT" +
+      "_SYNCED\020\003\022\032\n\026DATA_STATUS_NOT_LINKED\020\004\022\026\n" +
+      "\022DATA_STATUS_FAILED\020\0052\201\007\n\016AccountService" +
+      "\022e\n\nEnsureUser\022*.friendlyfire.account.v1" +
+      ".EnsureUserRequest\032+.friendlyfire.accoun" +
+      "t.v1.EnsureUserResponse\022\\\n\007GetUser\022\'.fri" +
+      "endlyfire.account.v1.GetUserRequest\032(.fr" +
+      "iendlyfire.account.v1.GetUserResponse\022z\n" +
+      "\021UpdateDisplayName\0221.friendlyfire.accoun" +
+      "t.v1.UpdateDisplayNameRequest\0322.friendly" +
+      "fire.account.v1.UpdateDisplayNameRespons" +
+      "e\022n\n\rStartRiotLink\022-.friendlyfire.accoun" +
+      "t.v1.StartRiotLinkRequest\032..friendlyfire" +
+      ".account.v1.StartRiotLinkResponse\022w\n\020Com" +
+      "pleteRiotLink\0220.friendlyfire.account.v1." +
+      "CompleteRiotLinkRequest\0321.friendlyfire.a" +
+      "ccount.v1.CompleteRiotLinkResponse\022e\n\nUn" +
+      "linkRiot\022*.friendlyfire.account.v1.Unlin" +
+      "kRiotRequest\032+.friendlyfire.account.v1.U" +
+      "nlinkRiotResponse\022n\n\rDeleteAccount\022-.fri" +
+      "endlyfire.account.v1.DeleteAccountReques" +
+      "t\032..friendlyfire.account.v1.DeleteAccoun" +
+      "tResponse\022n\n\rGetDataStatus\022-.friendlyfir" +
+      "e.account.v1.GetDataStatusRequest\032..frie" +
+      "ndlyfire.account.v1.GetDataStatusRespons" +
+      "eB\220\002\n.com.friendlyfire.proto.friendlyfir" +
+      "e.account.v1B\023AccountServiceProtoP\001ZKgit" +
+      "hub.com/SaswatM-62/FriendlyFire/gen/go/f" +
+      "riendlyfire/account/v1;accountv1\242\002\003FAX\252\002" +
+      "\027Friendlyfire.Account.V1\312\002\027Friendlyfire\\" +
+      "Account\\V1\342\002#Friendlyfire\\Account\\V1\\GPB" +
+      "Metadata\352\002\031Friendlyfire::Account::V1b\006pr" +
+      "oto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -282,6 +315,24 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_account_v1_DeleteAccountResponse_descriptor,
         new java.lang.String[] { });
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor =
+      getDescriptor().getMessageType(16);
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor,
+        new java.lang.String[] { "UserIds", });
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor =
+      getDescriptor().getMessageType(17);
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor,
+        new java.lang.String[] { "Statuses", });
+    internal_static_friendlyfire_account_v1_UserDataStatus_descriptor =
+      getDescriptor().getMessageType(18);
+    internal_static_friendlyfire_account_v1_UserDataStatus_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_UserDataStatus_descriptor,
+        new java.lang.String[] { "UserId", "Status", "EstimatedSeconds", "MatchesStored", "LastSyncedAt", "ErrorMessage", });
     descriptor.resolveAllFeaturesImmutable();
     com.google.protobuf.TimestampProto.getDescriptor();
   }

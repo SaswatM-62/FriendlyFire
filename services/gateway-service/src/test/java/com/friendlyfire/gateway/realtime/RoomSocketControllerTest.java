@@ -111,10 +111,10 @@ class RoomSocketControllerTest extends GatewayTestBase {
     }
 
     @Test
-    void thePauseVoteIsTheContractsWaitOption() {
+    void thePauseVoteIsSentAsThePauseOption() {
         client.send(action("vote"), Map.of("option", "PAUSE"));
 
-        assertThat(awaitCall(CastVoteRequest.class).getOption()).isEqualTo(VoteOption.VOTE_OPTION_WAIT);
+        assertThat(awaitCall(CastVoteRequest.class).getOption()).isEqualTo(VoteOption.VOTE_OPTION_PAUSE);
     }
 
     @Test
