@@ -5,6 +5,7 @@ import com.friendlyfire.account.riotlink.RiotAccountLink;
 import com.friendlyfire.account.riotlink.RiotLinkRepository;
 import com.friendlyfire.account.user.AccountUser;
 import com.friendlyfire.account.user.EnsuredUser;
+import com.friendlyfire.account.user.NewUserNames;
 import com.friendlyfire.account.user.UserRepository;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
@@ -30,21 +31,28 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-/** friendlyfire.account.v1.AccountService. Every RPC is a stub for now. */
+/**
+ * friendlyfire.account.v1.AccountService. EnsureUser and GetUser work; the other RPCs are
+ * stubs for now. When the database can't be reached, DatabaseErrorHandler answers
+ * UNAVAILABLE.
+ */
 @Service
 public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBase {
 
     private final UserRepository users;
+    private final NewUserNames newUserNames;
     private final RiotLinkRepository riotLinks;
     private final LinkStateStore linkStates;
     private final MatchDataServiceBlockingStub matchData;
 
     public AccountGrpcService(
             UserRepository users,
+            NewUserNames newUserNames,
             RiotLinkRepository riotLinks,
             LinkStateStore linkStates,
             MatchDataServiceBlockingStub matchData) {
         this.users = users;
+        this.newUserNames = newUserNames;
         this.riotLinks = riotLinks;
         this.linkStates = linkStates;
         this.matchData = matchData;
@@ -52,12 +60,16 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
     @Override
     public void ensureUser(EnsureUserRequest request, StreamObserver<EnsureUserResponse> responseObserver) {
+        // TODO(ff): if the user has a linked Riot account, ask Match Data to fetch new matches
+        //   (MatchDataService.SyncPlayer); don't fail the sign-in if that call fails
+        //   - uses: riotLinks, matchData
         EnsuredUser ensured = users.ensure(
                 request.getAuthSubject(),
                 request.getEmail(),
-                request.getSuggestedDisplayName());
+                newUserNames.from(request.getSuggestedDisplayName()));
+        AccountUser user = ensured.user();
         responseObserver.onNext(EnsureUserResponse.newBuilder()
-                .setUser(toProto(ensured.user()))
+                .setUser(toProto(user, riotLinks.findByUserId(user.userId())))
                 .setCreated(ensured.created())
                 .build());
         responseObserver.onCompleted();
@@ -65,25 +77,17 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
     @Override
     public void getUser(GetUserRequest request, StreamObserver<GetUserResponse> responseObserver) {
-        final UUID userId;
-        try {
-            userId = UUID.fromString(request.getUserId());
-        } catch (IllegalArgumentException exception) {
-            responseObserver.onError(
-                    Status.INVALID_ARGUMENT.withDescription("user_id must be a UUID").asRuntimeException());
-            return;
-        }
-
-        Optional<AccountUser> user = users.findById(userId);
+        Optional<AccountUser> user = parseUserId(request.getUserId()).flatMap(users::findById);
         if (user.isEmpty()) {
+            // An ID that isn't a UUID can't belong to anyone, so it's NOT_FOUND too.
             responseObserver.onError(
                     Status.NOT_FOUND.withDescription("user not found").asRuntimeException());
             return;
         }
 
-        Optional<RiotAccountLink> riotLink = riotLinks.findByUserId(userId);
+        UUID userId = user.get().userId();
         responseObserver.onNext(GetUserResponse.newBuilder()
-                .setUser(toProto(user.get(), riotLink))
+                .setUser(toProto(user.get(), riotLinks.findByUserId(userId)))
                 .build());
         responseObserver.onCompleted();
     }
@@ -145,31 +149,37 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
         responseObserver.onError(Status.UNIMPLEMENTED.withDescription("not implemented yet").asRuntimeException());
     }
 
-    private static com.friendlyfire.proto.friendlyfire.account.v1.User toProto(AccountUser user) {
-        return toProto(user, Optional.empty());
+    private static Optional<UUID> parseUserId(String userId) {
+        try {
+            return Optional.of(UUID.fromString(userId));
+        } catch (IllegalArgumentException exception) {
+            return Optional.empty();
+        }
     }
 
+    // Every RPC that returns a User passes the link, so none can leave it out by mistake.
     private static com.friendlyfire.proto.friendlyfire.account.v1.User toProto(
             AccountUser user, Optional<RiotAccountLink> riotLink) {
-        Instant createdAt = user.createdAt();
         var builder = com.friendlyfire.proto.friendlyfire.account.v1.User.newBuilder()
                 .setUserId(user.userId().toString())
                 .setEmail(user.email())
                 .setDisplayName(user.displayName())
-                .setCreatedAt(Timestamp.newBuilder()
-                        .setSeconds(createdAt.getEpochSecond())
-                        .setNanos(createdAt.getNano())
-                        .build());
+                .setCreatedAt(timestamp(user.createdAt()));
+        // RiotLink has no PUUID field: the PUUID never leaves this service.
         riotLink.ifPresent(link -> builder.setRiotLink(
                 com.friendlyfire.proto.friendlyfire.account.v1.RiotLink.newBuilder()
                         .setGameName(link.gameName())
                         .setTagLine(link.tagLine())
                         .setRegion(link.region())
-                        .setLinkedAt(Timestamp.newBuilder()
-                                .setSeconds(link.linkedAt().getEpochSecond())
-                                .setNanos(link.linkedAt().getNano())
-                                .build())
+                        .setLinkedAt(timestamp(link.linkedAt()))
                         .build()));
         return builder.build();
+    }
+
+    private static Timestamp timestamp(Instant instant) {
+        return Timestamp.newBuilder()
+                .setSeconds(instant.getEpochSecond())
+                .setNanos(instant.getNano())
+                .build();
     }
 }

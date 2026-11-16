@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE account.users (
     user_id UUID PRIMARY KEY,
     auth_subject TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL,

@@ -8,8 +8,14 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
+/** Linked Riot accounts in the `account` schema (table created in V3, FF-105). */
 @Repository
 public class RiotLinkRepository {
+    // TODO(ff): save and remove links (FF-110)
+    //   - save a link (one per user); a PUUID can belong to only one user
+    //     (ALREADY_EXISTS in CompleteRiotLink)
+    //   - remove a link (UnlinkRiot, DeleteAccount)
+    //   - the PUUID never leaves AccountService and MatchDataService
 
     private static final RowMapper<RiotAccountLink> ROW_MAPPER = RiotLinkRepository::mapRiotLink;
 
