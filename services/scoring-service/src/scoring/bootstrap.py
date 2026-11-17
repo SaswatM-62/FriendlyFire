@@ -87,7 +87,7 @@ async def build_server(settings: Settings, overrides: Overrides | None = None) -
 
     server = grpc.aio.server()
     scoring_service_pb2_grpc.add_ScoringServiceServicer_to_server(
-        ScoringServicer(QuizRepository(), ScoreCalculator()), server
+        ScoringServicer(QuizRepository(pool), ScoreCalculator()), server
     )
     dependency_health_pb2_grpc.add_DependencyHealthServiceServicer_to_server(
         DependencyHealthServicer(checker), server
