@@ -117,4 +117,114 @@ TEMPLATES = (
         queues=("competitive",),
         last_n=10,
     ),
+    QuestionTemplate(
+        id="highest-performance-score-v1",
+        question="Who had the highest Performance Score in a single match {scope}?",
+        explanation=(
+            "{name} recorded a Performance Score of {value} in one match {scope}, "
+            "the unique highest."
+        ),
+        stats=("numbers.performance_score",),
+        rule="max_in_match",
+        stat="numbers.performance_score",
+        scopes=ALL_SCOPES,
+        last_n=10,
+    ),
+    QuestionTemplate(
+        id="most-damage-dealt-match-v1",
+        question="Who dealt the most damage in a single match {scope}?",
+        explanation="{name} dealt {value} damage in one match {scope}, more than anyone else.",
+        stats=("numbers.damage_dealt",),
+        rule="max_in_match",
+        stat="numbers.damage_dealt",
+        scopes=ALL_SCOPES,
+        last_n=10,
+    ),
+    QuestionTemplate(
+        id="most-first-bloods-recent-v1",
+        question="Who earned the most first bloods across their last {last_n} games {scope}?",
+        explanation="{name} earned {value} first bloods across their last {last_n} games {scope}.",
+        stats=("numbers.first_bloods",),
+        rule="count",
+        stat="numbers.first_bloods",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="most-plants-recent-v1",
+        question="Who planted the spike the most times across their last {last_n} games {scope}?",
+        explanation=(
+            "{name} planted the spike {value} times across their last {last_n} games {scope}."
+        ),
+        stats=("numbers.plants",),
+        rule="count",
+        stat="numbers.plants",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="most-defuses-recent-v1",
+        question="Who defused the spike the most times across their last {last_n} games {scope}?",
+        explanation=(
+            "{name} defused the spike {value} times across their last {last_n} games {scope}."
+        ),
+        stats=("numbers.defuses",),
+        rule="count",
+        stat="numbers.defuses",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="most-round-kills-match-v1",
+        question="Who got the most kills in a single round {scope}?",
+        explanation="{name} got {value} kills in one round {scope}, the most in the group.",
+        stats=("numbers.max_round_kills",),
+        rule="max_in_match",
+        stat="numbers.max_round_kills",
+        scopes=ALL_SCOPES,
+        last_n=10,
+    ),
+    QuestionTemplate(
+        id="most-clutch-wins-recent-v1",
+        question="Who won the most clutch rounds in their last {last_n} games {scope}?",
+        explanation="{name} won {value} clutch rounds across their last {last_n} games {scope}.",
+        stats=("numbers.clutch_wins",),
+        rule="count",
+        stat="numbers.clutch_wins",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="most-round-winning-kills-recent-v1",
+        question="Who had the most round-winning kills across their last {last_n} games {scope}?",
+        explanation=(
+            "{name} had {value} round-winning kills across their last {last_n} games {scope}."
+        ),
+        stats=("numbers.round_winning_kills",),
+        rule="count",
+        stat="numbers.round_winning_kills",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="most-two-kill-rounds-recent-v1",
+        question="Who had the most rounds with exactly two kills across their last {last_n} games "
+        "{scope}?",
+        explanation=(
+            "{name} had {value} rounds with exactly two kills across their last {last_n} games "
+            "{scope}."
+        ),
+        stats=("numbers.rounds_with_kills:2",),
+        rule="count",
+        stat="numbers.rounds_with_kills:2",
+        scopes=ALL_SCOPES,
+    ),
+    QuestionTemplate(
+        id="highest-kast-recent-v1",
+        question="Who had the highest average KAST percentage across their last {last_n} games "
+        "{scope}?",
+        explanation=(
+            "{name} averaged {value}% KAST across their last {last_n} games {scope}, "
+            "the highest in the group."
+        ),
+        stats=("numbers.kast_pct",),
+        rule="average",
+        stat="numbers.kast_pct",
+        scopes=ALL_SCOPES,
+    ),
 )
