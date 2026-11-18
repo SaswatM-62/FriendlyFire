@@ -35,7 +35,7 @@ compose.yaml, Makefile, mise.toml      local dev; mise.toml pins every tool vers
 |---|---|
 | frontend | gateway-service (HTTP and WebSocket) |
 | gateway-service | account, room, scoring (gRPC) |
-| account-service | matchdata (gRPC), postgres (`account`), mock-rso-service (HTTP) |
+| account-service | matchdata, scoring (gRPC), postgres (`account`), mock-rso-service (HTTP) |
 | room-service | account, quiz, scoring (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring`) |
