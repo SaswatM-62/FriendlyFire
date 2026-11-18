@@ -48,8 +48,9 @@ message QuizPlayer {
   // Used as the option text in PICK_THE_PLAYER questions.
   string display_name = 2;
   // From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-  // or Unrated matches. Such a player is never an option, the answer or the
-  // source of a stat, but their matches still count when deciding which
+  // or Unrated matches. Such a player is never compared, so never the answer,
+  // a pair question's friend or the source of a stat. They are still an option
+  // in every question, and their matches still count when deciding which
   // matches the room played together.
   bool not_enough_matches = 3;
 }
@@ -65,6 +66,8 @@ message Question {
   QuestionType type = 2;
   // e.g. "Who had 31 kills on Ascent last Tuesday?"
   string text = 3;
+  // Every player in the room, by user_id, including players the question
+  // didn't compare (so the text says who was compared).
   repeated AnswerOption options = 4;
   string correct_option_id = 5;
   // Shown after the reveal, e.g. "Sam went 31/12/4 as Jett."

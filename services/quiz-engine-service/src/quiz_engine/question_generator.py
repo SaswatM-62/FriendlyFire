@@ -341,6 +341,11 @@ class QuestionGenerator:
         whose own pool runs short borrows from the nearest level. Only then are asked
         templates reused, the one asked longest ago first, in the same way. The quiz
         puts its hardest questions in the middle (arrange()).
+
+        Every room player is an option in every question. Players with
+        not_enough_matches are never compared, so they are never the answer, a pair
+        question's friend or the source of a stat, and their missing data can't skip
+        a question. Their matches still count when deciding whether a match was shared.
         """
         players = sorted(players, key=lambda p: p.user_id)
         ids = {p.user_id for p in players}
@@ -348,10 +353,12 @@ class QuestionGenerator:
             raise ValueError("At least two players with unique nonempty IDs are required")
         if question_count < 0:
             raise ValueError("question_count must be nonnegative")
-        if question_count == 0:
+        compared = {p.user_id for p in players if not p.not_enough_matches}
+        if question_count == 0 or len(compared) < 2:
             return []
 
         # Filter outsiders before inspecting values, conflicts, or match membership.
+        # Players who aren't compared stay in: their matches decide what was shared.
         unique: dict[tuple[str, str, str], PlayerMatchStats] = {}
         for row in stats:
             if row.user_id not in ids:
@@ -369,13 +376,15 @@ class QuestionGenerator:
 
         candidates: list[_Candidate] = []
         for template in self._templates:
-            applicable = [r for r in unique.values() if r.game == template.game]
+            applicable = [
+                r for r in unique.values() if r.game == template.game and r.user_id in compared
+            ]
             # Unknown queue could belong to the selected cohort. Do not silently
             # remove it and claim an exhaustive comparison of available history.
             if any(not r.labels.get("queue_id") for r in applicable):
                 continue
             for scope in sorted(set(template.scopes)):
-                groups: dict[str, list[PlayerMatchStats]] = {uid: [] for uid in ids}
+                groups: dict[str, list[PlayerMatchStats]] = {uid: [] for uid in compared}
                 for row in applicable:
                     shared = len(members[row.game, row.match_id]) >= 2
                     if row.labels.get("queue_id") not in template.queues:
@@ -516,11 +525,8 @@ class QuestionGenerator:
             # For aggregates this is representative evidence, not the sole
             # source. fact_key fingerprints the full comparison evidence.
             source_match_id=value.source_match_id,
-            options=[
-                AnswerOption(option_id=p.user_id, label=p.display_name)
-                for p in players
-                if p.user_id in values
-            ],
+            # Every room player, including those this question didn't compare.
+            options=[AnswerOption(option_id=p.user_id, label=p.display_name) for p in players],
         )
         rating = difficulty(best, runner_up, template.direction)
         return _Candidate(template.id, fact_key, scope, rating, question)

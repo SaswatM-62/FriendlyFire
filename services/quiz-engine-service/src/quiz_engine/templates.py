@@ -5,7 +5,7 @@ new kind of calculation needs code in question_generator.py. Templates carry no
 difficulty: each generated question is rated easy, medium or hard from how far its
 winner leads (question_generator.difficulty).
 
-How a template is evaluated, for every room player:
+How a template is evaluated, for every room player who is compared (see below):
 
 1. Rows: the player's matches in the template's game and queues, and in the scope
    (all matches, "shared" ones with 2+ room players, or "solo" ones).
@@ -31,13 +31,18 @@ How a template is evaluated, for every room player:
    and so does a {value} or {percent} in the question that rounds to the same text
    as the runner-up's (it wouldn't single out the winner). Any player with a
    missing value skips it too, except that with contenders_only players without
-   enough matches sit the question out (2+ must remain), and only
-   the remaining players are options. "Enough" means at least one match in the
-   scope (and at least last_n of them), plus one after the filter. Use it for agent
-   or map questions, and for the solo scope: players who mostly squad up still
-   have the odd solo game, so pair a solo template with contenders_only and a small
-   or no last_n. Pair questions always compare only the players who played with
-   the friend.
+   enough matches sit the question out (2+ must remain). "Enough" means at least
+   one match in the scope (and at least last_n of them), plus one after the filter.
+   Use it for agent or map questions, and for the solo scope: players who mostly
+   squad up still have the odd solo game, so pair a solo template with
+   contenders_only and a small or no last_n. Pair questions always compare only the
+   players who played with the friend.
+
+Every room player is an option in every question, including players who sat it out,
+so a question says who it compared ("of anyone here who has played Ascent"). Players
+with QuizPlayer.not_enough_matches are never compared: never the answer, a pair
+question's friend or the source of a stat. Their matches still count when deciding
+whether a match was shared.
 
 Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
 "matches", or "numbers.<key>" from the catalogue.
@@ -83,8 +88,9 @@ class QuestionTemplate:
 TEMPLATES = (
     QuestionTemplate(
         id="most-kills-v1",
-        question="Among these players, who recorded the most kills in a single match {scope}?",
-        explanation="{name} recorded {value} kills in one match {scope}, the unique highest total.",
+        question="This player once racked up {value} kills in a single match {scope}, the most "
+        "in this group. Who might this player be?",
+        explanation="{name}, with {value} kills in one match.",
         stats=("kills", "labels.queue_id"),
         rule="max_in_match",
         stat="kills",
@@ -93,11 +99,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="highest-acs-v1",
-        question="Among these players, who has the highest pooled average combat score {scope}?",
-        explanation=(
-            "{name} had the highest pooled ACS {scope}: {value} "
-            "({numerator} total combat score / {denominator} rounds)."
-        ),
+        question="This player averages {value} combat score per round {scope}, the highest "
+        "in this group. Who is this player?",
+        explanation="{name}: {numerator} combat score over {denominator} rounds.",
         stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.combat_score",),
@@ -107,10 +111,10 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="recent-wins-v1",
-        question="Among these players, who won the most games in their last {last_n} "
-        "available competitive matches?",
-        explanation="{name} won {value} of their last {last_n} available competitive matches "
-        "(draws count as non-wins).",
+        question="This player won {value} of their last {last_n} Competitive matches, more "
+        "than anyone else in this group. Who keeps winning?",
+        explanation="{name}, with {value} wins in {last_n} Competitive matches "
+        "(a draw isn't a win).",
         stats=("played_at", "labels.queue_id", "labels.result", "won"),
         rule="count",
         stat="won",

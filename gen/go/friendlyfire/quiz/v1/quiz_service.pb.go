@@ -157,8 +157,9 @@ type QuizPlayer struct {
 	// Used as the option text in PICK_THE_PLAYER questions.
 	DisplayName string `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	// From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-	// or Unrated matches. Such a player is never an option, the answer or the
-	// source of a stat, but their matches still count when deciding which
+	// or Unrated matches. Such a player is never compared, so never the answer,
+	// a pair question's friend or the source of a stat. They are still an option
+	// in every question, and their matches still count when deciding which
 	// matches the room played together.
 	NotEnoughMatches bool `protobuf:"varint,3,opt,name=not_enough_matches,json=notEnoughMatches,proto3" json:"not_enough_matches,omitempty"`
 	unknownFields    protoimpl.UnknownFields
@@ -267,7 +268,9 @@ type Question struct {
 	QuestionId string                 `protobuf:"bytes,1,opt,name=question_id,json=questionId,proto3" json:"question_id,omitempty"`
 	Type       QuestionType           `protobuf:"varint,2,opt,name=type,proto3,enum=friendlyfire.quiz.v1.QuestionType" json:"type,omitempty"`
 	// e.g. "Who had 31 kills on Ascent last Tuesday?"
-	Text            string          `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
+	Text string `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
+	// Every player in the room, by user_id, including players the question
+	// didn't compare (so the text says who was compared).
 	Options         []*AnswerOption `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
 	CorrectOptionId string          `protobuf:"bytes,5,opt,name=correct_option_id,json=correctOptionId,proto3" json:"correct_option_id,omitempty"`
 	// Shown after the reveal, e.g. "Sam went 31/12/4 as Jett."
