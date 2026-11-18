@@ -169,6 +169,11 @@ private static final long serialVersionUID = 0L;
   @SuppressWarnings("serial")
   private java.util.List<com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption> options_;
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   @java.lang.Override
@@ -176,6 +181,11 @@ private static final long serialVersionUID = 0L;
     return options_;
   }
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   @java.lang.Override
@@ -184,6 +194,11 @@ private static final long serialVersionUID = 0L;
     return options_;
   }
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   @java.lang.Override
@@ -191,6 +206,11 @@ private static final long serialVersionUID = 0L;
     return options_.size();
   }
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   @java.lang.Override
@@ -198,6 +218,11 @@ private static final long serialVersionUID = 0L;
     return options_.get(index);
   }
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   @java.lang.Override
@@ -1137,6 +1162,11 @@ private static final long serialVersionUID = 0L;
         com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption, com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.Builder, com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOptionOrBuilder> optionsBuilder_;
 
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public java.util.List<com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption> getOptionsList() {
@@ -1147,6 +1177,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public int getOptionsCount() {
@@ -1157,6 +1192,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption getOptions(int index) {
@@ -1167,6 +1207,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder setOptions(
@@ -1182,6 +1227,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder setOptions(
@@ -1196,6 +1246,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder addOptions(com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption value) {
@@ -1210,6 +1265,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder addOptions(
@@ -1225,6 +1285,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder addOptions(
@@ -1239,6 +1304,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder addOptions(
@@ -1253,6 +1323,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder addAllOptions(
@@ -1268,6 +1343,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder clearOptions() {
@@ -1281,6 +1361,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public Builder removeOptions(int index) {
@@ -1294,6 +1379,11 @@ private static final long serialVersionUID = 0L;
       return this;
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.Builder getOptionsBuilder(
@@ -1301,6 +1391,11 @@ private static final long serialVersionUID = 0L;
       return internalGetOptionsFieldBuilder().getBuilder(index);
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOptionOrBuilder getOptionsOrBuilder(
@@ -1311,6 +1406,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public java.util.List<? extends com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOptionOrBuilder> 
@@ -1322,6 +1422,11 @@ private static final long serialVersionUID = 0L;
       }
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.Builder addOptionsBuilder() {
@@ -1329,6 +1434,11 @@ private static final long serialVersionUID = 0L;
           com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.getDefaultInstance());
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.Builder addOptionsBuilder(
@@ -1337,6 +1447,11 @@ private static final long serialVersionUID = 0L;
           index, com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.getDefaultInstance());
     }
     /**
+     * <pre>
+     * Every player in the room, by user_id, including players the question
+     * didn't compare (so the text says who was compared).
+     * </pre>
+     *
      * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
      */
     public java.util.List<com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption.Builder> 
