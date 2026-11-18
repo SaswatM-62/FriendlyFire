@@ -142,7 +142,8 @@ export class FakeGateway {
   }
 
   syncStatus(): SyncStatusResponse {
-    if (!this.state.linked) return { status: "NOT_LINKED" };
+    // Like the real Gateway: an unlinked player has 0 matches stored.
+    if (!this.state.linked) return { status: "NOT_LINKED", matchesStored: 0 };
     const lastSyncedAt = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     switch (this.state.syncMode) {
       case "syncing": {
