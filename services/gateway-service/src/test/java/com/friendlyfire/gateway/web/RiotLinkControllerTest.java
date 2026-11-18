@@ -11,8 +11,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyfire.gateway.testsupport.FakeTokens;
 import com.friendlyfire.gateway.testsupport.GatewayTestBase;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.DataStatus;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
+import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,10 +99,57 @@ class RiotLinkControllerTest extends GatewayTestBase {
     }
 
     @Test
-    void syncStatusWaitsForAccountsNewRpc() throws Exception {
+    void syncStatusAsksAccountAboutTheSignedInPlayer() throws Exception {
         mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, bearer("maya")))
-                .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$.error.code").value("NOT_IMPLEMENTED"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("NOT_LINKED"))
+                .andExpect(jsonPath("$.matchesStored").value(0))
+                .andExpect(jsonPath("$.estimatedSeconds").doesNotExist())
+                .andExpect(jsonPath("$.lastSyncedAt").doesNotExist())
+                .andExpect(jsonPath("$.errorMessage").doesNotExist());
+
+        assertThat(ACCOUNT.calls.last(GetDataStatusRequest.class).getUserIdsList()).containsExactly("user-maya");
+    }
+
+    @Test
+    void syncStatusShowsTheEstimateAndTheLastSync() throws Exception {
+        ACCOUNT.calls.answer(GetDataStatusRequest.class, request -> GetDataStatusResponse.newBuilder()
+                .addStatuses(UserDataStatus.newBuilder()
+                        .setUserId(request.getUserIds(0))
+                        .setStatus(DataStatus.DATA_STATUS_SYNCING)
+                        .setEstimatedSeconds(120)
+                        .setMatchesStored(41)
+                        .setLastSyncedAt(Timestamp.newBuilder().setSeconds(1_762_500_000L)))
+                .build());
+
+        mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, bearer("maya")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SYNCING"))
+                .andExpect(jsonPath("$.estimatedSeconds").value(120))
+                .andExpect(jsonPath("$.matchesStored").value(41))
+                .andExpect(jsonPath("$.lastSyncedAt").value("2025-11-07T07:20:00Z"));
+    }
+
+    @Test
+    void aFailedSyncSaysWhy() throws Exception {
+        ACCOUNT.calls.answer(GetDataStatusRequest.class, request -> GetDataStatusResponse.newBuilder()
+                .addStatuses(UserDataStatus.newBuilder()
+                        .setUserId(request.getUserIds(0))
+                        .setStatus(DataStatus.DATA_STATUS_FAILED)
+                        .setErrorMessage("Riot's match history isn't answering."))
+                .build());
+
+        mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, bearer("maya")))
+                .andExpect(jsonPath("$.status").value("FAILED"))
+                .andExpect(jsonPath("$.errorMessage").value("Riot's match history isn't answering."));
+    }
+
+    @Test
+    void syncStatusIs503WhenAccountCantTell() throws Exception {
+        ACCOUNT.calls.fail(GetDataStatusRequest.class, Status.UNAVAILABLE);
+
+        mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, bearer("maya")))
+                .andExpect(status().isServiceUnavailable());
     }
 
     private ResultActions complete(String name, String body) throws Exception {

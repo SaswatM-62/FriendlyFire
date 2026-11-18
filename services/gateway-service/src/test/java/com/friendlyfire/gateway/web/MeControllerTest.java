@@ -1,6 +1,7 @@
 package com.friendlyfire.gateway.web;
 
 import static com.friendlyfire.gateway.testsupport.FakeServices.ACCOUNT;
+import static com.friendlyfire.gateway.testsupport.FakeServices.ROOM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -18,6 +19,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,11 +139,30 @@ class MeControllerTest extends GatewayTestBase {
     }
 
     @Test
-    void deletesTheAccount() throws Exception {
+    void deletesTheAccountAfterTakingThePlayerOutOfAnyRoom() throws Exception {
         mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
                 .andExpect(status().isNoContent());
 
+        assertThat(ROOM.calls.last(RemovePlayerRequest.class).getUserId()).isEqualTo("user-maya");
         assertThat(ACCOUNT.calls.last(DeleteAccountRequest.class).getUserId()).isEqualTo("user-maya");
+    }
+
+    @Test
+    void theAccountStaysWhenRoomCantRemoveThePlayer() throws Exception {
+        ROOM.calls.fail(RemovePlayerRequest.class, Status.UNIMPLEMENTED);
+
+        mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isNotImplemented());
+
+        assertThat(ACCOUNT.calls.received(DeleteAccountRequest.class)).isEmpty();
+    }
+
+    @Test
+    void aDeleteAccountCantFinishIs503() throws Exception {
+        ACCOUNT.calls.fail(DeleteAccountRequest.class, Status.UNAVAILABLE);
+
+        mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isServiceUnavailable());
     }
 
     @Test

@@ -12,6 +12,8 @@ import com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomResponse;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportConnectionQualityRequest;
@@ -201,5 +203,10 @@ public final class FakeRoomService extends RoomServiceGrpc.RoomServiceImplBase {
     @Override
     public void castVote(CastVoteRequest request, StreamObserver<CastVoteResponse> observer) {
         calls.handle(request, CastVoteResponse.getDefaultInstance(), observer);
+    }
+
+    @Override
+    public void removePlayer(RemovePlayerRequest request, StreamObserver<RemovePlayerResponse> observer) {
+        calls.handle(request, RemovePlayerResponse.getDefaultInstance(), observer);
     }
 }

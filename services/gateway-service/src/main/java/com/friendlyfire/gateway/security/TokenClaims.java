@@ -38,7 +38,10 @@ public final class TokenClaims {
         return string(jwt, "name");
     }
 
-    /** The Auth0 "admin" role, given to the project managers (FF-602). */
+    /**
+     * The "admin" role of the project managers (FF-602). The post-login Action takes it from
+     * the user's app_metadata, since the free Auth0 plan has no role management.
+     */
     public boolean isAdmin(Jwt jwt) {
         Object roles = jwt.getClaims().get(namespace + "roles");
         if (!(roles instanceof List<?> list)) {

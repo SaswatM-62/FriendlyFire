@@ -8,6 +8,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.Account
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -25,11 +27,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     private final AccountServiceBlockingStub accounts;
+    private final RoomServiceBlockingStub rooms;
     private final UserResolver users;
     private final SessionCloser sockets;
 
-    public MeController(AccountServiceBlockingStub accounts, UserResolver users, SessionCloser sockets) {
+    public MeController(
+            AccountServiceBlockingStub accounts, RoomServiceBlockingStub rooms, UserResolver users,
+            SessionCloser sockets) {
         this.accounts = accounts;
+        this.rooms = rooms;
         this.users = users;
         this.sockets = sockets;
     }
@@ -57,17 +63,17 @@ public class MeController {
     }
 
     /**
-     * Deletes the user, their Riot link and their match data (FF-111). 204 when done. A
-     * live WebSocket of theirs (another tab or device) is closed: tokens are only checked
-     * when a socket connects (ADR-022).
+     * Deletes the user, their Riot link and their match data (FF-111). 204 when done. It
+     * takes them out of any room first (ADR-027); if Room or Account can't finish, nothing
+     * more happens and the error goes back (e.g. 503), so the player can try again. A live
+     * WebSocket of theirs (another tab or device) is closed: tokens are only checked when a
+     * socket connects (ADR-022).
      */
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccount(SignedInUser me) {
-        // TODO(ff): take the player out of any room first (FF-111, ADR-027)
-        //   - call RoomService.RemovePlayer before DeleteAccount (in the contract; Room
-        //     still answers UNIMPLEMENTED)
-        //   - uses: a RoomServiceBlockingStub
+        // Account never calls Room (Room calls Account), so the Gateway does it.
+        rooms.removePlayer(RemovePlayerRequest.newBuilder().setUserId(me.userId()).build());
         accounts.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(me.userId()).build());
         users.evict(me.subject());
         sockets.closeUser(me.userId(), ErrorCodes.ACCOUNT_DELETED, "Your FriendlyFire account was deleted.");

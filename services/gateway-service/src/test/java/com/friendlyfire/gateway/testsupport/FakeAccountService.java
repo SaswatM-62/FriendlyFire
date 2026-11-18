@@ -3,10 +3,13 @@ package com.friendlyfire.gateway.testsupport;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.DataStatus;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkResponse;
@@ -15,6 +18,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
+import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 
@@ -78,5 +82,14 @@ public final class FakeAccountService extends AccountServiceGrpc.AccountServiceI
     @Override
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> observer) {
         calls.handle(request, DeleteAccountResponse.getDefaultInstance(), observer);
+    }
+
+    /** By default nobody has linked a Riot account. */
+    @Override
+    public void getDataStatus(GetDataStatusRequest request, StreamObserver<GetDataStatusResponse> observer) {
+        GetDataStatusResponse.Builder response = GetDataStatusResponse.newBuilder();
+        request.getUserIdsList().forEach(id -> response.addStatuses(UserDataStatus.newBuilder()
+                .setUserId(id).setStatus(DataStatus.DATA_STATUS_NOT_LINKED)));
+        calls.handle(request, response.build(), observer);
     }
 }
