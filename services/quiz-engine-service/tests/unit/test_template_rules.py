@@ -325,6 +325,114 @@ def test_lowest_wins_difficulty_uses_the_runner_up() -> None:
     assert difficulty(Fraction(10), Fraction(11), "lowest") == "hard"
 
 
+FF409_IDS = (
+    "max-round-damage-v1",
+    "recent-first-bloods-v1",
+    "average-performance-score-v1",
+    "opening-duel-win-rate-v1",
+    "max-round-kills-v1",
+    "post-plant-kills-v1",
+    "ninja-defuses-v1",
+    "clutch-win-rate-v1",
+    "fall-deaths-v1",
+    "pistol-round-kills-v1",
+)
+
+
+def ff409_template(template_id: str) -> QuestionTemplate:
+    from quiz_engine.templates import TEMPLATES
+
+    return next(t for t in TEMPLATES if t.id == template_id)
+
+
+def ff409_stats(template: QuestionTemplate, *, tied: bool = False) -> list[PlayerMatchStats]:
+    """Make enough fixture matches for a pack template, with Alice leading by default."""
+    count = template.last_n or 2
+    rows: list[PlayerMatchStats] = []
+    for n in range(count):
+        for uid in (ALICE, BOB):
+            alice = uid == ALICE
+            score = 8 if alice else (8 if tied else 3)
+            values: dict[str, float] = {}
+            fields = (
+                template.stat,
+                *template.numerator,
+                *template.denominator,
+            )
+            for field in fields:
+                if field.startswith("numbers."):
+                    if template.id in {"opening-duel-win-rate-v1", "clutch-win-rate-v1"}:
+                        if field.endswith(("first_deaths", "clutch_attempts")):
+                            values[field.removeprefix("numbers.")] = 10
+                        else:
+                            values[field.removeprefix("numbers.")] = score
+                    else:
+                        values[field.removeprefix("numbers.")] = score
+            row = match(uid, f"{template.id}-{uid}-{n}", seconds=n + 1, **values)
+            if template.display_label:
+                row.labels[template.display_label] = "Jett" if alice else "Sage"
+            rows.append(row)
+    return rows
+
+
+@pytest.mark.parametrize("template_id", FF409_IDS)
+def test_ff409_template_finds_one_winner(template_id: str) -> None:
+    template = ff409_template(template_id)
+    questions = ask(template, ff409_stats(template), ALICE, BOB)
+
+    assert questions
+    assert {question.correct_option_id for question in questions} == {ALICE}
+    assert all(
+        [option.option_id for option in question.options] == [ALICE, BOB] for question in questions
+    )
+
+
+@pytest.mark.parametrize("template_id", FF409_IDS)
+def test_ff409_template_skips_a_tie(template_id: str) -> None:
+    template = ff409_template(template_id)
+    assert ask(template, ff409_stats(template, tied=True), ALICE, BOB) == []
+
+
+@pytest.mark.parametrize("template_id", FF409_IDS)
+def test_ff409_template_skips_missing_data(template_id: str) -> None:
+    template = ff409_template(template_id)
+    stats = ff409_stats(template)
+    fields = (template.stat, *template.numerator, *template.denominator)
+    number_field = next(field for field in fields if field.startswith("numbers."))
+    key = number_field.removeprefix("numbers.")
+    del stats[0].numbers[key]
+
+    assert ask(template, stats, ALICE, BOB) == []
+
+
+def test_ff409_uses_ten_distinct_template_ids() -> None:
+    from quiz_engine.templates import TEMPLATES
+
+    assert len({template_id for template_id in FF409_IDS}) == 10
+    assert {template_id for template_id in FF409_IDS} <= {template.id for template in TEMPLATES}
+    assert len({template.id for template in TEMPLATES}) == len(TEMPLATES)
+
+
+def test_ff409_recent_first_bloods_has_guide_wording() -> None:
+    template = ff409_template("recent-first-bloods-v1")
+    stats = ff409_stats(template)
+    [question] = ask(template, stats, ALICE, BOB)
+
+    assert "last 5 matches" in question.text
+    assert question.correct_option_id == ALICE
+    assert question.explanation.startswith("Alice opened ")
+
+
+def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
+    template = ff409_template("fall-deaths-v1")
+    stats = ff409_stats(template)
+    [question] = ask(template, stats, ALICE, BOB)
+
+    assert "fell to their death" in question.text
+    assert "unfortunate stat" in question.text
+    assert question.correct_option_id == ALICE
+
+
 @pytest.mark.parametrize(
     ("fields", "problem"),
     [

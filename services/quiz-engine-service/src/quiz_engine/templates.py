@@ -1,51 +1,7 @@
-"""Data-only question templates; question_generator.py evaluates them.
+"""Data-only question templates transcribed from the sample question bank.
 
-Catalogue: docs/stats-catalogue.md. A new question is one more entry here; only a
-new kind of calculation needs code in question_generator.py. Templates carry no
-difficulty: each generated question is rated easy, medium or hard from how far its
-winner leads (question_generator.difficulty).
-
-How a template is evaluated, for every room player:
-
-1. Rows: the player's matches in the template's game and queues, and in the scope
-   (all matches, "shared" ones with 2+ room players, or "solo" ones).
-2. Window: the player's newest last_n matches by played_at (fewer than last_n, a
-   missing timestamp, or a tie across the boundary skips the question), or every
-   stored match when last_n is None. The window is chosen before any filter.
-3. Filter: with a parameter_label, one question per value of that label (e.g. per
-   agent), keeping only the window's matches with that value. A match missing the
-   label skips the question rather than silently dropping out.
-4. Value, by rule:
-   - max_in_match: the player's best single match for stat (highest, or lowest
-     when direction is "lowest"); display_label names a label from that match,
-     shown as {<display_label>_name}.
-   - count: the sum of stat over the matches ("matches" counts them, "won" counts
-     wins). No matches after a filter is a known zero.
-   - average: stat averaged per match.
-   - pooled_ratio: the sum of the numerator stats over the sum of the denominator
-     stats. A zero total denominator is unknown; one zero match still counts.
-   - pair: friend-pair counts. One question per room player (the {friend}); each
-     other player's value is the sum of the "<stat>:<friend's user ID>" number over
-     matches where they were on the friend's team.
-5. Compare: the unique highest (or lowest) value wins; a tie skips the question,
-   and so does a {value} or {percent} in the question that rounds to the same text
-   as the runner-up's (it wouldn't single out the winner). Any player with a
-   missing value skips it too, except that with contenders_only players without
-   enough matches sit the question out (2+ must remain), and only
-   the remaining players are options. "Enough" means at least one match in the
-   scope (and at least last_n of them), plus one after the filter. Use it for agent
-   or map questions, and for the solo scope: players who mostly squad up still
-   have the odd solo game, so pair a solo template with contenders_only and a small
-   or no last_n. Pair questions always compare only the players who played with
-   the friend.
-
-Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
-"matches", or "numbers.<key>" from the catalogue.
-
-Placeholders: {name} (winner), {value}, {numerator}, {denominator}, {percent}
-(value x 100), {scope}, {last_n}, {parameter}, {friend} and {<display_label>_name}.
-Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
-for {percent} (29.7).
+Catalogue: docs/stats-catalogue.md. A new question is another entry here; only a
+new kind of calculation needs code in question_generator.py.
 """
 
 from dataclasses import dataclass
@@ -64,7 +20,6 @@ class QuestionTemplate:
     id: str
     question: str
     explanation: str
-    # Every catalogue key the template reads, for reviewers.
     stats: tuple[str, ...]
     rule: Rule
     stat: str = ""
@@ -118,113 +73,115 @@ TEMPLATES = (
         last_n=10,
     ),
     QuestionTemplate(
-        id="highest-performance-score-v1",
-        question="Who had the highest Performance Score in a single match {scope}?",
+        id="max-round-damage-v1",
+        question="One of you dealt {value} damage to enemies in a single round {scope}, "
+        "more than anyone else here has managed. Who pulled that off?",
+        explanation="{name}, playing {agent_name}: {value} damage in one round.",
+        stats=("numbers.max_round_damage", "labels.agent", "labels.queue_id"),
+        rule="max_in_match",
+        stat="numbers.max_round_damage",
+        scopes=ALL_SCOPES,
+        last_n=None,
+        display_label="agent",
+    ),
+    QuestionTemplate(
+        id="recent-first-bloods-v1",
+        question="Over their last {last_n} matches, this player drew first blood "
+        "{value} times, the most in this group. Who is this player?",
         explanation=(
-            "{name} recorded a Performance Score of {value} in one match {scope}, "
-            "the unique highest."
+            "{name} opened {value} rounds with the first kill in their last {last_n} matches."
         ),
-        stats=("numbers.performance_score",),
-        rule="max_in_match",
-        stat="numbers.performance_score",
-        scopes=ALL_SCOPES,
-        last_n=10,
-    ),
-    QuestionTemplate(
-        id="most-damage-dealt-match-v1",
-        question="Who dealt the most damage in a single match {scope}?",
-        explanation="{name} dealt {value} damage in one match {scope}, more than anyone else.",
-        stats=("numbers.damage_dealt",),
-        rule="max_in_match",
-        stat="numbers.damage_dealt",
-        scopes=ALL_SCOPES,
-        last_n=10,
-    ),
-    QuestionTemplate(
-        id="most-first-bloods-recent-v1",
-        question="Who earned the most first bloods across their last {last_n} games {scope}?",
-        explanation="{name} earned {value} first bloods across their last {last_n} games {scope}.",
-        stats=("numbers.first_bloods",),
+        stats=("numbers.first_bloods", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.first_bloods",
         scopes=ALL_SCOPES,
+        last_n=5,
     ),
     QuestionTemplate(
-        id="most-plants-recent-v1",
-        question="Who planted the spike the most times across their last {last_n} games {scope}?",
-        explanation=(
-            "{name} planted the spike {value} times across their last {last_n} games {scope}."
-        ),
-        stats=("numbers.plants",),
-        rule="count",
-        stat="numbers.plants",
+        id="average-performance-score-v1",
+        question="This player averages a Performance Score of {value} per match {scope}, "
+        "the highest in this group. Who set the pace?",
+        explanation="{name} averaged {numerator} Performance Score in {denominator} matches.",
+        stats=("numbers.performance_score", "labels.queue_id"),
+        rule="average",
+        stat="numbers.performance_score",
         scopes=ALL_SCOPES,
+        last_n=None,
     ),
     QuestionTemplate(
-        id="most-defuses-recent-v1",
-        question="Who defused the spike the most times across their last {last_n} games {scope}?",
-        explanation=(
-            "{name} defused the spike {value} times across their last {last_n} games {scope}."
-        ),
-        stats=("numbers.defuses",),
-        rule="count",
-        stat="numbers.defuses",
+        id="opening-duel-win-rate-v1",
+        question="This player wins {percent}% of their opening duels {scope}, "
+        "the best record in this group. Who takes the first fight?",
+        explanation="{name}: {numerator} first bloods out of {denominator} opening duels.",
+        stats=("numbers.first_bloods", "numbers.first_deaths", "labels.queue_id"),
+        rule="pooled_ratio",
+        numerator=("numbers.first_bloods",),
+        denominator=("numbers.first_bloods", "numbers.first_deaths"),
         scopes=ALL_SCOPES,
+        last_n=None,
     ),
     QuestionTemplate(
-        id="most-round-kills-match-v1",
-        question="Who got the most kills in a single round {scope}?",
-        explanation="{name} got {value} kills in one round {scope}, the most in the group.",
-        stats=("numbers.max_round_kills",),
+        id="max-round-kills-v1",
+        question="Who got the most enemy kills in a single round {scope}?",
+        explanation="{name} got {value} enemy kills in one round {scope}, the most in the group.",
+        stats=("numbers.max_round_kills", "labels.queue_id"),
         rule="max_in_match",
         stat="numbers.max_round_kills",
         scopes=ALL_SCOPES,
-        last_n=10,
+        last_n=None,
     ),
     QuestionTemplate(
-        id="most-clutch-wins-recent-v1",
-        question="Who won the most clutch rounds in their last {last_n} games {scope}?",
-        explanation="{name} won {value} clutch rounds across their last {last_n} games {scope}.",
-        stats=("numbers.clutch_wins",),
+        id="post-plant-kills-v1",
+        question="Who gets the most post-plant kills across their last {last_n} matches?",
+        explanation="{name} got {value} enemy kills after the spike was planted.",
+        stats=("numbers.post_plant_kills", "played_at", "labels.queue_id"),
         rule="count",
-        stat="numbers.clutch_wins",
+        stat="numbers.post_plant_kills",
         scopes=ALL_SCOPES,
+        last_n=5,
     ),
     QuestionTemplate(
-        id="most-round-winning-kills-recent-v1",
-        question="Who had the most round-winning kills across their last {last_n} games {scope}?",
-        explanation=(
-            "{name} had {value} round-winning kills across their last {last_n} games {scope}."
-        ),
-        stats=("numbers.round_winning_kills",),
+        id="ninja-defuses-v1",
+        question="Who pulled off the most ninja defuses in their last {last_n} matches?",
+        explanation="{name} made {value} defuses while enemy players were still alive.",
+        stats=("numbers.ninja_defuses", "played_at", "labels.queue_id"),
         rule="count",
-        stat="numbers.round_winning_kills",
+        stat="numbers.ninja_defuses",
         scopes=ALL_SCOPES,
+        last_n=5,
     ),
     QuestionTemplate(
-        id="most-two-kill-rounds-recent-v1",
-        question="Who had the most rounds with exactly two kills across their last {last_n} games "
-        "{scope}?",
-        explanation=(
-            "{name} had {value} rounds with exactly two kills across their last {last_n} games "
-            "{scope}."
-        ),
-        stats=("numbers.rounds_with_kills:2",),
+        id="clutch-win-rate-v1",
+        question="This player wins {percent}% of their clutches {scope}, "
+        "the best record in this group. Who stays cold under pressure?",
+        explanation="{name}: {numerator} clutch wins out of {denominator} clutch attempts.",
+        stats=("numbers.clutch_wins", "numbers.clutch_attempts", "labels.queue_id"),
+        rule="pooled_ratio",
+        numerator=("numbers.clutch_wins",),
+        denominator=("numbers.clutch_attempts",),
+        scopes=ALL_SCOPES,
+        last_n=None,
+    ),
+    QuestionTemplate(
+        id="fall-deaths-v1",
+        question="In their last {last_n} matches, this player fell to their death "
+        "{value} times, more than anyone else here. Who does this unfortunate stat belong to?",
+        explanation="{name} recorded {value} fall deaths in their last {last_n} matches.",
+        stats=("numbers.fall_deaths", "played_at", "labels.queue_id"),
         rule="count",
-        stat="numbers.rounds_with_kills:2",
+        stat="numbers.fall_deaths",
         scopes=ALL_SCOPES,
+        last_n=5,
     ),
     QuestionTemplate(
-        id="highest-kast-recent-v1",
-        question="Who had the highest average KAST percentage across their last {last_n} games "
-        "{scope}?",
-        explanation=(
-            "{name} averaged {value}% KAST across their last {last_n} games {scope}, "
-            "the highest in the group."
-        ),
-        stats=("numbers.kast_pct",),
+        id="pistol-round-kills-v1",
+        question="This player averages {value} pistol-round kills per match {scope}, "
+        "the most in this group. Who starts rounds with a bang?",
+        explanation="{name}: {numerator} pistol-round kills in {denominator} matches.",
+        stats=("numbers.pistol_round_kills", "labels.queue_id"),
         rule="average",
-        stat="numbers.kast_pct",
+        stat="numbers.pistol_round_kills",
         scopes=ALL_SCOPES,
+        last_n=10,
     ),
 )
