@@ -207,7 +207,7 @@ def test_nonempty_quiz_has_three_templates_and_mixes_shared_and_solo() -> None:
 
 def test_every_question_names_its_template() -> None:
     questions = QuestionGenerator().generate(players(), history(), 5, 42)
-    assert sorted(template_ids(questions)) == sorted(t.id for t in TEMPLATES)
+    assert sorted(template_ids(questions)) == sorted([KILLS.id, ACS.id, WINS.id])
     for question in questions:
         assert len(question.question_id) == 64
         assert not question.question_id.startswith(question.template_id)
@@ -263,9 +263,10 @@ def test_play_again_rotates_through_every_template() -> None:
     generator = QuestionGenerator()
     asked: list[str] = []
     last_asked: dict[str, int] = {}
+    applicable_ids = [KILLS.id, ACS.id, WINS.id]
     for quiz in range(7):
         questions = generator.generate(players(), history(), 2, quiz, asked_template_ids=asked)
-        unused = [t.id for t in TEMPLATES if t.id not in last_asked]
+        unused = [template_id for template_id in applicable_ids if template_id not in last_asked]
         longest_ago = sorted(last_asked, key=lambda t: last_asked[t])
         if len(unused) >= 2:
             assert set(template_ids(questions)) <= set(unused)
@@ -302,7 +303,7 @@ def test_pooled_acs_uses_round_weighting_not_mean_of_match_acs() -> None:
     questions = QuestionGenerator([ACS]).generate(players(), stats, 1, 0)
     assert len(questions) == 1
     assert questions[0].correct_option_id == "b"
-    assert "20 combat score over 10 rounds" in questions[0].explanation
+    assert "20 total combat score / 10 rounds" in questions[0].explanation
 
 
 @pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), -1])
