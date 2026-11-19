@@ -141,8 +141,9 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-   * or Unrated matches. Such a player is never an option, the answer or the
-   * source of a stat, but their matches still count when deciding which
+   * or Unrated matches. Such a player is never compared, so never the answer,
+   * a pair question's friend or the source of a stat. They are still an option
+   * in every question, and their matches still count when deciding which
    * matches the room played together.
    * </pre>
    *
@@ -666,8 +667,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-     * or Unrated matches. Such a player is never an option, the answer or the
-     * source of a stat, but their matches still count when deciding which
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
      * matches the room played together.
      * </pre>
      *
@@ -681,8 +683,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-     * or Unrated matches. Such a player is never an option, the answer or the
-     * source of a stat, but their matches still count when deciding which
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
      * matches the room played together.
      * </pre>
      *
@@ -700,8 +703,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
-     * or Unrated matches. Such a player is never an option, the answer or the
-     * source of a stat, but their matches still count when deciding which
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
      * matches the room played together.
      * </pre>
      *

@@ -5,6 +5,7 @@ import { DataBadge } from "@/components/common/DataBadge";
 import { usePlayerInfo, useRoom } from "@/components/room/RoomContext";
 import { Av, Mini } from "@/components/ui/Character";
 import { ConfirmDialog } from "@/components/ui/Dialog";
+import { Banner } from "@/components/ui/Banner";
 import { Icon } from "@/components/ui/Icon";
 import { NetBars } from "@/components/ui/NetBars";
 import { useToast } from "@/components/ui/Toasts";
@@ -260,7 +261,8 @@ function Actions() {
 }
 
 /** The lobby (FF-505, Lobby boards): the code and settings, who's here, and Start. */
-export function Lobby() {
+/** `startFailed`: why the last Start didn't work (QUIZ_START_FAILED), shown until dismissed or the next Start. */
+export function Lobby({ startFailed, onDismissStartFailed }: { startFailed?: string | null; onDismissStartFailed?: () => void } = {}) {
   const { snapshot, isHost, meId, send } = useRoom();
   const info = usePlayerInfo();
   const [kicking, setKicking] = useState<string | null>(null);
@@ -268,6 +270,22 @@ export function Lobby() {
 
   return (
     <>
+      {startFailed && (
+        <Banner
+          tone="red"
+          icon="alert"
+          role="alert"
+          action={
+            onDismissStartFailed && (
+              <button type="button" className="btn btn--icon" aria-label="Dismiss" onClick={onDismissStartFailed}>
+                <Icon name="close" size={18} />
+              </button>
+            )
+          }
+        >
+          <strong>The quiz couldn&apos;t start.</strong> {startFailed}
+        </Banner>
+      )}
       <Head />
       <section className="players" aria-label="Players">
         {snapshot.players.map((player) => (

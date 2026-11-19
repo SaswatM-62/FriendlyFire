@@ -3,6 +3,7 @@
 import { createContext, Suspense, useContext, useMemo, useState, type ReactNode } from "react";
 import { ApiProvider } from "@/components/providers/ApiProvider";
 import { MeProvider } from "@/components/providers/MeProvider";
+import { OnboardingGate } from "@/components/providers/OnboardingGate";
 import { SessionProvider, useSession } from "@/components/providers/SessionProvider";
 import { SoundProvider } from "@/components/providers/SoundProvider";
 import { SyncStatusProvider } from "@/components/providers/SyncStatusProvider";
@@ -39,6 +40,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <SyncStatusProvider>
               <SoundProvider>
                 <RealtimeProvider fake={fake}>
+                  <Suspense fallback={null}>
+                    <OnboardingGate />
+                  </Suspense>
                   {children}
                   {DevPanel && (
                     <Suspense fallback={null}>

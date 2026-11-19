@@ -52,6 +52,7 @@ public class RoomController {
         RoomSnapshot room = rooms.createRoom(CreateRoomRequest.newBuilder()
                         .setHostUserId(me.userId())
                         .setHostDisplayName(me.displayName())
+                        .setHostRiotTagLine(me.riotTagLine())
                         .build())
                 .getSnapshot();
         return ResponseEntity.status(HttpStatus.CREATED).body(RoomSnapshotJson.from(room));
@@ -65,14 +66,12 @@ public class RoomController {
     public RoomSnapshotJson join(@PathVariable String code, SignedInUser me, HttpServletRequest request) {
         String roomCode = RoomCodes.require(code);
         rateLimiter.check(RateLimit.JOIN_ROOM, me.userId(), request.getRemoteAddr());
-        // TODO(ff): pass the player's Riot tag line, so two players with the same name can
-        //   be told apart (FF-303)
-        //   - JoinRoomRequest.riot_tag_line (and CreateRoomRequest.host_riot_tag_line for the
-        //     host); the tag line comes from the cached user's Riot link (UserResolver)
         RoomSnapshot room = GrpcErrors.renaming(JOIN_ERRORS, () -> rooms.joinRoom(JoinRoomRequest.newBuilder()
                         .setRoomCode(roomCode)
                         .setUserId(me.userId())
                         .setDisplayName(me.displayName())
+                        // Tells two players with the same name apart: "Sam (NA1)".
+                        .setRiotTagLine(me.riotTagLine())
                         .build()))
                 .getSnapshot();
         return RoomSnapshotJson.from(room);

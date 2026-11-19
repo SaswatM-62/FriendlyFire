@@ -2,7 +2,7 @@ import { http, HttpResponse, type RequestHandler } from "msw";
 import type { ApiErrorBody, HistoryPage, LiveStats } from "@/lib/api-types";
 import { config } from "@/lib/config";
 import { ME_ID } from "@/mocks/data";
-import { FULL_ROOM, STARTED_ROOM, type FakeGateway } from "@/mocks/gateway";
+import { FULL_ROOM, type FakeGateway } from "@/mocks/gateway";
 
 function fail(status: number, code: string, message: string): Response {
   return HttpResponse.json<ApiErrorBody>({ error: { code, message } }, { status });
@@ -31,6 +31,8 @@ export function createHandlers(gateway: FakeGateway, baseUrl: string = config.ga
       gateway.rename(name);
       return HttpResponse.json(gateway.me());
     }),
+
+    http.post(url("/api/me/onboarding"), () => (gateway.signedIn ? HttpResponse.json(gateway.finishOnboarding()) : signedOut())),
 
     http.delete(url("/api/me"), () => {
       if (!gateway.signedIn) return signedOut();
@@ -72,7 +74,6 @@ export function createHandlers(gateway: FakeGateway, baseUrl: string = config.ga
       if (!gateway.signedIn) return signedOut();
       const code = String(params.code);
       if (code === FULL_ROOM) return fail(409, "ROOM_FULL", "That room is full.");
-      if (code === STARTED_ROOM) return fail(409, "QUIZ_ALREADY_STARTED", "That quiz has started.");
       const room = gateway.room(code);
       if (!room) return fail(404, "ROOM_NOT_FOUND", "Room not found.");
       return HttpResponse.json(gateway.join(room));

@@ -33,6 +33,8 @@ export function VoteScreen() {
     END_QUIZ: vote.endVotes,
   };
   const voted = myVote !== null || vote.votedUserIds.includes(meId);
+  // Spectators (who joined mid-quiz) watch the vote but don't take part.
+  const spectating = snapshot.players.find((p) => p.userId === meId)?.status === "SPECTATING";
   const voters = snapshot.players.filter((p) => p.status === "CONNECTED" && p.userId !== vote.aboutUserId);
   const left = now === 0 ? null : msUntil(vote.deadline, now, clockOffsetMs) / 1000;
 
@@ -67,7 +69,7 @@ export function VoteScreen() {
               type="button"
               className={`opt${mine ? " opt--mine" : ""}`}
               aria-pressed={mine}
-              disabled={unavailable || (voted && !mine)}
+              disabled={spectating || unavailable || (voted && !mine)}
               style={unavailable || (voted && !mine) ? { opacity: 0.55, cursor: "default" } : undefined}
               onClick={() => cast(option)}
             >

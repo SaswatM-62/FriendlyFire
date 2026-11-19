@@ -11,6 +11,7 @@ import { Countdown, GetReady } from "@/components/room/Countdown";
 import { SiteChrome } from "@/components/chrome/SiteChrome";
 import { EndedEarlyScreen, PodiumScreen } from "@/components/room/FinishedScreens";
 import { Lobby } from "@/components/room/Lobby";
+import { PreparingScreen } from "@/components/room/PreparingScreen";
 import { HURRY_MS, QuestionScreen } from "@/components/room/QuestionScreen";
 import { RevealScreen } from "@/components/room/RevealScreen";
 import { RoomBar } from "@/components/room/RoomBar";
@@ -35,6 +36,8 @@ function stageStatus(s: RoomSnapshot, showLobby: boolean): string {
   switch (s.phase) {
     case "LOBBY":
       return `Lobby · ${s.players.length} of 8 players`;
+    case "PREPARING":
+      return "Preparing";
     case "STARTING":
       return s.roundNumber === 0 ? "Starting" : `Question ${s.roundNumber + 1} of ${s.settings.questionCount} · Get ready`;
     case "QUESTION":
@@ -132,10 +135,14 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
   }, [phone, chatOpen]);
   // After the podium, "Back to lobby" shows the lobby again until the host starts.
   const [lobbyAfter, setLobbyAfter] = useState<string | null>(null);
+  // Why the last Start didn't work (QUIZ_START_FAILED), shown in the lobby until the next Start.
+  const [startFailed, setStartFailed] = useState<string | null>(null);
 
   const onEvent = useCallback(
     (event: RoomEvent, previous: RoomSnapshot | null) => {
       if (event.type === "ROOM_CLOSED") setClosed(true);
+      if (event.type === "QUIZ_START_FAILED") setStartFailed(event.message ?? "The quiz couldn't start. Try again.");
+      if (event.type === "QUIZ_PREPARING") setStartFailed(null);
       const lines = chatLinesFor(event, previous, meId);
       if (lines.length > 0) {
         setChat((all) => [...all, ...lines.map((line): ChatLine => ({ ...line, id: `c${nextLine.current++}` }))].slice(-CHAT_KEEP));
@@ -268,7 +275,10 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
   let screen;
   switch (showLobby ? "LOBBY" : snapshot.phase) {
     case "LOBBY":
-      screen = <Lobby />;
+      screen = <Lobby startFailed={startFailed} onDismissStartFailed={() => setStartFailed(null)} />;
+      break;
+    case "PREPARING":
+      screen = <PreparingScreen />;
       break;
     case "STARTING":
       screen = snapshot.roundNumber === 0 ? <Countdown /> : <GetReady key={snapshot.roundNumber} />;

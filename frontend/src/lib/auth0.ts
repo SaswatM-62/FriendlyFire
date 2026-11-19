@@ -24,6 +24,10 @@ export const auth0: Auth0Client | null = isAuth0Configured()
       async onCallback(error, context) {
         const base = context.appBaseUrl ?? process.env.APP_BASE_URL!;
         if (error) {
+          // The page only gets a code; the reason Auth0 gave (e.g. "Service not found",
+          // or an Action denying the login) goes to the server log, never to the page.
+          const cause = error.cause as { code?: string; message?: string } | undefined;
+          console.warn(`Sign-in failed: ${error.code}${cause?.code ? ` (${cause.code}: ${cause.message ?? ""})` : ""}`);
           return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.code ?? "sign_in_failed")}`, base));
         }
         return NextResponse.redirect(new URL("/", base));

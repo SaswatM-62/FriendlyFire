@@ -50,7 +50,8 @@ These rules make the scoreboard and the events agree in all 840 sample rows. Der
 | Headshots (`P.stats.headshots`) | The sum of per-round `S.stats.headshots`. Hits, not headshot kills. |
 | Damage dealt and received | Every `S.damage_events` entry except the spike's 999 against yourself (an entry aimed at you, from you, of 999 or more). Self-damage and teammate damage stay in. |
 | First blood (`R.first_blood`) | The killer of the round's earliest kill; null only in surrender placeholders. |
-| Attack or defense | From `R.winning_team` and `R.winning_team_role`: the winner has that role and the other team the other one. |
+| Attack or defense | From `R.winning_team` and `R.winning_team_role`: the winner has that role and the other team the other one. Each team keeps one side for rounds 1–12 and the other for rounds 13–24; in overtime the sides swap every round (true in all 84 sample matches). |
+| Halves | The first half is rounds 1–12 (`R.id` 0–11) and the second half rounds 13–24 (`R.id` 12–23). Overtime rounds (`R.id` 24 on) are in neither half. Kills, deaths and assists split by side, or by first half, second half and overtime, add up to the scoreboard. |
 | Timing | Plant, defuse and kill times share one round clock; the spike explodes 45 s after the plant. |
 
 ## Top-level fields
@@ -88,6 +89,7 @@ These rules make the scoreboard and the events agree in all 840 sample rows. Der
 | `match_platform` | Match platform | `M.metadata.platform` |
 | `game_version` | Game build | `M.metadata.game_version` |
 | `result` | `win`, `loss` or `draw` | `T.won` true → win; false with equal `T.rounds.won` and `lost` → draw; false with fewer won → loss; otherwise unknown |
+| `starting_side` | Your team's side in round 1, `attack` or `defense`, and so for the whole first half | The attack-or-defense rule at `R.id` 0 |
 
 ## Direct numbers (`numbers` map)
 
@@ -136,6 +138,7 @@ Counts below use played rounds and enemy kills only. The trade window is 3 s eve
 | `rounds_with_kills:<n>` | Rounds with exactly n enemy kills, from `K`; zero-kill rounds included |
 | `max_round_combat_score` | Highest `S.stats.score` in one round |
 | `kast_pct` | % of rounds with an enemy kill, an assist, no death (spike deaths ignored, falls count) or a traded death |
+| `kast_rounds` | Rounds that count towards `kast_pct`. Pooled KAST is total `kast_rounds` ÷ total `rounds_played`; `kast_pct` can only be averaged per match. |
 | `trade_kills` | You killed the enemy who killed a teammate in the previous 3 s |
 | `traded_deaths` | A teammate killed your killer within 3 s of your death |
 | `deathless_rounds` | Rounds with no death event other than the spike. Revives mean this isn't "alive at round end". |
@@ -176,7 +179,6 @@ Counts below use played rounds and enemy kills only. The trade window is 3 s eve
 | `post_plant_kills` | Enemy kills after `R.plant.round_time_in_ms` |
 | `outgunned_kills` | Enemy kills where your `S.economy.loadout_value` was below the victim's |
 | `pistol_round_kills` | Enemy kills in rounds 1 and 13 (`R.id` 0 and 12) |
-| `attack_kills`, `defense_kills` | Enemy kills in rounds your team attacked or defended |
 | `plants`, `defuses` | Rounds where `R.plant.player.puuid` or `R.defuse.player.puuid` is you |
 | `plants_site_<site>` | Your plants by `R.plant.site` (`A`, `B`, `C`); only some maps have a C site |
 | `fastest_plant_ms` | Lowest `R.plant.round_time_in_ms` of your plants |
@@ -191,6 +193,19 @@ Counts below use played rounds and enemy kills only. The trade window is 3 s eve
 | `rounds_without_armor` | Rounds where `S.economy.armor` is null (no armor bought) |
 | `rounds_with_loadout:<weapon_id>` | Rounds whose `S.economy.weapon.id` is that gun (for example Operator rounds) |
 | `utility_per_round` | `(ability_casts_grenade + ability_casts_ability1 + ability_casts_ability2) / rounds_played`; compare only on the same agent or role |
+
+### By side and half
+
+A side is every round your team attacked, or every round it defended, overtime rounds included. A half is rounds 1–12 or rounds 13–24; overtime rounds are in neither. Each key splits a whole-match stat by the round it happened in, under that stat's rule, so a stat's two sides add up to the match total, and so do its two halves plus overtime. Compare them per round, against the round counts in [Team-shared stats](#team-shared-stats).
+
+| Key | Meaning and derivation |
+| --- | --- |
+| `attack_kills`, `defense_kills`, `first_half_kills`, `second_half_kills` | Enemy kills, counted like `kills`, by side and by half |
+| `attack_deaths`, `defense_deaths`, `first_half_deaths`, `second_half_deaths` | Your deaths, counted like `deaths` (spike deaths ignored), by side and by half |
+| `attack_assists`, `defense_assists`, `first_half_assists`, `second_half_assists` | Your assists, counted like `assists` in the round of the kill, by side and by half |
+| `attack_kast_rounds`, `defense_kast_rounds`, `first_half_kast_rounds`, `second_half_kast_rounds` | `kast_rounds` by side and by half |
+| `attack_damage_dealt`, `defense_damage_dealt` | `damage_dealt` by side, from each round's `S.damage_events` |
+| `attack_first_bloods`, `defense_first_bloods`, `attack_first_deaths`, `defense_first_deaths` | `first_bloods` and `first_deaths` by side |
 
 ### Against opponents
 
@@ -243,7 +258,10 @@ Teammates share these values within a match, so they separate friends only throu
 
 | Key | Meaning and derivation |
 | --- | --- |
-| `rounds_won_attack`, `rounds_won_defense` | Rounds your team won, by side |
+| `rounds_won_attack`, `rounds_won_defense` | Rounds your team won, by side (overtime included) |
+| `rounds_played_attack`, `rounds_played_defense` | Played rounds your team attacked or defended (overtime included) |
+| `rounds_won_first_half`, `rounds_won_second_half` | Rounds your team won in each half |
+| `rounds_played_first_half`, `rounds_played_second_half` | Played rounds in each half. The second half is often short: all 12 rounds in 22 of 84 sample matches, 9.3 on average, and none after a surrender before round 13. |
 | `pistol_rounds_won` | Your team won round 1 or 13 |
 | `eco_rounds_won` | Your team won a non-pistol round with under 5,000 in total loadout against an opponent's 15,000 or more |
 | `flawless_rounds`, `thrifty_rounds`, `team_ace_rounds` | Rounds where `R.ceremony_team` is your team with `CeremonyFlawless`, `CeremonyThrifty` or `CeremonyTeamAce` |
@@ -273,6 +291,7 @@ Null provider values stay unknown.
 - **Pooling across matches:** counts are summed; ratios are total ÷ total (pooled K/D = total kills ÷ total deaths; pooled ACS = total combat score ÷ total rounds; pooled headshot % = total head hits ÷ total hits). `performance_score` is averaged per match, every match counting equally. Win rate = wins ÷ completed matches (draws are non-wins).
 - **Headline stat:** Performance Score. ACS questions stay available.
 - **Solo-scope questions:** most squads still have a few solo games each. Give solo templates `contenders_only` and a small or no `last_n`, so friends with no (or too few) solo games sit out instead of skipping the question.
+- **Sides and halves:** compare per round (a side or half stat ÷ the matching `rounds_played_*`), never as totals: sides and second halves vary in length, and overtime ran in 7 of 84 sample matches. Round wins by side or half are team-shared, so ask them in the solo scope. To ask about one starting side, use `starting_side` as the parameter label (the quiz engine's `ParameterLabel` has to list it first).
 - **Same-agent and same-role questions:** ability questions use each friend's last 30 days and are asked only when at least 2 friends played the agent that has the ability; they compare only those friends. Show ability names from the agent table, never keys: slot names don't match keys (Phoenix's Hot Hands is `Ability1`, pressed with E). Kill questions for a single ability work only for damage abilities. Role questions use `labels.role`. Cross-agent utility uses `performance_utility_usage`.
 - **Rank:** never ask about a player's own rank, which friends already know. Ranks feed opponent questions instead: giant killer, playground bully, kills on the highest- or lowest-ranked opponent. Competitive only; tier 0 is unknown. Riot's policy forbids alternatives to the official ranking and MMR or ELO calculators, so never score or rank players' skill ourselves.
 - **Difficulty:** the question generator rates each question easy, medium or hard from the winner's lead over the runner-up (`question_generator.difficulty`), so templates carry no difficulty.
@@ -284,6 +303,7 @@ The [sample question bank](https://tamucs-my.sharepoint.com/:w:/r/personal/akhil
 | Quirk | Seen in the samples | Rule |
 | --- | --- | --- |
 | Surrender placeholder rounds: `result == "Surrendered"`, empty ceremony, null `first_blood`, no kills, but a winner is set | 9 rounds in 1 match (5 more in the earlier fetch) | Skip them; played rounds = won + lost |
+| A surrender before round 13 leaves no second half | 1 match (4 played rounds) | `rounds_played_second_half` is 0; pooled rates still count that match's first half |
 | Round timer ran out: `result` is an empty string | 17 rounds, all defender wins | Normal played rounds |
 | Revives: the same player is killed twice in a round | 152 (62 of them Clove's ult) | `deathless_rounds`, not "survived" |
 | Kills after the killer's recorded death | 163 | Allowed |

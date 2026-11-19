@@ -66,10 +66,11 @@ type RoomServiceClient interface {
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomResponse, error)
 	// Adds the user to a room. If they're already in it (after a page
 	// refresh or dropped connection), marks them connected again instead.
+	// Someone new who joins while a quiz is preparing or running joins as a
+	// spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
 	// Errors:
 	//
-	//	RESOURCE_EXHAUSTED   the room already has 8 players
-	//	FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+	//	RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
 	JoinRoom(ctx context.Context, in *JoinRoomRequest, opts ...grpc.CallOption) (*JoinRoomResponse, error)
 	// The user leaves for good. If the host leaves, the player who joined
 	// next becomes host. The room closes when the last player leaves.
@@ -80,14 +81,21 @@ type RoomServiceClient interface {
 	// INVALID_ARGUMENT if a value is outside the allowed range.
 	UpdateSettings(ctx context.Context, in *UpdateSettingsRequest, opts ...grpc.CallOption) (*UpdateSettingsResponse, error)
 	// Host only. Allowed in the lobby, or after a quiz finishes to play again.
-	// Checks every player's data status again, generates all questions, then
-	// starts a short countdown.
-	// FAILED_PRECONDITION (with a message for the host) if:
+	// Checks every player's data status again, then moves the room to
+	// ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+	// the quiz engine for every question in the background, and moves to
+	// ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+	// have passed (so everyone can read the loading screen). If someone is
+	// disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+	// If generation fails, or takes more than 60 seconds, the room goes back
+	// to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+	// saying why (e.g. not enough match data for the chosen number of
+	// questions). The host can't cancel preparing.
+	// FAILED_PRECONDITION (with a message for the host), before preparing, if:
 	//   - there are fewer than 2 players
 	//   - someone's data status isn't SYNCED
 	//   - fewer than 2 players have enough matches, or more than half of the
 	//     room doesn't (Player.not_enough_matches)
-	//   - there isn't enough match data for the chosen number of questions
 	StartQuiz(ctx context.Context, in *StartQuizRequest, opts ...grpc.CallOption) (*StartQuizResponse, error)
 	// Records a player's answer to the current question, using the time it
 	// arrives here (not a time sent by the browser).
@@ -280,10 +288,11 @@ type RoomServiceServer interface {
 	CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomResponse, error)
 	// Adds the user to a room. If they're already in it (after a page
 	// refresh or dropped connection), marks them connected again instead.
+	// Someone new who joins while a quiz is preparing or running joins as a
+	// spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
 	// Errors:
 	//
-	//	RESOURCE_EXHAUSTED   the room already has 8 players
-	//	FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+	//	RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
 	JoinRoom(context.Context, *JoinRoomRequest) (*JoinRoomResponse, error)
 	// The user leaves for good. If the host leaves, the player who joined
 	// next becomes host. The room closes when the last player leaves.
@@ -294,14 +303,21 @@ type RoomServiceServer interface {
 	// INVALID_ARGUMENT if a value is outside the allowed range.
 	UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsResponse, error)
 	// Host only. Allowed in the lobby, or after a quiz finishes to play again.
-	// Checks every player's data status again, generates all questions, then
-	// starts a short countdown.
-	// FAILED_PRECONDITION (with a message for the host) if:
+	// Checks every player's data status again, then moves the room to
+	// ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+	// the quiz engine for every question in the background, and moves to
+	// ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+	// have passed (so everyone can read the loading screen). If someone is
+	// disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+	// If generation fails, or takes more than 60 seconds, the room goes back
+	// to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+	// saying why (e.g. not enough match data for the chosen number of
+	// questions). The host can't cancel preparing.
+	// FAILED_PRECONDITION (with a message for the host), before preparing, if:
 	//   - there are fewer than 2 players
 	//   - someone's data status isn't SYNCED
 	//   - fewer than 2 players have enough matches, or more than half of the
 	//     room doesn't (Player.not_enough_matches)
-	//   - there isn't enough match data for the chosen number of questions
 	StartQuiz(context.Context, *StartQuizRequest) (*StartQuizResponse, error)
 	// Records a player's answer to the current question, using the time it
 	// arrives here (not a time sent by the browser).

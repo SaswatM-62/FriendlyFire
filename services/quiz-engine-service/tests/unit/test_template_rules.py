@@ -1,5 +1,6 @@
 """The template interface for question packs: rules, windows, parameters and checks."""
 
+from collections.abc import Collection
 from dataclasses import replace
 from fractions import Fraction
 
@@ -14,8 +15,12 @@ ALICE, BOB, CARA = "a", "b", "c"
 NAMES = {ALICE: "Alice", BOB: "Bob", CARA: "Cara"}
 
 
-def players(*ids: str) -> list[QuizPlayer]:
-    return [QuizPlayer(user_id=uid, display_name=NAMES[uid]) for uid in ids]
+def players(*ids: str, short: Collection[str] = ()) -> list[QuizPlayer]:
+    """The room; players in `short` have too few matches (not_enough_matches)."""
+    return [
+        QuizPlayer(user_id=uid, display_name=NAMES[uid], not_enough_matches=uid in short)
+        for uid in ids
+    ]
 
 
 def match(
@@ -57,18 +62,28 @@ def template(**fields: object) -> QuestionTemplate:
     return QuestionTemplate(**base)  # type: ignore[arg-type]
 
 
-def ask(t: QuestionTemplate, stats: list[PlayerMatchStats], *ids: str) -> list[Question]:
+def ask(
+    t: QuestionTemplate,
+    stats: list[PlayerMatchStats],
+    *ids: str,
+    short: Collection[str] = (),
+) -> list[Question]:
     """Every question the template can make.
 
     A quiz takes one question per template, picked by seed and by which difficulty
     the quiz length wants, so try lengths that want easy, medium and hard questions.
     """
     found: dict[str, Question] = {}
+    room = players(*ids, short=short)
     for count in (1, 3, 8):
         for seed in range(10):
-            for question in QuestionGenerator([t]).generate(players(*ids), stats, count, seed):
+            for question in QuestionGenerator([t]).generate(room, stats, count, seed):
                 found[question.text] = question
     return sorted(found.values(), key=lambda q: q.text)
+
+
+def option_ids(question: Question) -> list[str]:
+    return [option.option_id for option in question.options]
 
 
 def test_pooled_ratio_counts_a_deathless_match_but_skips_a_zero_total() -> None:
@@ -194,7 +209,8 @@ def test_contenders_only_compares_just_the_players_who_played_the_agent() -> Non
     ]
     [sova] = [q for q in ask(casts, stats, ALICE, BOB, CARA) if q.text.endswith("Sova")]
     assert sova.correct_option_id == ALICE
-    assert [o.option_id for o in sova.options] == [ALICE, BOB]
+    # Cara never played Sova and sits it out, but every room player is an option.
+    assert option_ids(sova) == [ALICE, BOB, CARA]
     # Only Cara played Jett, so there is nothing to compare.
     assert not [q for q in ask(casts, stats, ALICE, BOB, CARA) if q.text.endswith("Jett")]
 
@@ -257,7 +273,8 @@ def test_pair_questions_compare_the_friends_teammates_by_name() -> None:
     questions = ask(assists, stats, ALICE, BOB, CARA)
     [for_alice] = [q for q in questions if q.text == "Who sets up Alice the most?"]
     assert for_alice.correct_option_id == BOB
-    assert [o.option_id for o in for_alice.options] == [BOB, CARA]
+    # Alice is the friend, so never the answer, but still an option.
+    assert option_ids(for_alice) == [ALICE, BOB, CARA]
     assert all("a" not in q.text.split() for q in questions)
     # A missing pair key in a match together is unknown, not zero.
     del stats[2].numbers["assists_for:a"]
@@ -301,7 +318,8 @@ def test_solo_questions_compare_the_friends_who_have_solo_games() -> None:
     kills = template(rule="max_in_match", stat="kills", scopes=("solo",), contenders_only=True)
     [question] = ask(kills, squad_with_a_few_solo_games(), ALICE, BOB, CARA)
     assert question.correct_option_id == ALICE
-    assert [o.option_id for o in question.options] == [ALICE, BOB]
+    # Cara has no solo games and sits it out, but is still an option.
+    assert option_ids(question) == [ALICE, BOB, CARA]
     # Without contenders_only, Cara's missing solo games skip the question.
     assert (
         ask(replace(kills, contenders_only=False), squad_with_a_few_solo_games(), ALICE, BOB, CARA)
@@ -318,6 +336,61 @@ def test_contenders_only_lets_a_friend_with_too_few_matches_sit_out() -> None:
     stats = [*squad_with_a_few_solo_games(), match(BOB, "bob-solo-2", seconds=13, kills=40)]
     [question] = ask(kills, stats, ALICE, BOB, CARA)
     assert question.correct_option_id == BOB
+
+
+def test_a_player_with_too_few_matches_is_an_option_but_never_compared() -> None:
+    kills = template(rule="max_in_match", stat="kills")
+    stats = [match(ALICE, "1", kills=20), match(BOB, "2", kills=10), match(CARA, "3", kills=99)]
+    [question] = ask(kills, stats, ALICE, BOB, CARA, short={CARA})
+    # Cara's 99 kills don't count, so Alice wins with 20.
+    assert question.correct_option_id == ALICE
+    assert option_ids(question) == [ALICE, BOB, CARA]
+
+
+def test_missing_data_from_a_player_with_too_few_matches_skips_nothing() -> None:
+    kd = template(rule="pooled_ratio", numerator=("kills",), denominator=("deaths",))
+    stats = [match(ALICE, "1", kills=20, deaths=10), match(BOB, "2", kills=10, deaths=10)]
+    # Cara has no matches: a compared player without data skips the question...
+    assert ask(kd, stats, ALICE, BOB, CARA) == []
+    # ...but a player with too few matches isn't compared, so it goes ahead.
+    [question] = ask(kd, stats, ALICE, BOB, CARA, short={CARA})
+    assert question.correct_option_id == ALICE
+    assert option_ids(question) == [ALICE, BOB, CARA]
+
+
+def test_matches_with_a_player_with_too_few_matches_still_count_as_shared() -> None:
+    kills = template(rule="max_in_match", stat="kills", scopes=("solo",), contenders_only=True)
+    stats = [
+        match(ALICE, "with-cara", kills=30),
+        match(CARA, "with-cara"),
+        match(ALICE, "alice-solo", kills=12),
+        match(BOB, "bob-solo", kills=20),
+    ]
+    # Alice's 30-kill game was with Cara, so it isn't a solo game.
+    [question] = ask(kills, stats, ALICE, BOB, CARA, short={CARA})
+    assert question.correct_option_id == BOB
+
+
+def test_a_player_with_too_few_matches_is_never_a_pair_friend() -> None:
+    assists = template(
+        rule="pair",
+        stat="numbers.assists_for",
+        question="Who sets up {friend}?",
+        explanation="{name}",
+    )
+    stats = [
+        match(ALICE, "1"),
+        match(BOB, "1", **{"assists_for:a": 5}),
+        match(CARA, "1", **{"assists_for:a": 2}),
+    ]
+    assert [q.text for q in ask(assists, stats, ALICE, BOB, CARA)] == ["Who sets up Alice?"]
+    assert ask(assists, stats, ALICE, BOB, CARA, short={ALICE}) == []
+
+
+def test_fewer_than_two_players_with_enough_matches_make_no_questions() -> None:
+    kills = template(rule="max_in_match", stat="kills")
+    stats = [match(ALICE, "1", kills=20), match(BOB, "2", kills=10)]
+    assert ask(kills, stats, ALICE, BOB, short={BOB}) == []
 
 
 def test_lowest_wins_difficulty_uses_the_runner_up() -> None:

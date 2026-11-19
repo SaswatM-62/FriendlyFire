@@ -39,6 +39,7 @@ const (
 	AccountService_UnlinkRiot_FullMethodName        = "/friendlyfire.account.v1.AccountService/UnlinkRiot"
 	AccountService_DeleteAccount_FullMethodName     = "/friendlyfire.account.v1.AccountService/DeleteAccount"
 	AccountService_GetDataStatus_FullMethodName     = "/friendlyfire.account.v1.AccountService/GetDataStatus"
+	AccountService_FinishOnboarding_FullMethodName  = "/friendlyfire.account.v1.AccountService/FinishOnboarding"
 )
 
 // AccountServiceClient is the client API for AccountService service.
@@ -80,6 +81,10 @@ type AccountServiceClient interface {
 	// Data's raw sync status into the DataStatus below. Users it doesn't know
 	// come back as DATA_STATUS_NOT_LINKED.
 	GetDataStatus(ctx context.Context, in *GetDataStatusRequest, opts ...grpc.CallOption) (*GetDataStatusResponse, error)
+	// Marks the new-player tutorial as done (User.onboarded_at) and returns
+	// the user. Safe to call again: the first time is kept.
+	// NOT_FOUND if the user doesn't exist.
+	FinishOnboarding(ctx context.Context, in *FinishOnboardingRequest, opts ...grpc.CallOption) (*FinishOnboardingResponse, error)
 }
 
 type accountServiceClient struct {
@@ -170,6 +175,16 @@ func (c *accountServiceClient) GetDataStatus(ctx context.Context, in *GetDataSta
 	return out, nil
 }
 
+func (c *accountServiceClient) FinishOnboarding(ctx context.Context, in *FinishOnboardingRequest, opts ...grpc.CallOption) (*FinishOnboardingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(FinishOnboardingResponse)
+	err := c.cc.Invoke(ctx, AccountService_FinishOnboarding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServiceServer is the server API for AccountService service.
 // All implementations must embed UnimplementedAccountServiceServer
 // for forward compatibility.
@@ -209,6 +224,10 @@ type AccountServiceServer interface {
 	// Data's raw sync status into the DataStatus below. Users it doesn't know
 	// come back as DATA_STATUS_NOT_LINKED.
 	GetDataStatus(context.Context, *GetDataStatusRequest) (*GetDataStatusResponse, error)
+	// Marks the new-player tutorial as done (User.onboarded_at) and returns
+	// the user. Safe to call again: the first time is kept.
+	// NOT_FOUND if the user doesn't exist.
+	FinishOnboarding(context.Context, *FinishOnboardingRequest) (*FinishOnboardingResponse, error)
 	mustEmbedUnimplementedAccountServiceServer()
 }
 
@@ -242,6 +261,9 @@ func (UnimplementedAccountServiceServer) DeleteAccount(context.Context, *DeleteA
 }
 func (UnimplementedAccountServiceServer) GetDataStatus(context.Context, *GetDataStatusRequest) (*GetDataStatusResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDataStatus not implemented")
+}
+func (UnimplementedAccountServiceServer) FinishOnboarding(context.Context, *FinishOnboardingRequest) (*FinishOnboardingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method FinishOnboarding not implemented")
 }
 func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceServer() {}
 func (UnimplementedAccountServiceServer) testEmbeddedByValue()                        {}
@@ -408,6 +430,24 @@ func _AccountService_GetDataStatus_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_FinishOnboarding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishOnboardingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).FinishOnboarding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_FinishOnboarding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).FinishOnboarding(ctx, req.(*FinishOnboardingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountService_ServiceDesc is the grpc.ServiceDesc for AccountService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -446,6 +486,10 @@ var AccountService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDataStatus",
 			Handler:    _AccountService_GetDataStatus_Handler,
+		},
+		{
+			MethodName: "FinishOnboarding",
+			Handler:    _AccountService_FinishOnboarding_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

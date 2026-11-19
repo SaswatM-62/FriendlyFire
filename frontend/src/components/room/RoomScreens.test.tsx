@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { GetReady } from "@/components/room/Countdown";
 import { EndedEarlyScreen, PodiumScreen } from "@/components/room/FinishedScreens";
 import { Lobby } from "@/components/room/Lobby";
+import { PreparingScreen } from "@/components/room/PreparingScreen";
 import { QuestionScreen } from "@/components/room/QuestionScreen";
 import { RevealScreen, fastestCorrect } from "@/components/room/RevealScreen";
 import { previousRanks } from "@/components/room/Scoreboard";
@@ -337,5 +338,45 @@ describe("the end of the quiz", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("You win!");
+  });
+});
+
+describe("PreparingScreen", () => {
+  const preparing = (over: Partial<RoomSnapshot> = {}, players?: Parameters<typeof lobbySnapshot>[1]) =>
+    lobbySnapshot({ phase: "PREPARING", quizId: "quiz-1", phaseDeadline: new Date(Date.now() + 8_000).toISOString(), ...over }, players);
+
+  it("explains how a quiz works with this room's settings while the questions are built", () => {
+    renderRoom(<PreparingScreen />, preparing({ settings: { questionCount: 12, secondsPerQuestion: 25 } }));
+
+    expect(screen.getByRole("heading", { name: "Building your questions…" })).toBeInTheDocument();
+    expect(screen.getByText(/You get 25 seconds per question/)).toBeInTheDocument();
+    expect(screen.getByText(/A right answer scores 500, plus up to 500 more/)).toBeInTheDocument();
+    expect(screen.getByText(/questions ·/)).toHaveTextContent("12 questions · 25 seconds each");
+    expect(screen.queryByText("Taking longer than usual…")).not.toBeInTheDocument();
+  });
+
+  it("names players with too few matches, and tells a spectator they play next time", () => {
+    const players = [fakePlayer(p.alex, { status: "SPECTATING" }), fakePlayer(p.maya), fakePlayer(p.jordan, { noRecentMatches: true })];
+    renderRoom(<PreparingScreen />, preparing({}, players));
+
+    expect(screen.getByText(/Jordan doesn't have enough recent matches/)).toBeInTheDocument();
+    expect(screen.getByText(/you're watching this one/)).toBeInTheDocument();
+  });
+
+  it("says when it's taking longer than usual", async () => {
+    renderRoom(<PreparingScreen />, preparing({ phaseDeadline: new Date(Date.now() - 14_000).toISOString() }));
+
+    expect(await screen.findByText("Taking longer than usual…")).toBeInTheDocument();
+  });
+});
+
+describe("Spectators", () => {
+  it("can't answer, and are told they play in the next quiz", () => {
+    const snapshot = questionSnapshot();
+    snapshot.players[0] = { ...snapshot.players[0], status: "SPECTATING" };
+    renderRoom(<QuestionScreen rejections={0} />, snapshot);
+
+    expect(screen.getByRole("button", { name: /Maya/ })).toBeDisabled();
+    expect(screen.getByText(/You joined mid-quiz, so you're watching this one/)).toBeInTheDocument();
   });
 });

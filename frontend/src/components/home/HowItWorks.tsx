@@ -74,6 +74,11 @@ export function HowItWorks() {
           <h1 className="title">Trivia about your squad, built from your own matches</h1>
         </div>
         <div className="row">
+          {signedIn && (
+            <Link className="btn btn--ghost" href="/welcome?replay=1">
+              Show the tutorial
+            </Link>
+          )}
           <Link className="btn btn--line" href="/">
             Back
           </Link>

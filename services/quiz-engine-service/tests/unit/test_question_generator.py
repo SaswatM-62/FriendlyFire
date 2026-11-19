@@ -132,7 +132,12 @@ def pools(easy: int = 0, medium: int = 0, hard: int = 0) -> dict[str, int]:
 @st.composite
 def players_and_stats(draw: st.DrawFn) -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
     ids = draw(st.lists(st.uuids().map(str), min_size=2, max_size=5, unique=True))
-    roster = [QuizPlayer(user_id=uid, display_name=f"Player {n}") for n, uid in enumerate(ids)]
+    # Some players have too few matches: options, but never compared.
+    short = draw(st.lists(st.booleans(), min_size=len(ids), max_size=len(ids)))
+    roster = [
+        QuizPlayer(user_id=uid, display_name=f"Player {n}", not_enough_matches=flag)
+        for n, (uid, flag) in enumerate(zip(ids, short, strict=True))
+    ]
     # Half the examples give everyone 10+ matches (so recent wins can apply), and half
     # leave every stat in place (so pooled ACS can apply); the rest cover the skips.
     full_history = draw(st.booleans())
@@ -169,6 +174,7 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
     roster, stats = inputs
     questions = QuestionGenerator().generate(roster, stats, question_count=5, seed=seed)
     ids = {p.user_id for p in roster}
+    compared = {p.user_id for p in roster if not p.not_enough_matches}
     for question in questions:
         option_ids = [option.option_id for option in question.options]
         assert set(option_ids) == ids
@@ -184,7 +190,7 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
         elif "with other room players" in question.text:
             selected = [r for r in stats if len(members[r.match_id]) >= 2]
         scores = {}
-        for uid in ids:
+        for uid in compared:
             own = [r for r in selected if r.user_id == uid]
             assert own
             if question.template_id == "most-kills-v1":
@@ -315,7 +321,7 @@ def test_pooled_acs_uses_round_weighting_not_mean_of_match_acs() -> None:
     questions = QuestionGenerator([ACS]).generate(players(), stats, 1, 0)
     assert len(questions) == 1
     assert questions[0].correct_option_id == "b"
-    assert "20 total combat score / 10 rounds" in questions[0].explanation
+    assert "20 combat score over 10 rounds" in questions[0].explanation
 
 
 @pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), -1])
@@ -350,7 +356,7 @@ def test_recent_wins_filters_queue_before_taking_latest_ten_and_counts_draws() -
     questions = QuestionGenerator([WINS]).generate(players(), stats, 1, 0)
     assert len(questions) == 1
     assert questions[0].correct_option_id == "b"
-    assert "10 of their last 10" in questions[0].explanation
+    assert "won 10 of their last 10" in questions[0].text
 
 
 @pytest.mark.parametrize(

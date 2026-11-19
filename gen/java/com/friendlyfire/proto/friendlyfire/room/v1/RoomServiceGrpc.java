@@ -492,9 +492,10 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     default void joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request,
@@ -537,14 +538,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Checks every player's data status again, generates all questions, then
-     * starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if:
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
      *   - there are fewer than 2 players
      *   - someone's data status isn't SYNCED
      *   - fewer than 2 players have enough matches, or more than half of the
      *     room doesn't (Player.not_enough_matches)
-     *   - there isn't enough match data for the chosen number of questions
      * </pre>
      */
     default void startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request,
@@ -684,9 +692,10 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public void joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request,
@@ -733,14 +742,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Checks every player's data status again, generates all questions, then
-     * starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if:
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
      *   - there are fewer than 2 players
      *   - someone's data status isn't SYNCED
      *   - fewer than 2 players have enough matches, or more than half of the
      *     room doesn't (Player.not_enough_matches)
-     *   - there isn't enough match data for the chosen number of questions
      * </pre>
      */
     public void startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request,
@@ -876,9 +892,10 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request) throws io.grpc.StatusException {
@@ -921,14 +938,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Checks every player's data status again, generates all questions, then
-     * starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if:
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
      *   - there are fewer than 2 players
      *   - someone's data status isn't SYNCED
      *   - fewer than 2 players have enough matches, or more than half of the
      *     room doesn't (Player.not_enough_matches)
-     *   - there isn't enough match data for the chosen number of questions
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request) throws io.grpc.StatusException {
@@ -1058,9 +1082,10 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request) {
@@ -1103,14 +1128,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Checks every player's data status again, generates all questions, then
-     * starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if:
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
      *   - there are fewer than 2 players
      *   - someone's data status isn't SYNCED
      *   - fewer than 2 players have enough matches, or more than half of the
      *     room doesn't (Player.not_enough_matches)
-     *   - there isn't enough match data for the chosen number of questions
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request) {
@@ -1240,9 +1272,10 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse> joinRoom(
@@ -1289,14 +1322,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Checks every player's data status again, generates all questions, then
-     * starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if:
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
      *   - there are fewer than 2 players
      *   - someone's data status isn't SYNCED
      *   - fewer than 2 players have enough matches, or more than half of the
      *     room doesn't (Player.not_enough_matches)
-     *   - there isn't enough match data for the chosen number of questions
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse> startQuiz(

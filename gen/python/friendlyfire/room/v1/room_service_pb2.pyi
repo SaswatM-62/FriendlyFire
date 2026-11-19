@@ -20,6 +20,7 @@ class RoomPhase(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ROOM_PHASE_VOTE: _ClassVar[RoomPhase]
     ROOM_PHASE_FINISHED: _ClassVar[RoomPhase]
     ROOM_PHASE_PAUSED: _ClassVar[RoomPhase]
+    ROOM_PHASE_PREPARING: _ClassVar[RoomPhase]
 
 class PlayerStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -27,6 +28,7 @@ class PlayerStatus(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     PLAYER_STATUS_CONNECTED: _ClassVar[PlayerStatus]
     PLAYER_STATUS_DISCONNECTED: _ClassVar[PlayerStatus]
     PLAYER_STATUS_SITTING_OUT: _ClassVar[PlayerStatus]
+    PLAYER_STATUS_SPECTATING: _ClassVar[PlayerStatus]
 
 class ConnectionQuality(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = ()
@@ -74,6 +76,8 @@ class RoomEventType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     ROOM_EVENT_TYPE_ROOM_CLOSED: _ClassVar[RoomEventType]
     ROOM_EVENT_TYPE_VOTE_CAST: _ClassVar[RoomEventType]
     ROOM_EVENT_TYPE_QUIZ_PAUSED: _ClassVar[RoomEventType]
+    ROOM_EVENT_TYPE_QUIZ_PREPARING: _ClassVar[RoomEventType]
+    ROOM_EVENT_TYPE_QUIZ_START_FAILED: _ClassVar[RoomEventType]
 ROOM_PHASE_UNSPECIFIED: RoomPhase
 ROOM_PHASE_LOBBY: RoomPhase
 ROOM_PHASE_STARTING: RoomPhase
@@ -82,10 +86,12 @@ ROOM_PHASE_REVEAL: RoomPhase
 ROOM_PHASE_VOTE: RoomPhase
 ROOM_PHASE_FINISHED: RoomPhase
 ROOM_PHASE_PAUSED: RoomPhase
+ROOM_PHASE_PREPARING: RoomPhase
 PLAYER_STATUS_UNSPECIFIED: PlayerStatus
 PLAYER_STATUS_CONNECTED: PlayerStatus
 PLAYER_STATUS_DISCONNECTED: PlayerStatus
 PLAYER_STATUS_SITTING_OUT: PlayerStatus
+PLAYER_STATUS_SPECTATING: PlayerStatus
 CONNECTION_QUALITY_UNSPECIFIED: ConnectionQuality
 CONNECTION_QUALITY_GOOD: ConnectionQuality
 CONNECTION_QUALITY_FAIR: ConnectionQuality
@@ -121,6 +127,8 @@ ROOM_EVENT_TYPE_QUIZ_FINISHED: RoomEventType
 ROOM_EVENT_TYPE_ROOM_CLOSED: RoomEventType
 ROOM_EVENT_TYPE_VOTE_CAST: RoomEventType
 ROOM_EVENT_TYPE_QUIZ_PAUSED: RoomEventType
+ROOM_EVENT_TYPE_QUIZ_PREPARING: RoomEventType
+ROOM_EVENT_TYPE_QUIZ_START_FAILED: RoomEventType
 
 class RoomSnapshot(_message.Message):
     __slots__ = ("room_code", "host_user_id", "phase", "settings", "players", "quiz_id", "round_number", "current_question", "phase_deadline", "scoreboard", "active_vote", "waiting_for_user_id", "pause_seconds_left")
@@ -257,16 +265,18 @@ class Vote(_message.Message):
     def __init__(self, about_user_id: _Optional[str] = ..., deadline: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., pause_votes: _Optional[int] = ..., continue_votes: _Optional[int] = ..., end_votes: _Optional[int] = ..., voted_user_ids: _Optional[_Iterable[str]] = ..., pause_allowed: _Optional[bool] = ...) -> None: ...
 
 class RoomEvent(_message.Message):
-    __slots__ = ("type", "subject_user_id", "occurred_at", "snapshot")
+    __slots__ = ("type", "subject_user_id", "occurred_at", "snapshot", "message")
     TYPE_FIELD_NUMBER: _ClassVar[int]
     SUBJECT_USER_ID_FIELD_NUMBER: _ClassVar[int]
     OCCURRED_AT_FIELD_NUMBER: _ClassVar[int]
     SNAPSHOT_FIELD_NUMBER: _ClassVar[int]
+    MESSAGE_FIELD_NUMBER: _ClassVar[int]
     type: RoomEventType
     subject_user_id: str
     occurred_at: _timestamp_pb2.Timestamp
     snapshot: RoomSnapshot
-    def __init__(self, type: _Optional[_Union[RoomEventType, str]] = ..., subject_user_id: _Optional[str] = ..., occurred_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., snapshot: _Optional[_Union[RoomSnapshot, _Mapping]] = ...) -> None: ...
+    message: str
+    def __init__(self, type: _Optional[_Union[RoomEventType, str]] = ..., subject_user_id: _Optional[str] = ..., occurred_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., snapshot: _Optional[_Union[RoomSnapshot, _Mapping]] = ..., message: _Optional[str] = ...) -> None: ...
 
 class CreateRoomRequest(_message.Message):
     __slots__ = ("host_user_id", "host_display_name", "host_riot_tag_line")

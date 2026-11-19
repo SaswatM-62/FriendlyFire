@@ -16,6 +16,7 @@ export const FAKE_ME: Me = {
   email: "alex@example.com",
   createdAt: "2026-10-12T18:20:00Z",
   riotLink: { gameName: "Alex", tagLine: "NA1", region: "na", linkedAt: "2026-10-12T18:24:00Z" },
+  onboardedAt: "2026-10-12T18:25:00Z",
 };
 
 export interface FakePlayer {

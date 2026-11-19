@@ -88,8 +88,9 @@ class QuestionTemplate:
 TEMPLATES = (
     QuestionTemplate(
         id="most-kills-v1",
-        question="Among these players, who recorded the most kills in a single match {scope}?",
-        explanation="{name} recorded {value} kills in one match {scope}, the unique highest total.",
+        question="This player once racked up {value} kills in a single match {scope}, the most "
+        "in this group. Who might this player be?",
+        explanation="{name}, with {value} kills in one match.",
         stats=("kills", "labels.queue_id"),
         rule="max_in_match",
         stat="kills",
@@ -98,11 +99,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="highest-acs-v1",
-        question="Among these players, who has the highest pooled average combat score {scope}?",
-        explanation=(
-            "{name} had the highest pooled ACS {scope}: {value} "
-            "({numerator} total combat score / {denominator} rounds)."
-        ),
+        question="This player averages {value} combat score per round {scope}, the highest "
+        "in this group. Who is this player?",
+        explanation="{name}: {numerator} combat score over {denominator} rounds.",
         stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.combat_score",),
@@ -112,10 +111,10 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="recent-wins-v1",
-        question="Among these players, who won the most games in their last {last_n} "
-        "available competitive matches?",
-        explanation="{name} won {value} of their last {last_n} available competitive matches "
-        "(draws count as non-wins).",
+        question="This player won {value} of their last {last_n} Competitive matches, more "
+        "than anyone else in this group. Who keeps winning?",
+        explanation="{name}, with {value} wins in {last_n} Competitive matches "
+        "(a draw isn't a win).",
         stats=("played_at", "labels.queue_id", "labels.result", "won"),
         rule="count",
         stat="won",
