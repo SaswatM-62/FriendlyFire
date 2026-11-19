@@ -54,6 +54,11 @@ class AccountServiceStub:
                 request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.FromString,
                 _registered_method=True)
+        self.FinishOnboarding = channel.unary_unary(
+                '/friendlyfire.account.v1.AccountService/FinishOnboarding',
+                request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
+                _registered_method=True)
 
 
 class AccountServiceServicer:
@@ -133,6 +138,15 @@ class AccountServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def FinishOnboarding(self, request, context):
+        """Marks the new-player tutorial as done (User.onboarded_at) and returns
+        the user. Safe to call again: the first time is kept.
+        NOT_FOUND if the user doesn't exist.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AccountServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -175,6 +189,11 @@ def add_AccountServiceServicer_to_server(servicer, server):
                     servicer.GetDataStatus,
                     request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.FromString,
                     response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.SerializeToString,
+            ),
+            'FinishOnboarding': grpc.unary_unary_rpc_method_handler(
+                    servicer.FinishOnboarding,
+                    request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.FromString,
+                    response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -393,6 +412,33 @@ class AccountService:
             '/friendlyfire.account.v1.AccountService/GetDataStatus',
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.SerializeToString,
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def FinishOnboarding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.account.v1.AccountService/FinishOnboarding',
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
             options,
             channel_credentials,
             insecure,

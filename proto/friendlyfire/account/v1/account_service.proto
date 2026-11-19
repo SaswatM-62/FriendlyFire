@@ -57,6 +57,11 @@ service AccountService {
   // Data's raw sync status into the DataStatus below. Users it doesn't know
   // come back as DATA_STATUS_NOT_LINKED.
   rpc GetDataStatus(GetDataStatusRequest) returns (GetDataStatusResponse);
+
+  // Marks the new-player tutorial as done (User.onboarded_at) and returns
+  // the user. Safe to call again: the first time is kept.
+  // NOT_FOUND if the user doesn't exist.
+  rpc FinishOnboarding(FinishOnboardingRequest) returns (FinishOnboardingResponse);
 }
 
 enum DataStatus {
@@ -82,6 +87,10 @@ message User {
   google.protobuf.Timestamp created_at = 4;
   // Not set if the user hasn't linked a Riot account yet.
   RiotLink riot_link = 5;
+  // When they finished (or skipped the end of) the new-player tutorial. Not
+  // set until then. Accounts made before the tutorial existed count as done
+  // (set to created_at).
+  google.protobuf.Timestamp onboarded_at = 6;
 }
 
 // What the app may show about a linked Riot account. The PUUID is
@@ -183,4 +192,12 @@ message UserDataStatus {
   google.protobuf.Timestamp last_synced_at = 5;
   // Short, safe-to-show reason when FAILED.
   string error_message = 6;
+}
+
+message FinishOnboardingRequest {
+  string user_id = 1;
+}
+
+message FinishOnboardingResponse {
+  User user = 1;
 }
