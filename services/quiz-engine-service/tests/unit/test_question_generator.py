@@ -64,18 +64,36 @@ def row(
 
 
 def history() -> list[PlayerMatchStats]:
-    return [
-        row(
-            uid,
-            f"shared-{n}" if n < 5 else f"{uid}-{n}",
-            kills=30 if uid == "a" else 10,
-            score=400 if uid == "a" else 100,
-            seconds=n + 1,
-            won=uid == "a",
-        )
-        for n in range(10)
-        for uid in ("a", "b")
-    ]
+    stats = []
+    for n in range(10):
+        for uid in ("a", "b"):
+            alice = uid == "a"
+            match = row(
+                uid,
+                f"shared-{n}" if n < 5 else f"{uid}-{n}",
+                kills=30 if alice else 10,
+                score=400 if alice else 100,
+                seconds=n + 1,
+                won=alice,
+            )
+            match.labels["agent"] = "Jett" if alice else "Sage"
+            match.numbers.update(
+                {
+                    "performance_score": 265.1 if alice else 170.5,
+                    "max_round_damage": 160 if alice else 80,
+                    "first_bloods": 4 if alice else 2,
+                    "first_deaths": 6 if alice else 8,
+                    "max_round_kills": 4 if alice else 2,
+                    "post_plant_kills": 3 if alice else 1,
+                    "ninja_defuses": 1 if alice else 0,
+                    "clutch_wins": 2 if alice else 1,
+                    "clutch_attempts": 4,
+                    "fall_deaths": 1 if alice else 0,
+                    "pistol_round_kills": 2 if alice else 1,
+                }
+            )
+            stats.append(match)
+    return stats
 
 
 def rated(leads: dict[str, int]) -> tuple[list[QuestionTemplate], list[PlayerMatchStats]]:
@@ -197,16 +215,16 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
     assert questions == QuestionGenerator().generate(roster[::-1], stats[::-1], 5, seed)
 
 
-def test_nonempty_quiz_has_three_templates_and_mixes_shared_and_solo() -> None:
+def test_nonempty_quiz_is_full_and_mixes_shared_and_solo() -> None:
     questions = QuestionGenerator().generate(players(), history(), 5, 42)
-    assert len(questions) == 3
+    assert len(questions) == 5
     assert all(q.correct_option_id == "a" for q in questions)
     assert any("with other room players" in q.text for q in questions)
     assert any("without other room players" in q.text for q in questions)
 
 
 def test_every_question_names_its_template() -> None:
-    questions = QuestionGenerator().generate(players(), history(), 5, 42)
+    questions = QuestionGenerator().generate(players(), history(), len(TEMPLATES), 42)
     assert sorted(template_ids(questions)) == sorted(t.id for t in TEMPLATES)
     for question in questions:
         assert len(question.question_id) == 64
@@ -231,7 +249,7 @@ def test_outsiders_cannot_change_questions_or_leak_into_text_or_explanations() -
 
 
 def test_play_again_with_every_template_used_is_still_full_oldest_first() -> None:
-    generator = QuestionGenerator()
+    generator = QuestionGenerator([KILLS, ACS, WINS])
     first = generator.generate(players(), history(), 3, 1)
     asked = template_ids(first)
     for seed in (0, 1, 42):
@@ -249,7 +267,7 @@ def test_a_used_template_is_skipped_in_every_scope_while_others_are_left(seed: i
 
 
 def test_template_asked_longest_ago_is_reused_first() -> None:
-    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in TEMPLATES])
+    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in (KILLS, ACS, WINS)])
     # Most kills was asked first but asked again last, so it's the most recent.
     asked = [KILLS.id, ACS.id, WINS.id, KILLS.id]
     for seed in range(10):
@@ -260,12 +278,13 @@ def test_template_asked_longest_ago_is_reused_first() -> None:
 def test_play_again_rotates_through_every_template() -> None:
     # Real scopes: recent wins has no shared/solo version, so mixing scopes mustn't
     # keep swapping it out once it's the template asked longest ago.
-    generator = QuestionGenerator()
+    templates = [KILLS, ACS, WINS]
+    generator = QuestionGenerator(templates)
     asked: list[str] = []
     last_asked: dict[str, int] = {}
     for quiz in range(7):
         questions = generator.generate(players(), history(), 2, quiz, asked_template_ids=asked)
-        unused = [t.id for t in TEMPLATES if t.id not in last_asked]
+        unused = [t.id for t in templates if t.id not in last_asked]
         longest_ago = sorted(last_asked, key=lambda t: last_asked[t])
         if len(unused) >= 2:
             assert set(template_ids(questions)) <= set(unused)
@@ -475,7 +494,7 @@ def test_scope_repair_keeps_templates_and_facts_unique(seed: int) -> None:
 
 
 def test_new_template_precedes_reused_ones_when_history_is_partly_used() -> None:
-    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in TEMPLATES])
+    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in (KILLS, ACS, WINS)])
     actual = generator.generate(players(), history(), 3, 42, asked_template_ids=[KILLS.id, ACS.id])
     assert template_ids(actual) == [WINS.id, KILLS.id, ACS.id]
 
