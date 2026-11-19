@@ -2,6 +2,7 @@
 
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 import grpc
 from friendlyfire.health.v1 import dependency_health_pb2, dependency_health_pb2_grpc
@@ -17,7 +18,7 @@ from scoring.dependency_health import (
     DependencyHealthServicer,
     PostgresDependencyCheck,
 )
-from scoring.quiz_repository import QuizRepository
+from scoring.quiz_repository import QuizRepository, Quizzes
 from scoring.score_calculator import ScoreCalculator
 from scoring.servicer import ScoringServicer
 from scoring.settings import Settings
@@ -31,6 +32,9 @@ class Overrides:
 
     pool: AsyncConnectionPool | None = None
     dependency_checks: Sequence[DependencyCheck] | None = None
+    # With both quizzes and dependency_checks set, no connection pool is opened.
+    quizzes: Quizzes | None = None
+    now: Callable[[], datetime] | None = None
 
 
 @dataclass
@@ -55,7 +59,8 @@ async def build_server(settings: Settings, overrides: Overrides | None = None) -
     closers: list[Callable[[], Awaitable[None]]] = []
 
     pool = overrides.pool
-    if pool is None:
+    needs_pool = overrides.quizzes is None or overrides.dependency_checks is None
+    if pool is None and needs_pool:
         conninfo = make_conninfo(
             host=settings.postgres_host,
             port=settings.postgres_port,
@@ -82,12 +87,18 @@ async def build_server(settings: Settings, overrides: Overrides | None = None) -
 
     checks = overrides.dependency_checks
     if checks is None:
+        assert pool is not None
         checks = [PostgresDependencyCheck(pool)]
+    quizzes = overrides.quizzes
+    if quizzes is None:
+        assert pool is not None
+        quizzes = QuizRepository(pool)
     checker = DependencyHealthChecker(SERVICE_NAME, checks)
 
     server = grpc.aio.server()
     scoring_service_pb2_grpc.add_ScoringServiceServicer_to_server(
-        ScoringServicer(QuizRepository(), ScoreCalculator()), server
+        ScoringServicer(quizzes, ScoreCalculator(), overrides.now or (lambda: datetime.now(UTC))),
+        server,
     )
     dependency_health_pb2_grpc.add_DependencyHealthServiceServicer_to_server(
         DependencyHealthServicer(checker), server
