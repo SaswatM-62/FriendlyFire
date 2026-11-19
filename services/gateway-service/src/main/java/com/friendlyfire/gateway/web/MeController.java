@@ -6,6 +6,7 @@ import com.friendlyfire.gateway.security.SignedInUser;
 import com.friendlyfire.gateway.security.UserResolver;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
 import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -57,6 +59,18 @@ public class MeController {
                         .setUserId(me.userId())
                         .setDisplayName(body.displayName() == null ? "" : body.displayName())
                         .build())
+                .getUser();
+        users.update(me.subject(), user);
+        return MeJson.from(user);
+    }
+
+    /**
+     * Marks the new-player tutorial as done (finished, or skipped from the Riot step on) and
+     * returns the user with {@code onboardedAt}. Calling it again keeps the first time.
+     */
+    @PostMapping("/onboarding")
+    public MeJson finishOnboarding(SignedInUser me) {
+        User user = accounts.finishOnboarding(FinishOnboardingRequest.newBuilder().setUserId(me.userId()).build())
                 .getUser();
         users.update(me.subject(), user);
         return MeJson.from(user);

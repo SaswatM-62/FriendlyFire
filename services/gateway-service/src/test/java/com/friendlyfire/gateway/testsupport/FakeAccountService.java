@@ -8,6 +8,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
@@ -29,6 +31,7 @@ import io.grpc.stub.StreamObserver;
 public final class FakeAccountService extends AccountServiceGrpc.AccountServiceImplBase {
 
     static final Timestamp CREATED_AT = Timestamp.newBuilder().setSeconds(1_762_000_000L).build();
+    static final Timestamp ONBOARDED_AT = Timestamp.newBuilder().setSeconds(1_762_000_600L).build();
 
     public final FakeCalls calls = new FakeCalls();
 
@@ -82,6 +85,16 @@ public final class FakeAccountService extends AccountServiceGrpc.AccountServiceI
     @Override
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> observer) {
         calls.handle(request, DeleteAccountResponse.getDefaultInstance(), observer);
+    }
+
+    /** Finishing the tutorial stamps the fake user with ONBOARDED_AT. */
+    @Override
+    public void finishOnboarding(FinishOnboardingRequest request, StreamObserver<FinishOnboardingResponse> observer) {
+        String name = request.getUserId().replaceFirst("^user-", "");
+        String displayName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        calls.handle(request, FinishOnboardingResponse.newBuilder()
+                .setUser(user(name, displayName).toBuilder().setOnboardedAt(ONBOARDED_AT))
+                .build(), observer);
     }
 
     /** By default nobody has linked a Riot account. */
