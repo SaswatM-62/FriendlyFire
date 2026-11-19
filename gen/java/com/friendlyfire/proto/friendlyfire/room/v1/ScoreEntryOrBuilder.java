@@ -55,4 +55,10 @@ public interface ScoreEntryOrBuilder extends
    * @return The pointsLastRound.
    */
   int getPointsLastRound();
+
+  /**
+   * <code>int32 correct_answers = 6 [json_name = "correctAnswers"];</code>
+   * @return The correctAnswers.
+   */
+  int getCorrectAnswers();
 }

@@ -138,6 +138,14 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;</code>
    */
   ROOM_EVENT_TYPE_QUIZ_START_FAILED(22),
+  /**
+   * <pre>
+   * Someone sent a chat message (RoomEvent.chat).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_CHAT_MESSAGE = 23;</code>
+   */
+  ROOM_EVENT_TYPE_CHAT_MESSAGE(23),
   UNRECOGNIZED(-1),
   ;
 
@@ -277,6 +285,14 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;</code>
    */
   public static final int ROOM_EVENT_TYPE_QUIZ_START_FAILED_VALUE = 22;
+  /**
+   * <pre>
+   * Someone sent a chat message (RoomEvent.chat).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_CHAT_MESSAGE = 23;</code>
+   */
+  public static final int ROOM_EVENT_TYPE_CHAT_MESSAGE_VALUE = 23;
 
 
   public final int getNumber() {
@@ -326,6 +342,7 @@ public enum RoomEventType
       case 20: return ROOM_EVENT_TYPE_QUIZ_PAUSED;
       case 21: return ROOM_EVENT_TYPE_QUIZ_PREPARING;
       case 22: return ROOM_EVENT_TYPE_QUIZ_START_FAILED;
+      case 23: return ROOM_EVENT_TYPE_CHAT_MESSAGE;
       default: return null;
     }
   }
