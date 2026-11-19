@@ -42,11 +42,11 @@ public class RiotLinkService {
     }
 
     /** Step 1: the Riot Sign-On URL, carrying a new one-time state for this user. */
-    public String start(UUID userId, String redirectUri) {
+    public String start(UUID userId, String email, String redirectUri) {
         if (redirectUri == null || redirectUri.isBlank()) {
             throw Status.INVALID_ARGUMENT.withDescription("redirect_uri is required").asRuntimeException();
         }
-        return rso.authorizeUrl(linkStates.create(userId, redirectUri), redirectUri);
+        return rso.authorizeUrl(linkStates.create(userId, redirectUri), redirectUri, email);
     }
 
     /**

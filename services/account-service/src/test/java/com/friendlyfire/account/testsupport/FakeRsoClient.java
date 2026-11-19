@@ -23,8 +23,8 @@ public final class FakeRsoClient implements RsoClient {
     }
 
     @Override
-    public String authorizeUrl(String state, String redirectUri) {
-        return AUTHORIZE + "?state=" + state + "&redirect_uri=" + redirectUri;
+    public String authorizeUrl(String state, String redirectUri, String email) {
+        return AUTHORIZE + "?state=" + state + "&redirect_uri=" + redirectUri + "&login_hint=" + email;
     }
 
     @Override

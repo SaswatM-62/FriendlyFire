@@ -36,6 +36,9 @@ func run() error {
 		return err
 	}
 	slog.Info("test players loaded", "file", cfg.PlayersFile, "count", len(players))
+	if missing := rso.WithoutEmail(players); missing > 0 {
+		slog.Warn("some test players have no email, so nobody can link them", "count", missing)
+	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
