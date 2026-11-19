@@ -18,7 +18,10 @@ How a template is evaluated, for every room player who is compared (see below):
 4. Value, by rule:
    - max_in_match: the player's best single match for stat (highest, or lowest
      when direction is "lowest"); display_label names a label from that match,
-     shown as {<display_label>_name}.
+     shown as {<display_label>_name}. A match missing the stat makes the value
+     unknown, unless skip_missing is set: then matches without it are left out (for
+     stats that only exist when something happened, like longest_kill_m in a match
+     with no kills), and only a player with no known match is unknown.
    - count: the sum of stat over the matches ("matches" counts them, "won" counts
      wins). No matches after a filter is a known zero.
    - average: stat averaged per match.
@@ -83,6 +86,8 @@ class QuestionTemplate:
     parameter_label: ParameterLabel = ""
     display_label: str = ""
     contenders_only: bool = False
+    # max_in_match only: leave out matches that don't have the stat (see above).
+    skip_missing: bool = False
 
 
 TEMPLATES = (
@@ -135,6 +140,8 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         display_label="map",
+        # A match with no kills has no longest kill.
+        skip_missing=True,
     ),
     # 2. Totals: assists that came from pure utility (no damage on the victim).
     QuestionTemplate(

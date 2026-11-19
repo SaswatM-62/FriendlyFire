@@ -155,6 +155,23 @@ def test_max_in_match_takes_each_players_best_match_and_lowest_can_win() -> None
     assert question.source_match_id == "1"
 
 
+def test_skip_missing_leaves_out_matches_without_the_stat() -> None:
+    # Bob's second match had no kills, so it has no longest kill.
+    stats = [
+        match(ALICE, "1", longest_kill_m=40),
+        match(BOB, "2", longest_kill_m=30),
+        match(BOB, "3"),
+    ]
+    strict = template(rule="max_in_match", stat="numbers.longest_kill_m")
+    assert ask(strict, stats, ALICE, BOB) == []
+    lenient = replace(strict, skip_missing=True)
+    [question] = ask(lenient, stats, ALICE, BOB)
+    assert question.correct_option_id == ALICE
+    assert question.explanation == "Alice: 40 (40/1)"
+    # A player with no match that has the stat is still unknown.
+    assert ask(lenient, [match(ALICE, "1", longest_kill_m=40), match(BOB, "3")], ALICE, BOB) == []
+
+
 def test_average_is_per_match() -> None:
     performance = template(rule="average", stat="numbers.performance_score")
     stats = [
@@ -407,6 +424,7 @@ def test_lowest_wins_difficulty_uses_the_runner_up() -> None:
         ({"rule": "count", "stat": "kills", "display_label": "rank"}, "display_label"),
         ({"rule": "pair", "stat": "kills"}, "pair needs"),
         ({"rule": "count", "stat": "kills", "last_n": 0}, "last_n"),
+        ({"rule": "count", "stat": "kills", "skip_missing": True}, "skip_missing"),
         ({"rule": "count", "stat": "kills", "question": "Who has {rank}?"}, "{rank}"),
     ],
 )
