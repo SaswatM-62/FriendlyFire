@@ -334,9 +334,29 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
     sync that can't start is logged, and the next sign-in tries again). Anything that
     deletes data (unlinking, deleting an account, swapping Riot accounts) answers
     UNAVAILABLE and changes nothing, so no personal data is left behind; the other services
-    always go first, then Account's own rows. While those services are still stubs,
-    unlinking and deleting an account answer 503 (501 from the Gateway while Room's
-    `RemovePlayer` isn't built).
+    always go first, then Account's own rows. While Match Data is still a stub, unlinking,
+    and deleting an account that has a Riot link, answer 503.
+  - **The mock RSO's email check:** `StartRiotLink` adds the account's email to the mock's
+    URL (`login_hint`), and the mock only accepts a Riot ID for the email it's assigned to.
+    The real Riot Sign-On client will never send it.
+- **Room's rules** (room-service):
+  - `RoomManager` does every action from the contract; `QuizRunner` runs a quiz from Start
+    to the final standings. Each `Room` is changed only while holding its lock
+    (`synchronized (room)`), and every event is published under the same lock, so streams
+    see events in order. Calls to Account, the quiz engine and Scoring happen outside the
+    lock.
+  - Timers go through the injected `Scheduler` and `Clock` (`RoomTimings` has every
+    length): 8 s minimum and 60 s maximum to prepare, a 3 s countdown before every
+    question, a 10 s reveal, a 15 s vote, pauses of up to 60 s (180 s per quiz). Each phase
+    change bumps the room's `generation`, so a timer set for an earlier phase does nothing.
+  - Scoring owns the points: Room registers the quiz (`StartQuiz`, or the start fails),
+    records every round (`RecordRound`, retried once; if Scoring stays down, Room scores
+    that round itself with the same formula) and finalizes it in the background.
+  - Rooms live in memory (`InMemoryRoomRepository`): a restart ends them. A user is in one
+    room at a time. Scheduled jobs (`RoomJobs`) refresh lobby players' data status every
+    5 s and close rooms everyone left 5 minutes ago, or where nothing happened for 2 hours.
+  - Tests: `testsupport/RoomFixture` wires everything with fakes and a manual clock;
+    `fixture.advance(...)` runs the timers, so a whole quiz takes milliseconds.
 - 4-space indents. No Java formatter or linter is set up yet, so follow the surrounding code.
 
 **Tests**
@@ -393,7 +413,11 @@ services/scoring-service/
   agent/map parameters and placeholders. The generator rejects a template it can't
   evaluate or render as soon as it loads, and rates each question's difficulty itself.
 - scoring-service: Postgres through the injected psycopg `AsyncConnectionPool`, on the
-  `scoring` schema. Alembic creates and updates the tables, running
+  `scoring` schema, behind the `Quizzes` protocol (`QuizRepository`; `tests/fakes.py` has
+  an in-memory `FakeQuizzes` for servicer tests). A quiz's players are numbered by seat,
+  so their answers stay linked after `AnonymizePlayer` clears the user ID. `RecordRound`
+  replaces a round sent again; `FinalizeQuiz` keeps the first call's result; history pages
+  are keyed on (finished_at, quiz_id). Alembic creates and updates the tables, running
   `scoring.migrate.upgrade_to_head` before the gRPC server starts.
   **To add a migration:** copy `src/scoring/migrations/versions/0001_init.py` to
   `000N_<what>.py`, set `revision` to the new id and `down_revision` to the previous one,
@@ -457,16 +481,21 @@ services/match-data-service/
   ones, save the list from the team password manager as
   `services/mock-rso-service/testplayers.json` (same format, gitignored: never commit it);
   the service picks it up by itself. `MOCK_RSO_PLAYERS_FILE` points at any other file.
+  Each player has an `email`: the FriendlyFire account allowed to link them. The sign-in
+  page asks for a Riot ID (e.g. `Sam#NA1`, not case-sensitive) and refuses one that isn't in
+  the list or belongs to another email. A player without an email can't be linked (the
+  service logs how many there are). The page says it's a mock; in production Riot's own
+  sign-in and consent screen opens instead.
   **Callback URLs:** `/authorize` only sends the browser back to the exact URLs in
   `MOCK_RSO_REDIRECT_URIS`; anything else gets a 400.
   **Try it with curl:**
   ```bash
   CALLBACK=http://localhost:3000/link/riot/callback
-  # The page a browser would show
-  curl "http://localhost:8090/authorize?response_type=code&redirect_uri=$CALLBACK&state=abc"
-  # Pick a player: the Location header has the code. deny=1 instead of puuid refuses.
+  # The page a browser would show (login_hint is the FriendlyFire account's email)
+  curl "http://localhost:8090/authorize?response_type=code&redirect_uri=$CALLBACK&state=abc&login_hint=sam@example.com"
+  # Sign in as a test player: the Location header has the code. deny=1 instead refuses.
   curl -i http://localhost:8090/authorize -d "redirect_uri=$CALLBACK" -d state=abc \
-    -d puuid=00000000-0000-4000-8000-000000000001
+    -d login_hint=sam@example.com --data-urlencode "riot_id=Sam#NA1"
   # Swap the code for a token (a code works once)
   curl http://localhost:8090/token -d grant_type=authorization_code -d "redirect_uri=$CALLBACK" \
     -d code=PASTE_THE_CODE
