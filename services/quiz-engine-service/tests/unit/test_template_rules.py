@@ -347,27 +347,53 @@ def ff409_template(template_id: str) -> QuestionTemplate:
 
 def ff409_stats(template: QuestionTemplate, *, tied: bool = False) -> list[PlayerMatchStats]:
     """Make enough fixture matches for a pack template, with Alice leading by default."""
-    count = template.last_n or 2
+    count = template.last_n or 10
     rows: list[PlayerMatchStats] = []
     for n in range(count):
         for uid in (ALICE, BOB):
             alice = uid == ALICE
-            score = 8 if alice else (8 if tied else 3)
-            values: dict[str, float] = {}
-            fields = (
-                template.stat,
-                *template.numerator,
-                *template.denominator,
-            )
-            for field in fields:
-                if field.startswith("numbers."):
-                    if template.id in {"opening-duel-win-rate-v1", "clutch-win-rate-v1"}:
-                        if field.endswith(("first_deaths", "clutch_attempts")):
-                            values[field.removeprefix("numbers.")] = 10
-                        else:
-                            values[field.removeprefix("numbers.")] = score
-                    else:
-                        values[field.removeprefix("numbers.")] = score
+            scores = {
+                "max-round-damage-v1": (160, 80),
+                "recent-first-bloods-v1": (2, 1),
+                "average-performance-score-v1": (265.1, 170.5),
+                "opening-duel-win-rate-v1": (4, 2),
+                "max-round-kills-v1": (4, 2),
+                "post-plant-kills-v1": (3, 1),
+                "ninja-defuses-v1": (1, 0),
+                "clutch-win-rate-v1": (2, 1),
+                "fall-deaths-v1": (1, 0),
+                "pistol-round-kills-v1": (2, 1),
+            }
+            score, other_score = scores[template.id]
+            if tied:
+                other_score = score
+            values = {
+                "max_round_damage": score,
+                "first_bloods": score,
+                "performance_score": score,
+                "first_deaths": 6 if alice else (6 if tied else 8),
+                "max_round_kills": score,
+                "post_plant_kills": score,
+                "ninja_defuses": score,
+                "clutch_wins": score,
+                "clutch_attempts": 4,
+                "fall_deaths": score,
+                "pistol_round_kills": score,
+            }
+            if not alice:
+                values.update(
+                    {
+                        "max_round_damage": other_score,
+                        "first_bloods": other_score,
+                        "performance_score": other_score,
+                        "max_round_kills": other_score,
+                        "post_plant_kills": other_score,
+                        "ninja_defuses": other_score,
+                        "clutch_wins": other_score,
+                        "fall_deaths": other_score,
+                        "pistol_round_kills": other_score,
+                    }
+                )
             row = match(uid, f"{template.id}-{uid}-{n}", seconds=n + 1, **values)
             if template.display_label:
                 row.labels[template.display_label] = "Jett" if alice else "Sage"
@@ -413,6 +439,17 @@ def test_ff409_uses_ten_distinct_template_ids() -> None:
     assert len({template.id for template in TEMPLATES}) == len(TEMPLATES)
 
 
+def test_ff409_recent_windows_use_all_scope_and_pistol_rounds_use_all_matches() -> None:
+    for template_id in (
+        "recent-first-bloods-v1",
+        "post-plant-kills-v1",
+        "ninja-defuses-v1",
+        "fall-deaths-v1",
+    ):
+        assert ff409_template(template_id).scopes == ("all",)
+    assert ff409_template("pistol-round-kills-v1").last_n is None
+
+
 def test_ff409_recent_first_bloods_has_guide_wording() -> None:
     template = ff409_template("recent-first-bloods-v1")
     stats = ff409_stats(template)
@@ -431,6 +468,86 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
     assert "fell to their death" in question.text
     assert "unfortunate stat" in question.text
     assert question.correct_option_id == ALICE
+
+
+@pytest.mark.parametrize(
+    ("template_id", "question", "explanation"),
+    [
+        (
+            "max-round-damage-v1",
+            "One of you dealt 160 damage to enemies in a single round {scope}, more than anyone "
+            "else here has managed. Who pulled that off?",
+            "Alice, playing Jett: 160 damage in one round.",
+        ),
+        (
+            "recent-first-bloods-v1",
+            "Over their last 5 matches, this player drew first blood 10 times, the most in this "
+            "group. Who is this player?",
+            "Alice opened 10 rounds with the first kill in their last 5 matches.",
+        ),
+        (
+            "average-performance-score-v1",
+            "This player averages a Performance Score of 265.10 per match {scope}, the highest in "
+            "this group. Who set the pace?",
+            "Alice: 2651 Performance Score over 10 matches.",
+        ),
+        (
+            "opening-duel-win-rate-v1",
+            "This player wins 40% of their opening duels {scope}, the best record in this group. "
+            "Who takes the first fight?",
+            "Alice: 40 first bloods out of 100 opening duels.",
+        ),
+        (
+            "max-round-kills-v1",
+            "One of you took down 4 enemies in a single round {scope}, and nobody else here has "
+            "matched it. Who is this player?",
+            "Alice, playing Jett: 4 kills in one round.",
+        ),
+        (
+            "post-plant-kills-v1",
+            "Once the spike is down, this player gets to work: 15 post-plant kills in their last "
+            "5 matches, the most in this group. Who might this player be?",
+            "Alice got 15 kills after the plant in their last 5 matches.",
+        ),
+        (
+            "ninja-defuses-v1",
+            "Someone here defused the spike 5 times in their last 5 matches with enemies still "
+            "alive. Which of you has that unique distinction?",
+            "Alice: 5 ninja defuses in 5 matches.",
+        ),
+        (
+            "clutch-win-rate-v1",
+            "Left as the last one standing, this player wins 50% of their clutches {scope}. "
+            "Nobody here does better. Who stays cold under pressure?",
+            "Alice: 20 clutch wins out of 40 clutch attempts.",
+        ),
+        (
+            "fall-deaths-v1",
+            "In their last 5 matches, this player fell to their death 5 times, more than anyone "
+            "else here. Who does this unfortunate stat belong to?",
+            "Alice recorded 5 fall deaths in their last 5 matches.",
+        ),
+        (
+            "pistol-round-kills-v1",
+            "This player averages 2 pistol-round kills per match {scope}, the most in this group. "
+            "Who starts rounds with a bang?",
+            "Alice: 20 pistol-round kills in 10 matches.",
+        ),
+    ],
+)
+def test_ff409_question_and_answer_text(template_id: str, question: str, explanation: str) -> None:
+    template = replace(ff409_template(template_id), scopes=("all",))
+    questions = ask(template, ff409_stats(template), ALICE, BOB)
+    scope_text = {
+        "all": "in the available Competitive and Unrated match history",
+        "shared": "in available matches played with other room players",
+        "solo": "in available matches played without other room players",
+    }
+
+    expected = [
+        (question.format(scope=scope_text[scope]), explanation) for scope in template.scopes
+    ]
+    assert sorted((q.text, q.explanation) for q in questions) == sorted(expected)
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,56 @@
-"""Data-only question templates transcribed from the sample question bank.
+"""Data-only question templates; question_generator.py evaluates them.
 
-Catalogue: docs/stats-catalogue.md. A new question is another entry here; only a
-new kind of calculation needs code in question_generator.py.
+Catalogue: docs/stats-catalogue.md. A new question is one more entry here; only a
+new kind of calculation needs code in question_generator.py. Templates carry no
+difficulty: each generated question is rated easy, medium or hard from how far its
+winner leads (question_generator.difficulty).
+
+How a template is evaluated, for every room player who is compared (see below):
+
+1. Rows: the player's matches in the template's game and queues, and in the scope
+   (all matches, "shared" ones with 2+ room players, or "solo" ones).
+2. Window: the player's newest last_n matches by played_at (fewer than last_n, a
+   missing timestamp, or a tie across the boundary skips the question), or every
+   stored match when last_n is None. The window is chosen before any filter.
+3. Filter: with a parameter_label, one question per value of that label (e.g. per
+   agent), keeping only the window's matches with that value. A match missing the
+   label skips the question rather than silently dropping out.
+4. Value, by rule:
+   - max_in_match: the player's best single match for stat (highest, or lowest
+     when direction is "lowest"); display_label names a label from that match,
+     shown as {<display_label>_name}.
+   - count: the sum of stat over the matches ("matches" counts them, "won" counts
+     wins). No matches after a filter is a known zero.
+   - average: stat averaged per match.
+   - pooled_ratio: the sum of the numerator stats over the sum of the denominator
+     stats. A zero total denominator is unknown; one zero match still counts.
+   - pair: friend-pair counts. One question per room player (the {friend}); each
+     other player's value is the sum of the "<stat>:<friend's user ID>" number over
+     matches where they were on the friend's team.
+5. Compare: the unique highest (or lowest) value wins; a tie skips the question,
+   and so does a {value} or {percent} in the question that rounds to the same text
+   as the runner-up's (it wouldn't single out the winner). Any player with a
+   missing value skips it too, except that with contenders_only players without
+   enough matches sit the question out (2+ must remain). "Enough" means at least
+   one match in the scope (and at least last_n of them), plus one after the filter.
+   Use it for agent or map questions, and for the solo scope: players who mostly
+   squad up still have the odd solo game, so pair a solo template with
+   contenders_only and a small or no last_n. Pair questions always compare only the
+   players who played with the friend.
+
+Every room player is an option in every question, including players who sat it out,
+so a question says who it compared ("of anyone here who has played Ascent"). Players
+with QuizPlayer.not_enough_matches are never compared: never the answer, a pair
+question's friend or the source of a stat. Their matches still count when deciding
+whether a match was shared.
+
+Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
+"matches", or "numbers.<key>" from the catalogue.
+
+Placeholders: {name} (winner), {value}, {numerator}, {denominator}, {percent}
+(value x 100), {scope}, {last_n}, {parameter}, {friend} and {<display_label>_name}.
+Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
+for {percent} (29.7).
 """
 
 from dataclasses import dataclass
@@ -20,6 +69,7 @@ class QuestionTemplate:
     id: str
     question: str
     explanation: str
+    # Every catalogue key the template reads, for reviewers.
     stats: tuple[str, ...]
     rule: Rule
     stat: str = ""
@@ -94,14 +144,13 @@ TEMPLATES = (
         stats=("numbers.first_bloods", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.first_bloods",
-        scopes=ALL_SCOPES,
         last_n=5,
     ),
     QuestionTemplate(
         id="average-performance-score-v1",
         question="This player averages a Performance Score of {value} per match {scope}, "
         "the highest in this group. Who set the pace?",
-        explanation="{name} averaged {numerator} Performance Score in {denominator} matches.",
+        explanation="{name}: {numerator} Performance Score over {denominator} matches.",
         stats=("numbers.performance_score", "labels.queue_id"),
         rule="average",
         stat="numbers.performance_score",
@@ -122,38 +171,40 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="max-round-kills-v1",
-        question="Who got the most enemy kills in a single round {scope}?",
-        explanation="{name} got {value} enemy kills in one round {scope}, the most in the group.",
-        stats=("numbers.max_round_kills", "labels.queue_id"),
+        question="One of you took down {value} enemies in a single round {scope}, and nobody "
+        "else here has matched it. Who is this player?",
+        explanation="{name}, playing {agent_name}: {value} kills in one round.",
+        stats=("numbers.max_round_kills", "labels.agent", "labels.queue_id"),
         rule="max_in_match",
         stat="numbers.max_round_kills",
         scopes=ALL_SCOPES,
         last_n=None,
+        display_label="agent",
     ),
     QuestionTemplate(
         id="post-plant-kills-v1",
-        question="Who gets the most post-plant kills across their last {last_n} matches?",
-        explanation="{name} got {value} enemy kills after the spike was planted.",
+        question="Once the spike is down, this player gets to work: {value} post-plant kills in "
+        "their last {last_n} matches, the most in this group. Who might this player be?",
+        explanation="{name} got {value} kills after the plant in their last {last_n} matches.",
         stats=("numbers.post_plant_kills", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.post_plant_kills",
-        scopes=ALL_SCOPES,
         last_n=5,
     ),
     QuestionTemplate(
         id="ninja-defuses-v1",
-        question="Who pulled off the most ninja defuses in their last {last_n} matches?",
-        explanation="{name} made {value} defuses while enemy players were still alive.",
+        question="Someone here defused the spike {value} times in their last {last_n} matches "
+        "with enemies still alive. Which of you has that unique distinction?",
+        explanation="{name}: {value} ninja defuses in {last_n} matches.",
         stats=("numbers.ninja_defuses", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.ninja_defuses",
-        scopes=ALL_SCOPES,
         last_n=5,
     ),
     QuestionTemplate(
         id="clutch-win-rate-v1",
-        question="This player wins {percent}% of their clutches {scope}, "
-        "the best record in this group. Who stays cold under pressure?",
+        question="Left as the last one standing, this player wins {percent}% of their clutches "
+        "{scope}. Nobody here does better. Who stays cold under pressure?",
         explanation="{name}: {numerator} clutch wins out of {denominator} clutch attempts.",
         stats=("numbers.clutch_wins", "numbers.clutch_attempts", "labels.queue_id"),
         rule="pooled_ratio",
@@ -170,7 +221,6 @@ TEMPLATES = (
         stats=("numbers.fall_deaths", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.fall_deaths",
-        scopes=ALL_SCOPES,
         last_n=5,
     ),
     QuestionTemplate(
@@ -182,6 +232,6 @@ TEMPLATES = (
         rule="average",
         stat="numbers.pistol_round_kills",
         scopes=ALL_SCOPES,
-        last_n=10,
+        last_n=None,
     ),
 )
