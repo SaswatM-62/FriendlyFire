@@ -37,6 +37,10 @@ describe("FakeRoom", () => {
     const { room, events, transport } = hostedRoom(3);
 
     transport.send("start", {});
+    expect(room.snapshot.phase).toBe("PREPARING");
+    expect(events.at(-1)?.type).toBe("QUIZ_PREPARING");
+
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs);
     expect(room.snapshot.phase).toBe("STARTING");
 
     vi.advanceTimersByTime(FAKE_TIMING.startingMs);
@@ -62,7 +66,7 @@ describe("FakeRoom", () => {
   it("has a get-ready before every question after the first", () => {
     const { room, transport } = hostedRoom(3);
     transport.send("start", {});
-    vi.advanceTimersByTime(FAKE_TIMING.startingMs);
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs + FAKE_TIMING.startingMs);
     const q = room.snapshot.currentQuestion!;
     transport.send("answer", { questionId: q.questionId, optionId: q.options[0].optionId });
     vi.advanceTimersByTime(2_500);
@@ -81,7 +85,7 @@ describe("FakeRoom", () => {
   it("refuses a second answer and answers outside the question", () => {
     const { room, errors, transport } = hostedRoom();
     transport.send("start", {});
-    vi.advanceTimersByTime(FAKE_TIMING.startingMs);
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs + FAKE_TIMING.startingMs);
     const q = room.snapshot.currentQuestion!;
 
     transport.send("answer", { questionId: q.questionId, optionId: q.options[0].optionId });
@@ -123,7 +127,7 @@ describe("FakeRoom", () => {
   it("lets the host change settings after a quiz too (proposed, for Back to lobby)", () => {
     const { room, transport, errors } = hostedRoom(5);
     transport.send("start", {});
-    vi.advanceTimersByTime(5 * 40_000);
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs + 5 * 40_000);
     expect(room.snapshot.phase).toBe("FINISHED");
 
     room.handle("settings", { questionCount: 8, secondsPerQuestion: 20 }, ME_ID);
@@ -149,7 +153,7 @@ describe("FakeRoom", () => {
   it("has the bots chat now and then", () => {
     const { events, transport } = hostedRoom(3);
     transport.send("start", {});
-    vi.advanceTimersByTime(3 * 40_000);
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs + 3 * 40_000);
 
     const lines = events.filter((e) => e.type === "CHAT_MESSAGE").map((e) => e.chat!);
     expect(lines.length).toBeGreaterThan(0);
@@ -165,11 +169,43 @@ describe("FakeRoom", () => {
     expect(events.slice(-2).map((e) => e.type)).toEqual(["PLAYER_LEFT", "HOST_CHANGED"]);
   });
 
+  it("goes back to the lobby with a reason when building the questions fails", () => {
+    const { room, events, transport } = hostedRoom();
+    transport.send("start", {});
+
+    room.failStart("Not enough matches for 15 questions. Try 10.");
+
+    expect(room.snapshot.phase).toBe("LOBBY");
+    expect(room.snapshot.quizId).toBeUndefined();
+    expect(events.at(-1)).toMatchObject({ type: "QUIZ_START_FAILED", message: "Not enough matches for 15 questions. Try 10." });
+  });
+
+  it("makes someone who joins mid-quiz a spectator until the next quiz", () => {
+    const { room, errors, transport } = hostedRoom(3);
+    transport.send("start", {});
+    vi.advanceTimersByTime(FAKE_TIMING.preparingMs + FAKE_TIMING.startingMs);
+
+    room.addPlayer(fakePlayer({ userId: "late", displayName: "Lena", riotTagLine: "EUW" }));
+    const late = () => room.snapshot.players.find((x) => x.userId === "late")!;
+
+    expect(late().status).toBe("SPECTATING");
+    expect(room.snapshot.currentQuestion?.options.map((o) => o.optionId)).not.toContain("late");
+    room.handle("answer", { questionId: room.snapshot.currentQuestion!.questionId, optionId: ME_ID }, "late");
+    expect(room.snapshot.players.find((x) => x.userId === "late")?.answeredCurrentQuestion).toBe(false);
+
+    const q = room.snapshot.currentQuestion!;
+    transport.send("answer", { questionId: q.questionId, optionId: q.options[0].optionId });
+    vi.advanceTimersByTime(3 * 40_000);
+    expect(room.snapshot.phase).toBe("FINISHED");
+    expect(late().status).toBe("CONNECTED");
+    expect(errors).toEqual([]);
+  });
+
   describe("the vote after a disconnect", () => {
     function voting() {
       const setup = hostedRoom();
       setup.transport.send("start", {});
-      vi.advanceTimersByTime(FAKE_TIMING.startingMs);
+      vi.advanceTimersByTime(FAKE_TIMING.preparingMs + FAKE_TIMING.startingMs);
       setup.room.jumpTo("vote");
       expect(setup.room.snapshot.phase).toBe("VOTE");
       return setup;

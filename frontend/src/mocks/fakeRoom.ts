@@ -20,6 +20,8 @@ import { FAKE_BACKEND_MARKER, FAKE_QUESTIONS, type FakePlayer } from "@/mocks/da
  * 10 s, time for the staged reveal); the vote and pause are shorter, to step through quickly.
  */
 export const FAKE_TIMING = {
+  /** The loading screen's minimum (the real Room's 8 s); the fake's questions are always ready by then. */
+  preparingMs: 8_000,
   startingMs: 3_000,
   revealMs: 10_000,
   voteMs: 15_000,
@@ -31,6 +33,9 @@ export const FAKE_TIMING = {
 
 export type FakeScene =
   | "lobby"
+  | "preparing"
+  | "slow-prep"
+  | "start-failed"
   | "countdown"
   | "get-ready"
   | "question"
@@ -137,13 +142,14 @@ export class FakeRoom {
     return () => this.listeners.delete(listener);
   }
 
-  private emit(type: RoomEventType, subjectUserId?: string, chat?: ChatMessage) {
+  private emit(type: RoomEventType, subjectUserId?: string, chat?: ChatMessage, message?: string) {
     const event: RoomEvent = {
       type,
       subjectUserId,
       occurredAt: new Date().toISOString(),
       snapshot: clone(this.snapshot),
       ...(chat ? { chat } : {}),
+      ...(message ? { message } : {}),
     };
     for (const listener of this.listeners) listener(event);
     for (const c of this.connections) if (c.open) c.handlers.onEvent(event);
@@ -188,8 +194,9 @@ export class FakeRoom {
     return this.snapshot.phase === "LOBBY" || this.snapshot.phase === "FINISHED";
   }
 
+  /** Who plays this quiz: not those sitting out, nor spectators who joined during it. */
   private active() {
-    return this.snapshot.players.filter((p) => p.status !== "SITTING_OUT");
+    return this.snapshot.players.filter((p) => p.status !== "SITTING_OUT" && p.status !== "SPECTATING");
   }
 
   // ---------- room chat (planned) ----------
@@ -339,7 +346,8 @@ export class FakeRoom {
       this.player(player.userId)!.status = "CONNECTED";
       return this.emit("PLAYER_RECONNECTED", player.userId);
     }
-    this.snapshot.players.push(player);
+    // Joining while a quiz is preparing or running: watch it, play from the next one.
+    this.snapshot.players.push(this.betweenQuizzes() ? player : { ...player, status: "SPECTATING" });
     this.emit("PLAYER_JOINED", player.userId);
     if (player.userId !== this.meId && this.snapshot.phase === "LOBBY") {
       this.after(1_200, () => this.say(player.userId, ["yo", "hey all", "what are we playing to", "ready when you are"][this.snapshot.players.length % 4]));
@@ -406,13 +414,13 @@ export class FakeRoom {
     this.pauseUsedS = 0;
     this.fastest = null;
     for (const p of this.snapshot.players) {
-      if (p.status === "SITTING_OUT") p.status = "CONNECTED";
+      if (p.status === "SITTING_OUT" || p.status === "SPECTATING") p.status = "CONNECTED";
     }
     const connected = this.snapshot.players.filter((p) => p.status === "CONNECTED");
     // In a quiz of 4+ questions, the second player drops during question 3 (once).
     this.dropUserId = this.snapshot.settings.questionCount >= 4 && this.quizCount === 1 ? (this.bots()[0]?.userId ?? null) : null;
     Object.assign(this.snapshot, {
-      phase: "STARTING",
+      phase: "PREPARING",
       quizId: `fake-quiz-${this.snapshot.roomCode}-${this.quizCount}`,
       roundNumber: 0,
       currentQuestion: undefined,
@@ -421,7 +429,7 @@ export class FakeRoom {
       fastestAnswer: undefined,
       waitingForUserId: undefined,
       pauseSecondsLeft: FAKE_TIMING.pauseBudgetS,
-      phaseDeadline: this.deadlineIn(FAKE_TIMING.startingMs),
+      phaseDeadline: this.deadlineIn(FAKE_TIMING.preparingMs),
       scoreboard: connected.map<ScoreEntry>((p) => ({
         userId: p.userId,
         displayName: p.displayName,
@@ -431,8 +439,29 @@ export class FakeRoom {
         correctAnswers: 0,
       })),
     } satisfies Partial<RoomSnapshot>);
+    this.emit("QUIZ_PREPARING");
+    this.after(FAKE_TIMING.preparingMs, () => this.beginCountdown());
+  }
+
+  /** The questions are ready and the loading screen's minimum is up: 3-2-1, then question 1. */
+  private beginCountdown() {
+    this.snapshot.phase = "STARTING";
+    this.snapshot.phaseDeadline = this.deadlineIn(FAKE_TIMING.startingMs);
     this.emit("QUIZ_STARTING");
     this.after(FAKE_TIMING.startingMs, () => this.startQuestion(1));
+  }
+
+  /** Building the questions failed: back to the lobby, with a reason for everyone. */
+  failStart(message: string) {
+    this.clearTimers();
+    Object.assign(this.snapshot, {
+      phase: "LOBBY",
+      quizId: undefined,
+      roundNumber: 0,
+      phaseDeadline: undefined,
+      scoreboard: [],
+    } satisfies Partial<RoomSnapshot>);
+    this.emit("QUIZ_START_FAILED", undefined, undefined, message);
   }
 
   /** Get ready: a short countdown before every question after the first (and after a pause). */
@@ -497,6 +526,9 @@ export class FakeRoom {
   }
 
   private answer(from: string, body: RoomActions["answer"]) {
+    if (this.player(from)?.status === "SPECTATING") {
+      return this.errorTo(from, "FAILED_PRECONDITION", "You're watching this quiz. You'll play in the next one.", "answer");
+    }
     const q = this.snapshot.currentQuestion;
     if (this.snapshot.phase !== "QUESTION" || !q || body.questionId !== q.questionId) {
       return this.errorTo(from, "FAILED_PRECONDITION", "Time's up for that question.", "answer");
@@ -612,6 +644,7 @@ export class FakeRoom {
   private castVote(from: string, option: VoteOption) {
     const vote = this.snapshot.activeVote;
     if (this.snapshot.phase !== "VOTE" || !vote || from === vote.aboutUserId || this.votes.has(from)) return;
+    if (this.player(from)?.status === "SPECTATING") return;
     if (option === "PAUSE" && vote.pauseAllowed === false) {
       return this.errorTo(from, "FAILED_PRECONDITION", "No pause time left.", "vote");
     }
@@ -691,6 +724,8 @@ export class FakeRoom {
   finish(reason: EndReason, type: RoomEventType = "QUIZ_FINISHED") {
     this.clearTimers();
     this.rank();
+    // Spectators play from the next quiz.
+    for (const p of this.snapshot.players) if (p.status === "SPECTATING") p.status = "CONNECTED";
     Object.assign(this.snapshot, {
       phase: "FINISHED",
       currentQuestion: undefined,
@@ -748,9 +783,25 @@ export class FakeRoom {
           endReason: undefined,
         } satisfies Partial<RoomSnapshot>);
         return this.emit("SNAPSHOT");
-      case "countdown":
+      case "preparing":
         restoreEveryone();
         return this.startQuiz();
+      case "slow-prep":
+        // Preparing for 21 s already, so the "taking longer than usual" line shows.
+        restoreEveryone();
+        this.startQuiz();
+        this.clearTimers();
+        this.snapshot.phaseDeadline = this.deadlineIn(FAKE_TIMING.preparingMs - 21_000);
+        return this.emit("SNAPSHOT");
+      case "start-failed":
+        restoreEveryone();
+        this.startQuiz();
+        return this.failStart("Not enough matches for 15 questions. Try 10.");
+      case "countdown":
+        restoreEveryone();
+        this.startQuiz();
+        this.clearTimers();
+        return this.beginCountdown();
       case "get-ready":
         restoreEveryone();
         ensureQuiz();

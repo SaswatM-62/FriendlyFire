@@ -55,7 +55,8 @@ export function QuestionScreen({ rejections }: Props) {
   const me = snapshot.players.find((p) => p.userId === meId);
   const confirmed = me?.answeredCurrentQuestion ?? false;
   const answered = myLock !== null || confirmed;
-  const canAnswer = me?.status !== "SITTING_OUT";
+  const spectating = me?.status === "SPECTATING";
+  const canAnswer = me?.status !== "SITTING_OUT" && !spectating;
   const timeUp = now !== 0 && leftMs === 0;
   const hurry = leftMs <= HURRY_MS && !timeUp;
 
@@ -131,6 +132,11 @@ export function QuestionScreen({ rejections }: Props) {
           <span className="h2" style={{ fontSize: 17, color: hurry && !answered ? "var(--red-text)" : undefined }}>
             {timeUp ? "Time's up" : `${hurry && !answered ? "Hurry: " : ""}${lockedCount} of ${players.length} locked in`}
           </span>
+        </p>
+      )}
+      {spectating && (
+        <p className="small" style={{ textAlign: "center", color: "var(--cyan-text)" }}>
+          You joined mid-quiz, so you&apos;re watching this one. You&apos;ll play in the next quiz.
         </p>
       )}
       {me?.status === "SITTING_OUT" && (

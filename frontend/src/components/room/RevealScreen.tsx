@@ -85,7 +85,7 @@ export function RevealScreen() {
   const left = Math.max(0, Math.ceil(leftMs / 1000));
   const totalMs = usePhaseLength(leftMs, now !== 0);
   const last = snapshot.roundNumber >= snapshot.settings.questionCount;
-  const playing = snapshot.players.some((p) => p.userId === meId && p.status !== "SITTING_OUT");
+  const playing = snapshot.players.some((p) => p.userId === meId && p.status !== "SITTING_OUT" && p.status !== "SPECTATING");
   const what = last ? "Final results in" : "Next question in";
 
   return (

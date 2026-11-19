@@ -113,6 +113,8 @@ export function createApiClient(options: ApiClientOptions) {
     updateDisplayName: (displayName: string, opts?: RequestOptions) =>
       request<Me>("PATCH", "/api/me", { ...opts, body: { displayName } }),
     deleteAccount: (opts?: RequestOptions) => request<void>("DELETE", "/api/me", opts),
+    /** Marks the new-player tutorial as done; returns the user with `onboardedAt`. */
+    finishOnboarding: (opts?: RequestOptions) => request<Me>("POST", "/api/me/onboarding", opts),
 
     startRiotLink: (opts?: RequestOptions) => request<StartRiotLinkResponse>("POST", "/api/link/riot/start", opts),
     completeRiotLink: (code: string, state: string, opts?: RequestOptions) =>
