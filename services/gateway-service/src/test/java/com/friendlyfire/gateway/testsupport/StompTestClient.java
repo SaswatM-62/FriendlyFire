@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.JacksonJsonMessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
@@ -145,10 +146,16 @@ public final class StompTestClient implements AutoCloseable {
 
     @Override
     public void close() {
-        if (session.isConnected()) {
-            session.disconnect();
+        try {
+            if (session.isConnected()) {
+                session.disconnect();
+            }
+        } catch (MessageDeliveryException e) {
+            // The server closed the connection between the check and the DISCONNECT (it does
+            // after an ERROR frame, e.g. ACCOUNT_DELETED): there's nothing left to disconnect.
+        } finally {
+            client.stop();
         }
-        client.stop();
     }
 
     private static WebSocketStompClient newClient() {
