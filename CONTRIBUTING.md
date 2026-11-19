@@ -285,7 +285,8 @@ services/account-service/src/main/java/com/friendlyfire/account/
 ├── config/      wiring: GrpcClientsConfig (gRPC clients), HealthConfig, ...
 ├── grpc/        the gRPC service (AccountGrpcService)
 ├── health/      dependency health checks
-└── user/, riotlink/, rso/   features
+├── user/, riotlink/, rso/, datastatus/   features
+└── matchdata/, scoring/   clients for the services Account calls (interfaces, so tests use fakes)
 ```
 The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `grpc/`.
 
@@ -317,14 +318,33 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
   table is `account.flyway_schema_history`. Tests that load the whole app without a database set
   `spring.flyway.enabled=false`; `FlywayMigrationIT` covers the migrations on a real
   Postgres.
-- **Time:** room-service injects a `java.time.Clock`; never call `Instant.now()` directly
-  in game logic.
+- **Time:** room-service and account-service inject a `java.time.Clock`; never call
+  `Instant.now()` directly in game logic.
+- **Account's rules:**
+  - **Linking a Riot account** (ADR-007): `StartRiotLink` keeps a one-time `state` for 10
+    minutes (`LinkStateStore`, in memory) and returns the mock RSO's page at
+    `MOCK_RSO_BROWSER_URL`; Account itself calls the mock at `MOCK_RSO_URL`.
+    `CompleteRiotLink` checks and uses up the state, swaps the code for the player's Riot
+    account, saves the link and starts a sync. The PUUID never leaves Account and Match
+    Data.
+  - **Data status** (ADR-010): `GetDataStatus` turns Match Data's raw sync status into
+    SYNCED (under 24 hours old), SYNCING, NOT_SYNCED, NOT_LINKED or FAILED. `EnsureUser`
+    starts a sync when a linked player's data isn't SYNCED.
+  - **When Match Data or Scoring can't be reached:** sign-in and linking still work (a
+    sync that can't start is logged, and the next sign-in tries again). Anything that
+    deletes data (unlinking, deleting an account, swapping Riot accounts) answers
+    UNAVAILABLE and changes nothing, so no personal data is left behind; the other services
+    always go first, then Account's own rows. While those services are still stubs,
+    unlinking and deleting an account answer 503 (501 from the Gateway while Room's
+    `RemovePlayer` isn't built).
 - 4-space indents. No Java formatter or linter is set up yet, so follow the surrounding code.
 
 **Tests**
 - In `src/test/java`, same package as the class. `*Test` = unit test (`make test`),
   `*IT` = integration test (`make test-integration`).
 - JUnit 5 and AssertJ. MockMvc (`@WebMvcTest`) for REST, `WebSocketStompClient` for STOMP.
+- **Account tests:** `testsupport/FakesConfig` swaps the clock, Riot Sign-On, Match Data and
+  Scoring for fakes in a Spring test; `AccountGrpcServiceIT` uses it with a real Postgres.
 - **Gateway tests** extend `testsupport/GatewayTestBase`: the whole Gateway with
   account-, room- and scoring-service as in-process fakes (`FakeServices`) and Auth0 as
   `FakeTokens` (`FakeTokens.token("maya")` signs in as `user-maya`). `StompTestClient` is a
@@ -506,7 +526,9 @@ frontend/src/
   `AUTH0_*` settings in `.env`. Without them every page still renders, signed out. The
   Gateway also needs the tenant's post-login Action from `infra/auth0/post-login-action.js`
   (it adds the email, verified flag, name and roles to access tokens); without it every
-  player gets "verify your email".
+  player gets "verify your email". The project managers are admins through their
+  `app_metadata` (`{"roles": ["admin"]}`, set in the Auth0 dashboard): the free plan has no
+  role management.
 
 **The fake backend (FF-513).** With `NEXT_PUBLIC_FAKE_BACKEND=true` in `.env` (then
 `docker compose up -d --no-deps frontend`), the frontend answers every Gateway call itself

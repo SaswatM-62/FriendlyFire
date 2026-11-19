@@ -12,6 +12,9 @@ import { FULL_ROOM, GUEST_ROOM, STARTED_ROOM, type FakeSyncMode } from "@/mocks/
 
 const SCENES: [FakeScene, string][] = [
   ["lobby", "Lobby"],
+  ["preparing", "Preparing"],
+  ["slow-prep", "Slow preparing"],
+  ["start-failed", "Start failed"],
   ["countdown", "Countdown"],
   ["get-ready", "Get ready"],
   ["question", "Question"],
@@ -70,6 +73,15 @@ export function DevPanel() {
               <button type="button" className="btn btn--sm" onClick={() => after(() => gateway.setLinked(!gateway.linked))}>
                 {gateway.linked ? "Unlink Riot" : "Link Riot"}
               </button>
+              <button
+                type="button"
+                className="btn btn--sm"
+                aria-pressed={!gateway.onboarded}
+                title="A fresh email sign-up who hasn't done the tutorial (/welcome)"
+                onClick={() => after(() => gateway.newPlayer())}
+              >
+                New player
+              </button>
             </div>
             <div className="row" style={{ gap: 8 }}>
               {SYNC.map(([mode, label]) => (
@@ -103,7 +115,7 @@ export function DevPanel() {
               <Link href={`/room/${GUEST_ROOM}`} style={{ color: "var(--cyan-text)" }}>
                 {GUEST_ROOM}
               </Link>{" "}
-              is Maya&apos;s room. {FULL_ROOM} is full, {STARTED_ROOM} has started, any other code is not found.
+              is Maya&apos;s room. {FULL_ROOM} is full, {STARTED_ROOM} is mid-quiz (you spectate), any other code is not found.
             </p>
             {room ? (
               <div className="row" style={{ gap: 8 }}>

@@ -260,6 +260,37 @@ public final class AccountServiceGrpc {
     return getGetDataStatusMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> getFinishOnboardingMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "FinishOnboarding",
+      requestType = com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> getFinishOnboardingMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest, com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> getFinishOnboardingMethod;
+    if ((getFinishOnboardingMethod = AccountServiceGrpc.getFinishOnboardingMethod) == null) {
+      synchronized (AccountServiceGrpc.class) {
+        if ((getFinishOnboardingMethod = AccountServiceGrpc.getFinishOnboardingMethod) == null) {
+          AccountServiceGrpc.getFinishOnboardingMethod = getFinishOnboardingMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest, com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "FinishOnboarding"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new AccountServiceMethodDescriptorSupplier("FinishOnboarding"))
+              .build();
+        }
+      }
+    }
+    return getFinishOnboardingMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -420,6 +451,18 @@ public final class AccountServiceGrpc {
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetDataStatusMethod(), responseObserver);
     }
+
+    /**
+     * <pre>
+     * Marks the new-player tutorial as done (User.onboarded_at) and returns
+     * the user. Safe to call again: the first time is kept.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    default void finishOnboarding(com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getFinishOnboardingMethod(), responseObserver);
+    }
   }
 
   /**
@@ -554,6 +597,19 @@ public final class AccountServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetDataStatusMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     * <pre>
+     * Marks the new-player tutorial as done (User.onboarded_at) and returns
+     * the user. Safe to call again: the first time is kept.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public void finishOnboarding(com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getFinishOnboardingMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -669,6 +725,18 @@ public final class AccountServiceGrpc {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetDataStatusMethod(), getCallOptions(), request);
     }
+
+    /**
+     * <pre>
+     * Marks the new-player tutorial as done (User.onboarded_at) and returns
+     * the user. Safe to call again: the first time is kept.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse finishOnboarding(com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getFinishOnboardingMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -783,6 +851,18 @@ public final class AccountServiceGrpc {
     public com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse getDataStatus(com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetDataStatusMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Marks the new-player tutorial as done (User.onboarded_at) and returns
+     * the user. Safe to call again: the first time is kept.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse finishOnboarding(com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getFinishOnboardingMethod(), getCallOptions(), request);
     }
   }
 
@@ -907,6 +987,19 @@ public final class AccountServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetDataStatusMethod(), getCallOptions()), request);
     }
+
+    /**
+     * <pre>
+     * Marks the new-player tutorial as done (User.onboarded_at) and returns
+     * the user. Safe to call again: the first time is kept.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> finishOnboarding(
+        com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getFinishOnboardingMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_ENSURE_USER = 0;
@@ -917,6 +1010,7 @@ public final class AccountServiceGrpc {
   private static final int METHODID_UNLINK_RIOT = 5;
   private static final int METHODID_DELETE_ACCOUNT = 6;
   private static final int METHODID_GET_DATA_STATUS = 7;
+  private static final int METHODID_FINISH_ONBOARDING = 8;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -966,6 +1060,10 @@ public final class AccountServiceGrpc {
         case METHODID_GET_DATA_STATUS:
           serviceImpl.getDataStatus((com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest) request,
               (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse>) responseObserver);
+          break;
+        case METHODID_FINISH_ONBOARDING:
+          serviceImpl.finishOnboarding((com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -1041,6 +1139,13 @@ public final class AccountServiceGrpc {
               com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest,
               com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse>(
                 service, METHODID_GET_DATA_STATUS)))
+        .addMethod(
+          getFinishOnboardingMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest,
+              com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse>(
+                service, METHODID_FINISH_ONBOARDING)))
         .build();
   }
 
@@ -1097,6 +1202,7 @@ public final class AccountServiceGrpc {
               .addMethod(getUnlinkRiotMethod())
               .addMethod(getDeleteAccountMethod())
               .addMethod(getGetDataStatusMethod())
+              .addMethod(getFinishOnboardingMethod())
               .build();
         }
       }

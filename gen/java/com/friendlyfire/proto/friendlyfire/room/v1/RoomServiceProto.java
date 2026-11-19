@@ -274,148 +274,152 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
       "otes\022%\n\016continue_votes\030\004 \001(\005R\rcontinueVo" +
       "tes\022\033\n\tend_votes\030\005 \001(\005R\010endVotes\022$\n\016vote" +
       "d_user_ids\030\006 \003(\tR\014votedUserIds\022#\n\rpause_" +
-      "allowed\030\007 \001(\010R\014pauseAllowed\"\351\001\n\tRoomEven" +
+      "allowed\030\007 \001(\010R\014pauseAllowed\"\203\002\n\tRoomEven" +
       "t\0227\n\004type\030\001 \001(\0162#.friendlyfire.room.v1.R" +
       "oomEventTypeR\004type\022&\n\017subject_user_id\030\002 " +
       "\001(\tR\rsubjectUserId\022;\n\013occurred_at\030\003 \001(\0132" +
       "\032.google.protobuf.TimestampR\noccurredAt\022" +
       ">\n\010snapshot\030\004 \001(\0132\".friendlyfire.room.v1" +
-      ".RoomSnapshotR\010snapshot\"\216\001\n\021CreateRoomRe" +
-      "quest\022 \n\014host_user_id\030\001 \001(\tR\nhostUserId\022" +
-      "*\n\021host_display_name\030\002 \001(\tR\017hostDisplayN" +
-      "ame\022+\n\022host_riot_tag_line\030\003 \001(\tR\017hostRio" +
-      "tTagLine\"T\n\022CreateRoomResponse\022>\n\010snapsh" +
-      "ot\030\001 \001(\0132\".friendlyfire.room.v1.RoomSnap" +
-      "shotR\010snapshot\"\216\001\n\017JoinRoomRequest\022\033\n\tro" +
-      "om_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\t" +
-      "R\006userId\022!\n\014display_name\030\003 \001(\tR\013displayN" +
-      "ame\022\"\n\rriot_tag_line\030\004 \001(\tR\013riotTagLine\"" +
-      "R\n\020JoinRoomResponse\022>\n\010snapshot\030\001 \001(\0132\"." +
+      ".RoomSnapshotR\010snapshot\022\030\n\007message\030\005 \001(\t" +
+      "R\007message\"\216\001\n\021CreateRoomRequest\022 \n\014host_" +
+      "user_id\030\001 \001(\tR\nhostUserId\022*\n\021host_displa" +
+      "y_name\030\002 \001(\tR\017hostDisplayName\022+\n\022host_ri" +
+      "ot_tag_line\030\003 \001(\tR\017hostRiotTagLine\"T\n\022Cr" +
+      "eateRoomResponse\022>\n\010snapshot\030\001 \001(\0132\".fri" +
+      "endlyfire.room.v1.RoomSnapshotR\010snapshot" +
+      "\"\216\001\n\017JoinRoomRequest\022\033\n\troom_code\030\001 \001(\tR" +
+      "\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022!\n\014di" +
+      "splay_name\030\003 \001(\tR\013displayName\022\"\n\rriot_ta" +
+      "g_line\030\004 \001(\tR\013riotTagLine\"R\n\020JoinRoomRes" +
+      "ponse\022>\n\010snapshot\030\001 \001(\0132\".friendlyfire.r" +
+      "oom.v1.RoomSnapshotR\010snapshot\"H\n\020LeaveRo" +
+      "omRequest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027" +
+      "\n\007user_id\030\002 \001(\tR\006userId\"\023\n\021LeaveRoomResp" +
+      "onse\"o\n\021KickPlayerRequest\022\033\n\troom_code\030\001" +
+      " \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022" +
+      "$\n\016target_user_id\030\003 \001(\tR\014targetUserId\"T\n" +
+      "\022KickPlayerResponse\022>\n\010snapshot\030\001 \001(\0132\"." +
       "friendlyfire.room.v1.RoomSnapshotR\010snaps" +
-      "hot\"H\n\020LeaveRoomRequest\022\033\n\troom_code\030\001 \001" +
-      "(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\"\023\n" +
-      "\021LeaveRoomResponse\"o\n\021KickPlayerRequest\022" +
-      "\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030" +
-      "\002 \001(\tR\006userId\022$\n\016target_user_id\030\003 \001(\tR\014t" +
-      "argetUserId\"T\n\022KickPlayerResponse\022>\n\010sna" +
-      "pshot\030\001 \001(\0132\".friendlyfire.room.v1.RoomS" +
-      "napshotR\010snapshot\"\215\001\n\025UpdateSettingsRequ" +
-      "est\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user" +
-      "_id\030\002 \001(\tR\006userId\022>\n\010settings\030\003 \001(\0132\".fr" +
-      "iendlyfire.room.v1.RoomSettingsR\010setting" +
-      "s\"X\n\026UpdateSettingsResponse\022>\n\010snapshot\030" +
-      "\001 \001(\0132\".friendlyfire.room.v1.RoomSnapsho" +
-      "tR\010snapshot\"H\n\020StartQuizRequest\022\033\n\troom_" +
-      "code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006u" +
-      "serId\"S\n\021StartQuizResponse\022>\n\010snapshot\030\001" +
-      " \001(\0132\".friendlyfire.room.v1.RoomSnapshot" +
-      "R\010snapshot\"\211\001\n\023SubmitAnswerRequest\022\033\n\tro" +
-      "om_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\t" +
-      "R\006userId\022\037\n\013question_id\030\003 \001(\tR\nquestionI" +
-      "d\022\033\n\toption_id\030\004 \001(\tR\010optionId\"\026\n\024Submit" +
-      "AnswerResponse\"Q\n\031ReportDisconnectedRequ" +
-      "est\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user" +
-      "_id\030\002 \001(\tR\006userId\"\034\n\032ReportDisconnectedR" +
-      "esponse\"\231\001\n\036ReportConnectionQualityReque" +
+      "hot\"\215\001\n\025UpdateSettingsRequest\022\033\n\troom_co" +
+      "de\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006use" +
+      "rId\022>\n\010settings\030\003 \001(\0132\".friendlyfire.roo" +
+      "m.v1.RoomSettingsR\010settings\"X\n\026UpdateSet" +
+      "tingsResponse\022>\n\010snapshot\030\001 \001(\0132\".friend" +
+      "lyfire.room.v1.RoomSnapshotR\010snapshot\"H\n" +
+      "\020StartQuizRequest\022\033\n\troom_code\030\001 \001(\tR\010ro" +
+      "omCode\022\027\n\007user_id\030\002 \001(\tR\006userId\"S\n\021Start" +
+      "QuizResponse\022>\n\010snapshot\030\001 \001(\0132\".friendl" +
+      "yfire.room.v1.RoomSnapshotR\010snapshot\"\211\001\n" +
+      "\023SubmitAnswerRequest\022\033\n\troom_code\030\001 \001(\tR" +
+      "\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022\037\n\013qu" +
+      "estion_id\030\003 \001(\tR\nquestionId\022\033\n\toption_id" +
+      "\030\004 \001(\tR\010optionId\"\026\n\024SubmitAnswerResponse" +
+      "\"Q\n\031ReportDisconnectedRequest\022\033\n\troom_co" +
+      "de\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006use" +
+      "rId\"\034\n\032ReportDisconnectedResponse\"\231\001\n\036Re" +
+      "portConnectionQualityRequest\022\033\n\troom_cod" +
+      "e\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006user" +
+      "Id\022A\n\007quality\030\003 \001(\0162\'.friendlyfire.room." +
+      "v1.ConnectionQualityR\007quality\"!\n\037ReportC" +
+      "onnectionQualityResponse\"\201\001\n\017CastVoteReq" +
+      "uest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007use" +
+      "r_id\030\002 \001(\tR\006userId\0228\n\006option\030\003 \001(\0162 .fri" +
+      "endlyfire.room.v1.VoteOptionR\006option\"\022\n\020" +
+      "CastVoteResponse\"N\n\026GetRoomSnapshotReque" +
       "st\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_" +
-      "id\030\002 \001(\tR\006userId\022A\n\007quality\030\003 \001(\0162\'.frie" +
-      "ndlyfire.room.v1.ConnectionQualityR\007qual" +
-      "ity\"!\n\037ReportConnectionQualityResponse\"\201" +
-      "\001\n\017CastVoteRequest\022\033\n\troom_code\030\001 \001(\tR\010r" +
-      "oomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\0228\n\006opti" +
-      "on\030\003 \001(\0162 .friendlyfire.room.v1.VoteOpti" +
-      "onR\006option\"\022\n\020CastVoteResponse\"N\n\026GetRoo" +
-      "mSnapshotRequest\022\033\n\troom_code\030\001 \001(\tR\010roo" +
-      "mCode\022\027\n\007user_id\030\002 \001(\tR\006userId\"Y\n\027GetRoo" +
-      "mSnapshotResponse\022>\n\010snapshot\030\001 \001(\0132\".fr" +
-      "iendlyfire.room.v1.RoomSnapshotR\010snapsho" +
-      "t\"6\n\027StreamRoomEventsRequest\022\033\n\troom_cod" +
-      "e\030\001 \001(\tR\010roomCode\"Q\n\030StreamRoomEventsRes" +
-      "ponse\0225\n\005event\030\001 \001(\0132\037.friendlyfire.room" +
-      ".v1.RoomEventR\005event\".\n\023RemovePlayerRequ" +
-      "est\022\027\n\007user_id\030\001 \001(\tR\006userId\"\026\n\024RemovePl" +
-      "ayerResponse*\313\001\n\tRoomPhase\022\032\n\026ROOM_PHASE" +
-      "_UNSPECIFIED\020\000\022\024\n\020ROOM_PHASE_LOBBY\020\001\022\027\n\023" +
-      "ROOM_PHASE_STARTING\020\002\022\027\n\023ROOM_PHASE_QUES" +
-      "TION\020\003\022\025\n\021ROOM_PHASE_REVEAL\020\004\022\023\n\017ROOM_PH" +
-      "ASE_VOTE\020\005\022\027\n\023ROOM_PHASE_FINISHED\020\006\022\025\n\021R" +
-      "OOM_PHASE_PAUSED\020\007*\211\001\n\014PlayerStatus\022\035\n\031P" +
-      "LAYER_STATUS_UNSPECIFIED\020\000\022\033\n\027PLAYER_STA" +
-      "TUS_CONNECTED\020\001\022\036\n\032PLAYER_STATUS_DISCONN" +
-      "ECTED\020\002\022\035\n\031PLAYER_STATUS_SITTING_OUT\020\003*\216" +
-      "\001\n\021ConnectionQuality\022\"\n\036CONNECTION_QUALI" +
-      "TY_UNSPECIFIED\020\000\022\033\n\027CONNECTION_QUALITY_G" +
-      "OOD\020\001\022\033\n\027CONNECTION_QUALITY_FAIR\020\002\022\033\n\027CO" +
-      "NNECTION_QUALITY_POOR\020\003*\332\001\n\020PlayerDataSt" +
-      "atus\022\"\n\036PLAYER_DATA_STATUS_UNSPECIFIED\020\000" +
-      "\022\035\n\031PLAYER_DATA_STATUS_SYNCED\020\001\022\036\n\032PLAYE" +
-      "R_DATA_STATUS_SYNCING\020\002\022!\n\035PLAYER_DATA_S" +
-      "TATUS_NOT_SYNCED\020\003\022!\n\035PLAYER_DATA_STATUS" +
-      "_NOT_LINKED\020\004\022\035\n\031PLAYER_DATA_STATUS_FAIL" +
-      "ED\020\005*\203\001\n\nVoteOption\022\033\n\027VOTE_OPTION_UNSPE" +
-      "CIFIED\020\000\022\025\n\021VOTE_OPTION_PAUSE\020\001\022\'\n#VOTE_" +
-      "OPTION_CONTINUE_WITHOUT_PLAYER\020\002\022\030\n\024VOTE" +
-      "_OPTION_END_QUIZ\020\003*\203\006\n\rRoomEventType\022\037\n\033" +
-      "ROOM_EVENT_TYPE_UNSPECIFIED\020\000\022\034\n\030ROOM_EV" +
-      "ENT_TYPE_SNAPSHOT\020\001\022!\n\035ROOM_EVENT_TYPE_P" +
-      "LAYER_JOINED\020\002\022\037\n\033ROOM_EVENT_TYPE_PLAYER" +
-      "_LEFT\020\003\022!\n\035ROOM_EVENT_TYPE_PLAYER_KICKED" +
-      "\020\004\022\'\n#ROOM_EVENT_TYPE_PLAYER_DISCONNECTE" +
-      "D\020\005\022&\n\"ROOM_EVENT_TYPE_PLAYER_RECONNECTE" +
-      "D\020\006\022 \n\034ROOM_EVENT_TYPE_HOST_CHANGED\020\007\022$\n" +
-      " ROOM_EVENT_TYPE_SETTINGS_CHANGED\020\010\022%\n!R" +
-      "OOM_EVENT_TYPE_PLAYER_DATA_READY\020\t\022.\n*RO" +
-      "OM_EVENT_TYPE_CONNECTION_QUALITY_CHANGED" +
-      "\020\n\022!\n\035ROOM_EVENT_TYPE_QUIZ_STARTING\020\013\022$\n" +
-      " ROOM_EVENT_TYPE_QUESTION_STARTED\020\014\022#\n\037R" +
-      "OOM_EVENT_TYPE_PLAYER_ANSWERED\020\r\022%\n!ROOM" +
-      "_EVENT_TYPE_QUESTION_REVEALED\020\016\022 \n\034ROOM_" +
-      "EVENT_TYPE_VOTE_STARTED\020\017\022!\n\035ROOM_EVENT_" +
-      "TYPE_VOTE_RESOLVED\020\020\022!\n\035ROOM_EVENT_TYPE_" +
-      "QUIZ_FINISHED\020\021\022\037\n\033ROOM_EVENT_TYPE_ROOM_" +
-      "CLOSED\020\022\022\035\n\031ROOM_EVENT_TYPE_VOTE_CAST\020\023\022" +
-      "\037\n\033ROOM_EVENT_TYPE_QUIZ_PAUSED\020\0242\343\n\n\013Roo" +
-      "mService\022_\n\nCreateRoom\022\'.friendlyfire.ro" +
-      "om.v1.CreateRoomRequest\032(.friendlyfire.r" +
-      "oom.v1.CreateRoomResponse\022Y\n\010JoinRoom\022%." +
-      "friendlyfire.room.v1.JoinRoomRequest\032&.f" +
-      "riendlyfire.room.v1.JoinRoomResponse\022\\\n\t" +
-      "LeaveRoom\022&.friendlyfire.room.v1.LeaveRo" +
-      "omRequest\032\'.friendlyfire.room.v1.LeaveRo" +
-      "omResponse\022_\n\nKickPlayer\022\'.friendlyfire." +
-      "room.v1.KickPlayerRequest\032(.friendlyfire" +
-      ".room.v1.KickPlayerResponse\022k\n\016UpdateSet" +
-      "tings\022+.friendlyfire.room.v1.UpdateSetti" +
-      "ngsRequest\032,.friendlyfire.room.v1.Update" +
-      "SettingsResponse\022\\\n\tStartQuiz\022&.friendly" +
-      "fire.room.v1.StartQuizRequest\032\'.friendly" +
-      "fire.room.v1.StartQuizResponse\022e\n\014Submit" +
-      "Answer\022).friendlyfire.room.v1.SubmitAnsw" +
-      "erRequest\032*.friendlyfire.room.v1.SubmitA" +
-      "nswerResponse\022w\n\022ReportDisconnected\022/.fr" +
-      "iendlyfire.room.v1.ReportDisconnectedReq" +
-      "uest\0320.friendlyfire.room.v1.ReportDiscon" +
-      "nectedResponse\022\206\001\n\027ReportConnectionQuali" +
-      "ty\0224.friendlyfire.room.v1.ReportConnecti" +
-      "onQualityRequest\0325.friendlyfire.room.v1." +
-      "ReportConnectionQualityResponse\022Y\n\010CastV" +
-      "ote\022%.friendlyfire.room.v1.CastVoteReque" +
-      "st\032&.friendlyfire.room.v1.CastVoteRespon" +
-      "se\022n\n\017GetRoomSnapshot\022,.friendlyfire.roo" +
-      "m.v1.GetRoomSnapshotRequest\032-.friendlyfi" +
-      "re.room.v1.GetRoomSnapshotResponse\022s\n\020St" +
-      "reamRoomEvents\022-.friendlyfire.room.v1.St" +
-      "reamRoomEventsRequest\032..friendlyfire.roo" +
-      "m.v1.StreamRoomEventsResponse0\001\022e\n\014Remov" +
-      "ePlayer\022).friendlyfire.room.v1.RemovePla" +
-      "yerRequest\032*.friendlyfire.room.v1.Remove" +
-      "PlayerResponseB\370\001\n+com.friendlyfire.prot" +
-      "o.friendlyfire.room.v1B\020RoomServiceProto" +
-      "P\001ZEgithub.com/SaswatM-62/FriendlyFire/g" +
-      "en/go/friendlyfire/room/v1;roomv1\242\002\003FRX\252" +
-      "\002\024Friendlyfire.Room.V1\312\002\024Friendlyfire\\Ro" +
-      "om\\V1\342\002 Friendlyfire\\Room\\V1\\GPBMetadata" +
-      "\352\002\026Friendlyfire::Room::V1b\006proto3"
+      "id\030\002 \001(\tR\006userId\"Y\n\027GetRoomSnapshotRespo" +
+      "nse\022>\n\010snapshot\030\001 \001(\0132\".friendlyfire.roo" +
+      "m.v1.RoomSnapshotR\010snapshot\"6\n\027StreamRoo" +
+      "mEventsRequest\022\033\n\troom_code\030\001 \001(\tR\010roomC" +
+      "ode\"Q\n\030StreamRoomEventsResponse\0225\n\005event" +
+      "\030\001 \001(\0132\037.friendlyfire.room.v1.RoomEventR" +
+      "\005event\".\n\023RemovePlayerRequest\022\027\n\007user_id" +
+      "\030\001 \001(\tR\006userId\"\026\n\024RemovePlayerResponse*\345" +
+      "\001\n\tRoomPhase\022\032\n\026ROOM_PHASE_UNSPECIFIED\020\000" +
+      "\022\024\n\020ROOM_PHASE_LOBBY\020\001\022\027\n\023ROOM_PHASE_STA" +
+      "RTING\020\002\022\027\n\023ROOM_PHASE_QUESTION\020\003\022\025\n\021ROOM" +
+      "_PHASE_REVEAL\020\004\022\023\n\017ROOM_PHASE_VOTE\020\005\022\027\n\023" +
+      "ROOM_PHASE_FINISHED\020\006\022\025\n\021ROOM_PHASE_PAUS" +
+      "ED\020\007\022\030\n\024ROOM_PHASE_PREPARING\020\010*\247\001\n\014Playe" +
+      "rStatus\022\035\n\031PLAYER_STATUS_UNSPECIFIED\020\000\022\033" +
+      "\n\027PLAYER_STATUS_CONNECTED\020\001\022\036\n\032PLAYER_ST" +
+      "ATUS_DISCONNECTED\020\002\022\035\n\031PLAYER_STATUS_SIT" +
+      "TING_OUT\020\003\022\034\n\030PLAYER_STATUS_SPECTATING\020\004" +
+      "*\216\001\n\021ConnectionQuality\022\"\n\036CONNECTION_QUA" +
+      "LITY_UNSPECIFIED\020\000\022\033\n\027CONNECTION_QUALITY" +
+      "_GOOD\020\001\022\033\n\027CONNECTION_QUALITY_FAIR\020\002\022\033\n\027" +
+      "CONNECTION_QUALITY_POOR\020\003*\332\001\n\020PlayerData" +
+      "Status\022\"\n\036PLAYER_DATA_STATUS_UNSPECIFIED" +
+      "\020\000\022\035\n\031PLAYER_DATA_STATUS_SYNCED\020\001\022\036\n\032PLA" +
+      "YER_DATA_STATUS_SYNCING\020\002\022!\n\035PLAYER_DATA" +
+      "_STATUS_NOT_SYNCED\020\003\022!\n\035PLAYER_DATA_STAT" +
+      "US_NOT_LINKED\020\004\022\035\n\031PLAYER_DATA_STATUS_FA" +
+      "ILED\020\005*\203\001\n\nVoteOption\022\033\n\027VOTE_OPTION_UNS" +
+      "PECIFIED\020\000\022\025\n\021VOTE_OPTION_PAUSE\020\001\022\'\n#VOT" +
+      "E_OPTION_CONTINUE_WITHOUT_PLAYER\020\002\022\030\n\024VO" +
+      "TE_OPTION_END_QUIZ\020\003*\316\006\n\rRoomEventType\022\037" +
+      "\n\033ROOM_EVENT_TYPE_UNSPECIFIED\020\000\022\034\n\030ROOM_" +
+      "EVENT_TYPE_SNAPSHOT\020\001\022!\n\035ROOM_EVENT_TYPE" +
+      "_PLAYER_JOINED\020\002\022\037\n\033ROOM_EVENT_TYPE_PLAY" +
+      "ER_LEFT\020\003\022!\n\035ROOM_EVENT_TYPE_PLAYER_KICK" +
+      "ED\020\004\022\'\n#ROOM_EVENT_TYPE_PLAYER_DISCONNEC" +
+      "TED\020\005\022&\n\"ROOM_EVENT_TYPE_PLAYER_RECONNEC" +
+      "TED\020\006\022 \n\034ROOM_EVENT_TYPE_HOST_CHANGED\020\007\022" +
+      "$\n ROOM_EVENT_TYPE_SETTINGS_CHANGED\020\010\022%\n" +
+      "!ROOM_EVENT_TYPE_PLAYER_DATA_READY\020\t\022.\n*" +
+      "ROOM_EVENT_TYPE_CONNECTION_QUALITY_CHANG" +
+      "ED\020\n\022!\n\035ROOM_EVENT_TYPE_QUIZ_STARTING\020\013\022" +
+      "$\n ROOM_EVENT_TYPE_QUESTION_STARTED\020\014\022#\n" +
+      "\037ROOM_EVENT_TYPE_PLAYER_ANSWERED\020\r\022%\n!RO" +
+      "OM_EVENT_TYPE_QUESTION_REVEALED\020\016\022 \n\034ROO" +
+      "M_EVENT_TYPE_VOTE_STARTED\020\017\022!\n\035ROOM_EVEN" +
+      "T_TYPE_VOTE_RESOLVED\020\020\022!\n\035ROOM_EVENT_TYP" +
+      "E_QUIZ_FINISHED\020\021\022\037\n\033ROOM_EVENT_TYPE_ROO" +
+      "M_CLOSED\020\022\022\035\n\031ROOM_EVENT_TYPE_VOTE_CAST\020" +
+      "\023\022\037\n\033ROOM_EVENT_TYPE_QUIZ_PAUSED\020\024\022\"\n\036RO" +
+      "OM_EVENT_TYPE_QUIZ_PREPARING\020\025\022%\n!ROOM_E" +
+      "VENT_TYPE_QUIZ_START_FAILED\020\0262\343\n\n\013RoomSe" +
+      "rvice\022_\n\nCreateRoom\022\'.friendlyfire.room." +
+      "v1.CreateRoomRequest\032(.friendlyfire.room" +
+      ".v1.CreateRoomResponse\022Y\n\010JoinRoom\022%.fri" +
+      "endlyfire.room.v1.JoinRoomRequest\032&.frie" +
+      "ndlyfire.room.v1.JoinRoomResponse\022\\\n\tLea" +
+      "veRoom\022&.friendlyfire.room.v1.LeaveRoomR" +
+      "equest\032\'.friendlyfire.room.v1.LeaveRoomR" +
+      "esponse\022_\n\nKickPlayer\022\'.friendlyfire.roo" +
+      "m.v1.KickPlayerRequest\032(.friendlyfire.ro" +
+      "om.v1.KickPlayerResponse\022k\n\016UpdateSettin" +
+      "gs\022+.friendlyfire.room.v1.UpdateSettings" +
+      "Request\032,.friendlyfire.room.v1.UpdateSet" +
+      "tingsResponse\022\\\n\tStartQuiz\022&.friendlyfir" +
+      "e.room.v1.StartQuizRequest\032\'.friendlyfir" +
+      "e.room.v1.StartQuizResponse\022e\n\014SubmitAns" +
+      "wer\022).friendlyfire.room.v1.SubmitAnswerR" +
+      "equest\032*.friendlyfire.room.v1.SubmitAnsw" +
+      "erResponse\022w\n\022ReportDisconnected\022/.frien" +
+      "dlyfire.room.v1.ReportDisconnectedReques" +
+      "t\0320.friendlyfire.room.v1.ReportDisconnec" +
+      "tedResponse\022\206\001\n\027ReportConnectionQuality\022" +
+      "4.friendlyfire.room.v1.ReportConnectionQ" +
+      "ualityRequest\0325.friendlyfire.room.v1.Rep" +
+      "ortConnectionQualityResponse\022Y\n\010CastVote" +
+      "\022%.friendlyfire.room.v1.CastVoteRequest\032" +
+      "&.friendlyfire.room.v1.CastVoteResponse\022" +
+      "n\n\017GetRoomSnapshot\022,.friendlyfire.room.v" +
+      "1.GetRoomSnapshotRequest\032-.friendlyfire." +
+      "room.v1.GetRoomSnapshotResponse\022s\n\020Strea" +
+      "mRoomEvents\022-.friendlyfire.room.v1.Strea" +
+      "mRoomEventsRequest\032..friendlyfire.room.v" +
+      "1.StreamRoomEventsResponse0\001\022e\n\014RemovePl" +
+      "ayer\022).friendlyfire.room.v1.RemovePlayer" +
+      "Request\032*.friendlyfire.room.v1.RemovePla" +
+      "yerResponseB\370\001\n+com.friendlyfire.proto.f" +
+      "riendlyfire.room.v1B\020RoomServiceProtoP\001Z" +
+      "Egithub.com/SaswatM-62/FriendlyFire/gen/" +
+      "go/friendlyfire/room/v1;roomv1\242\002\003FRX\252\002\024F" +
+      "riendlyfire.Room.V1\312\002\024Friendlyfire\\Room\\" +
+      "V1\342\002 Friendlyfire\\Room\\V1\\GPBMetadata\352\002\026" +
+      "Friendlyfire::Room::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -481,7 +485,7 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
     internal_static_friendlyfire_room_v1_RoomEvent_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RoomEvent_descriptor,
-        new java.lang.String[] { "Type", "SubjectUserId", "OccurredAt", "Snapshot", });
+        new java.lang.String[] { "Type", "SubjectUserId", "OccurredAt", "Snapshot", "Message", });
     internal_static_friendlyfire_room_v1_CreateRoomRequest_descriptor =
       getDescriptor().getMessageType(10);
     internal_static_friendlyfire_room_v1_CreateRoomRequest_fieldAccessorTable = new

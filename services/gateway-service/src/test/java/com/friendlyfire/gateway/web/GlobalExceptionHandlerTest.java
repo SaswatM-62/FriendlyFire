@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyfire.gateway.testsupport.FakeTokens;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotResponse;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import io.grpc.ManagedChannel;
@@ -122,8 +123,8 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void unfinishedEndpointIs501NotImplemented() throws Exception {
-        mvc.perform(get("/api/link/riot/status").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
+    void aServiceThatHasntBuiltTheCallYetIs501NotImplemented() throws Exception {
+        mvc.perform(get("/test/not-built").header(HttpHeaders.AUTHORIZATION, SIGNED_IN))
                 .andExpect(status().isNotImplemented())
                 .andExpect(jsonPath("$.error.code").value("NOT_IMPLEMENTED"));
     }
@@ -154,6 +155,12 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/test/room")
         void room() {
             rooms.getRoomSnapshot(GetRoomSnapshotRequest.getDefaultInstance());
+        }
+
+        // The fake Room only implements GetRoomSnapshot, so this answers UNIMPLEMENTED.
+        @GetMapping("/test/not-built")
+        void notBuilt() {
+            rooms.removePlayer(RemovePlayerRequest.getDefaultInstance());
         }
 
         @GetMapping("/test/boom")

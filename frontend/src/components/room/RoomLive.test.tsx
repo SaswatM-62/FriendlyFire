@@ -48,6 +48,11 @@ describe("RoomLive", () => {
     expect(screen.getByRole("banner")).toContainElement(screen.getByRole("button", { name: /Switch to (light|dark) theme/ }));
 
     await act(async () => room.handle("start", {}, ME_ID));
+    // Everyone sees the loading screen, with how a quiz works, before the countdown.
+    expect(screen.getByRole("heading", { name: "Building your questions…" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "How a quiz works" })).toBeInTheDocument();
+    await act(async () => vi.advanceTimersByTime(FAKE_TIMING.preparingMs));
+    expect(room.snapshot.phase).toBe("STARTING");
     for (let i = 0; i < 2; i++) {
       await act(async () => vi.advanceTimersByTime(FAKE_TIMING.startingMs + 100));
       expect(room.snapshot.phase).toBe("QUESTION");
@@ -73,6 +78,28 @@ describe("RoomLive", () => {
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Back to lobby" })));
     expect(screen.getByRole("heading", { name: "Room code" })).toBeInTheDocument();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: /Start quiz/ })));
-    expect(room.snapshot.phase).toBe("STARTING");
+    expect(room.snapshot.phase).toBe("PREPARING");
+  });
+
+  it("shows why in the lobby when the quiz couldn't start", async () => {
+    const room = hostedRoom();
+    transport = (_code, handlers) => room.connect(handlers);
+    render(
+      <ToastProvider>
+        <ApiProvider>
+          <SoundProvider>
+            <RoomLive code="TEST22" meId={ME_ID} initial={room.snapshot} />
+          </SoundProvider>
+        </ApiProvider>
+      </ToastProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(300));
+
+    await act(async () => room.handle("start", {}, ME_ID));
+    await act(async () => room.failStart("Not enough matches for 15 questions. Try 10."));
+
+    expect(screen.getByRole("alert")).toHaveTextContent("The quiz couldn't start. Not enough matches for 15 questions. Try 10.");
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Dismiss" })));
+    expect(screen.queryByText(/couldn't start/)).not.toBeInTheDocument();
   });
 });

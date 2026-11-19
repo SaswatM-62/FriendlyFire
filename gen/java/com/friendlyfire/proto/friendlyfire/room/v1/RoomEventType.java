@@ -120,6 +120,24 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;</code>
    */
   ROOM_EVENT_TYPE_QUIZ_PAUSED(20),
+  /**
+   * <pre>
+   * The host pressed Start and the questions are being built
+   * (ROOM_PHASE_PREPARING).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_PREPARING = 21;</code>
+   */
+  ROOM_EVENT_TYPE_QUIZ_PREPARING(21),
+  /**
+   * <pre>
+   * Building the questions failed or took too long; the room is back in the
+   * lobby. RoomEvent.message says why.
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;</code>
+   */
+  ROOM_EVENT_TYPE_QUIZ_START_FAILED(22),
   UNRECOGNIZED(-1),
   ;
 
@@ -241,6 +259,24 @@ public enum RoomEventType
    * <code>ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;</code>
    */
   public static final int ROOM_EVENT_TYPE_QUIZ_PAUSED_VALUE = 20;
+  /**
+   * <pre>
+   * The host pressed Start and the questions are being built
+   * (ROOM_PHASE_PREPARING).
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_PREPARING = 21;</code>
+   */
+  public static final int ROOM_EVENT_TYPE_QUIZ_PREPARING_VALUE = 21;
+  /**
+   * <pre>
+   * Building the questions failed or took too long; the room is back in the
+   * lobby. RoomEvent.message says why.
+   * </pre>
+   *
+   * <code>ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;</code>
+   */
+  public static final int ROOM_EVENT_TYPE_QUIZ_START_FAILED_VALUE = 22;
 
 
   public final int getNumber() {
@@ -288,6 +324,8 @@ public enum RoomEventType
       case 18: return ROOM_EVENT_TYPE_ROOM_CLOSED;
       case 19: return ROOM_EVENT_TYPE_VOTE_CAST;
       case 20: return ROOM_EVENT_TYPE_QUIZ_PAUSED;
+      case 21: return ROOM_EVENT_TYPE_QUIZ_PREPARING;
+      case 22: return ROOM_EVENT_TYPE_QUIZ_START_FAILED;
       default: return null;
     }
   }

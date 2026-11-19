@@ -49,7 +49,8 @@ public enum RoomPhase
   ROOM_PHASE_REVEAL(4),
   /**
    * <pre>
-   * After a reveal, the others vote about someone who disconnected.
+   * After a reveal, or after preparing, the others vote about someone who
+   * disconnected.
    * </pre>
    *
    * <code>ROOM_PHASE_VOTE = 5;</code>
@@ -73,6 +74,17 @@ public enum RoomPhase
    * <code>ROOM_PHASE_PAUSED = 7;</code>
    */
   ROOM_PHASE_PAUSED(7),
+  /**
+   * <pre>
+   * After the host pressed Start: the quiz engine is building the questions
+   * and every browser shows the loading screen. Settings, kicks and a second
+   * Start are refused. Ends in STARTING (or VOTE), or back in LOBBY if
+   * generation fails (event QUIZ_START_FAILED).
+   * </pre>
+   *
+   * <code>ROOM_PHASE_PREPARING = 8;</code>
+   */
+  ROOM_PHASE_PREPARING(8),
   UNRECOGNIZED(-1),
   ;
 
@@ -123,7 +135,8 @@ public enum RoomPhase
   public static final int ROOM_PHASE_REVEAL_VALUE = 4;
   /**
    * <pre>
-   * After a reveal, the others vote about someone who disconnected.
+   * After a reveal, or after preparing, the others vote about someone who
+   * disconnected.
    * </pre>
    *
    * <code>ROOM_PHASE_VOTE = 5;</code>
@@ -147,6 +160,17 @@ public enum RoomPhase
    * <code>ROOM_PHASE_PAUSED = 7;</code>
    */
   public static final int ROOM_PHASE_PAUSED_VALUE = 7;
+  /**
+   * <pre>
+   * After the host pressed Start: the quiz engine is building the questions
+   * and every browser shows the loading screen. Settings, kicks and a second
+   * Start are refused. Ends in STARTING (or VOTE), or back in LOBBY if
+   * generation fails (event QUIZ_START_FAILED).
+   * </pre>
+   *
+   * <code>ROOM_PHASE_PREPARING = 8;</code>
+   */
+  public static final int ROOM_PHASE_PREPARING_VALUE = 8;
 
 
   public final int getNumber() {
@@ -181,6 +205,7 @@ public enum RoomPhase
       case 5: return ROOM_PHASE_VOTE;
       case 6: return ROOM_PHASE_FINISHED;
       case 7: return ROOM_PHASE_PAUSED;
+      case 8: return ROOM_PHASE_PREPARING;
       default: return null;
     }
   }

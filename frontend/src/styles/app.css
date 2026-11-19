@@ -110,6 +110,10 @@
   .sw[aria-checked="true"]{outline:2px solid var(--text)}
   .eb[aria-checked="true"]{border-color:var(--text);color:var(--text)}
 
+  /* the loading screen's bar, full after Room's 8 s minimum, pulses until the questions are ready */
+  .prep-wait{animation:ff-pulse 1.4s ease-in-out infinite}
+  @media (prefers-reduced-motion:reduce){.prep-wait{animation:none}}
+
   /* loading placeholders */
   .skel{display:block;border-radius:10px;background:var(--surface-2);animation:ff-pulse 1.4s ease-in-out infinite}
   @keyframes ff-pulse{50%{opacity:.55}}

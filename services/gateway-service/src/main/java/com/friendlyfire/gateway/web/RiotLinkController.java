@@ -1,6 +1,7 @@
 package com.friendlyfire.gateway.web;
 
 import com.friendlyfire.gateway.json.RiotLinkJson;
+import com.friendlyfire.gateway.json.SyncStatusJson;
 import com.friendlyfire.gateway.protection.RateLimit;
 import com.friendlyfire.gateway.protection.RateLimiter;
 import com.friendlyfire.gateway.security.SignedInUser;
@@ -8,14 +9,15 @@ import com.friendlyfire.gateway.security.UserResolver;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
 import io.grpc.Status;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -90,16 +92,17 @@ public class RiotLinkController {
         users.evict(me.subject());
     }
 
+    /**
+     * The sync banner's status (FF-112), from Account, which owns the 24-hour rule
+     * (ADR-010); never from Match Data. 503 if Account can't tell (Match Data is down).
+     */
     @GetMapping("/status")
-    public ResponseEntity<?> status() {
-        // TODO(ff): the sync banner's status (FF-112)
-        //   - calls AccountService.GetDataStatus for the signed-in user (Account owns the
-        //     24-hour rule, ADR-010), never Match Data
-        //   - 200 {"status": "SYNCING", "estimatedSeconds": 120, "lastSyncedAt": ...,
-        //     "matchesStored": 41, "errorMessage": ...} (SyncStatusResponse in
-        //     frontend/src/lib/api-types.ts)
-        //   - uses: accounts
-        return NotImplemented.response();
+    public SyncStatusJson status(SignedInUser me) {
+        UserDataStatus status = accounts.getDataStatus(GetDataStatusRequest.newBuilder()
+                        .addUserIds(me.userId())
+                        .build())
+                .getStatuses(0);
+        return SyncStatusJson.from(status);
     }
 
     /** POST /start's answer. */

@@ -26,18 +26,20 @@ DATA_STATUS_NOT_LINKED: DataStatus
 DATA_STATUS_FAILED: DataStatus
 
 class User(_message.Message):
-    __slots__ = ("user_id", "display_name", "email", "created_at", "riot_link")
+    __slots__ = ("user_id", "display_name", "email", "created_at", "riot_link", "onboarded_at")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     RIOT_LINK_FIELD_NUMBER: _ClassVar[int]
+    ONBOARDED_AT_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     display_name: str
     email: str
     created_at: _timestamp_pb2.Timestamp
     riot_link: RiotLink
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., email: _Optional[str] = ..., created_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., riot_link: _Optional[_Union[RiotLink, _Mapping]] = ...) -> None: ...
+    onboarded_at: _timestamp_pb2.Timestamp
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., email: _Optional[str] = ..., created_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., riot_link: _Optional[_Union[RiotLink, _Mapping]] = ..., onboarded_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
 
 class RiotLink(_message.Message):
     __slots__ = ("game_name", "tag_line", "region", "linked_at")
@@ -174,3 +176,15 @@ class UserDataStatus(_message.Message):
     last_synced_at: _timestamp_pb2.Timestamp
     error_message: str
     def __init__(self, user_id: _Optional[str] = ..., status: _Optional[_Union[DataStatus, str]] = ..., estimated_seconds: _Optional[int] = ..., matches_stored: _Optional[int] = ..., last_synced_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., error_message: _Optional[str] = ...) -> None: ...
+
+class FinishOnboardingRequest(_message.Message):
+    __slots__ = ("user_id",)
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ...) -> None: ...
+
+class FinishOnboardingResponse(_message.Message):
+    __slots__ = ("user",)
+    USER_FIELD_NUMBER: _ClassVar[int]
+    user: User
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...

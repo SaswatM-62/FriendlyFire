@@ -35,6 +35,8 @@ export interface Me {
   createdAt: string;
   /** Absent until the player links a Riot account. */
   riotLink?: RiotLink | null;
+  /** When they finished the new-player tutorial; absent until then (the app sends them to /welcome). */
+  onboardedAt?: string;
 }
 
 /** PATCH /api/me body. 1–24 characters after trimming. */
@@ -76,6 +78,8 @@ export interface CompleteRiotLinkRequest {
 
 export type RoomPhase =
   | "LOBBY"
+  /** After Start, while the questions are built: the loading screen (at least 8 s, at most 60). */
+  | "PREPARING"
   | "STARTING"
   | "QUESTION"
   | "REVEAL"
@@ -84,7 +88,8 @@ export type RoomPhase =
   | "PAUSED"
   | "FINISHED";
 
-export type PlayerStatus = "CONNECTED" | "DISCONNECTED" | "SITTING_OUT";
+/** SPECTATING: joined while a quiz was preparing or running; watches and chats, plays from the next quiz. */
+export type PlayerStatus = "CONNECTED" | "DISCONNECTED" | "SITTING_OUT" | "SPECTATING";
 
 export type ConnectionQuality = "GOOD" | "FAIR" | "POOR";
 
@@ -264,6 +269,10 @@ export type RoomEventType =
   | "SETTINGS_CHANGED"
   | "PLAYER_DATA_READY"
   | "CONNECTION_QUALITY_CHANGED"
+  /** The host pressed Start; the questions are being built (PREPARING). */
+  | "QUIZ_PREPARING"
+  /** Building the questions failed or took too long: back in the lobby, `message` says why. */
+  | "QUIZ_START_FAILED"
   | "QUIZ_STARTING"
   | "QUESTION_STARTED"
   | "PLAYER_ANSWERED"
@@ -299,6 +308,8 @@ export interface RoomEvent {
   occurredAt: string;
   /** The room right after the event: replace the stored state with it. */
   snapshot: RoomSnapshot;
+  /** A sentence safe to show everyone, when the event has one (QUIZ_START_FAILED). */
+  message?: string;
   /** Planned: the message, on CHAT_MESSAGE only. */
   chat?: ChatMessage;
 }

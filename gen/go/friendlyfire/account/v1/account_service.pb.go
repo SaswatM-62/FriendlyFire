@@ -106,7 +106,11 @@ type User struct {
 	Email       string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	// Not set if the user hasn't linked a Riot account yet.
-	RiotLink      *RiotLink `protobuf:"bytes,5,opt,name=riot_link,json=riotLink,proto3" json:"riot_link,omitempty"`
+	RiotLink *RiotLink `protobuf:"bytes,5,opt,name=riot_link,json=riotLink,proto3" json:"riot_link,omitempty"`
+	// When they finished (or skipped the end of) the new-player tutorial. Not
+	// set until then. Accounts made before the tutorial existed count as done
+	// (set to created_at).
+	OnboardedAt   *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=onboarded_at,json=onboardedAt,proto3" json:"onboarded_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -172,6 +176,13 @@ func (x *User) GetCreatedAt() *timestamppb.Timestamp {
 func (x *User) GetRiotLink() *RiotLink {
 	if x != nil {
 		return x.RiotLink
+	}
+	return nil
+}
+
+func (x *User) GetOnboardedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OnboardedAt
 	}
 	return nil
 }
@@ -1097,18 +1108,107 @@ func (x *UserDataStatus) GetErrorMessage() string {
 	return ""
 }
 
+type FinishOnboardingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FinishOnboardingRequest) Reset() {
+	*x = FinishOnboardingRequest{}
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FinishOnboardingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FinishOnboardingRequest) ProtoMessage() {}
+
+func (x *FinishOnboardingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FinishOnboardingRequest.ProtoReflect.Descriptor instead.
+func (*FinishOnboardingRequest) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *FinishOnboardingRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type FinishOnboardingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FinishOnboardingResponse) Reset() {
+	*x = FinishOnboardingResponse{}
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FinishOnboardingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FinishOnboardingResponse) ProtoMessage() {}
+
+func (x *FinishOnboardingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FinishOnboardingResponse.ProtoReflect.Descriptor instead.
+func (*FinishOnboardingResponse) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *FinishOnboardingResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_friendlyfire_account_v1_account_service_proto protoreflect.FileDescriptor
 
 const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\n" +
-	"-friendlyfire/account/v1/account_service.proto\x12\x17friendlyfire.account.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd3\x01\n" +
+	"-friendlyfire/account/v1/account_service.proto\x12\x17friendlyfire.account.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x02\n" +
 	"\x04User\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x129\n" +
 	"\n" +
 	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12>\n" +
-	"\triot_link\x18\x05 \x01(\v2!.friendlyfire.account.v1.RiotLinkR\briotLink\"\x93\x01\n" +
+	"\triot_link\x18\x05 \x01(\v2!.friendlyfire.account.v1.RiotLinkR\briotLink\x12=\n" +
+	"\fonboarded_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\vonboardedAt\"\x93\x01\n" +
 	"\bRiotLink\x12\x1b\n" +
 	"\tgame_name\x18\x01 \x01(\tR\bgameName\x12\x19\n" +
 	"\btag_line\x18\x02 \x01(\tR\atagLine\x12\x16\n" +
@@ -1158,7 +1258,11 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\x11estimated_seconds\x18\x03 \x01(\x05R\x10estimatedSeconds\x12%\n" +
 	"\x0ematches_stored\x18\x04 \x01(\x05R\rmatchesStored\x12@\n" +
 	"\x0elast_synced_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\flastSyncedAt\x12#\n" +
-	"\rerror_message\x18\x06 \x01(\tR\ferrorMessage*\xaa\x01\n" +
+	"\rerror_message\x18\x06 \x01(\tR\ferrorMessage\"2\n" +
+	"\x17FinishOnboardingRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"M\n" +
+	"\x18FinishOnboardingResponse\x121\n" +
+	"\x04user\x18\x01 \x01(\v2\x1d.friendlyfire.account.v1.UserR\x04user*\xaa\x01\n" +
 	"\n" +
 	"DataStatus\x12\x1b\n" +
 	"\x17DATA_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -1166,7 +1270,7 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\x13DATA_STATUS_SYNCING\x10\x02\x12\x1a\n" +
 	"\x16DATA_STATUS_NOT_SYNCED\x10\x03\x12\x1a\n" +
 	"\x16DATA_STATUS_NOT_LINKED\x10\x04\x12\x16\n" +
-	"\x12DATA_STATUS_FAILED\x10\x052\x81\a\n" +
+	"\x12DATA_STATUS_FAILED\x10\x052\xfa\a\n" +
 	"\x0eAccountService\x12e\n" +
 	"\n" +
 	"EnsureUser\x12*.friendlyfire.account.v1.EnsureUserRequest\x1a+.friendlyfire.account.v1.EnsureUserResponse\x12\\\n" +
@@ -1177,7 +1281,8 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\n" +
 	"UnlinkRiot\x12*.friendlyfire.account.v1.UnlinkRiotRequest\x1a+.friendlyfire.account.v1.UnlinkRiotResponse\x12n\n" +
 	"\rDeleteAccount\x12-.friendlyfire.account.v1.DeleteAccountRequest\x1a..friendlyfire.account.v1.DeleteAccountResponse\x12n\n" +
-	"\rGetDataStatus\x12-.friendlyfire.account.v1.GetDataStatusRequest\x1a..friendlyfire.account.v1.GetDataStatusResponseB\x90\x02\n" +
+	"\rGetDataStatus\x12-.friendlyfire.account.v1.GetDataStatusRequest\x1a..friendlyfire.account.v1.GetDataStatusResponse\x12w\n" +
+	"\x10FinishOnboarding\x120.friendlyfire.account.v1.FinishOnboardingRequest\x1a1.friendlyfire.account.v1.FinishOnboardingResponseB\x90\x02\n" +
 	".com.friendlyfire.proto.friendlyfire.account.v1B\x13AccountServiceProtoP\x01ZKgithub.com/SaswatM-62/FriendlyFire/gen/go/friendlyfire/account/v1;accountv1\xa2\x02\x03FAX\xaa\x02\x17Friendlyfire.Account.V1\xca\x02\x17Friendlyfire\\Account\\V1\xe2\x02#Friendlyfire\\Account\\V1\\GPBMetadata\xea\x02\x19Friendlyfire::Account::V1b\x06proto3"
 
 var (
@@ -1193,7 +1298,7 @@ func file_friendlyfire_account_v1_account_service_proto_rawDescGZIP() []byte {
 }
 
 var file_friendlyfire_account_v1_account_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_friendlyfire_account_v1_account_service_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_friendlyfire_account_v1_account_service_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_friendlyfire_account_v1_account_service_proto_goTypes = []any{
 	(DataStatus)(0),                   // 0: friendlyfire.account.v1.DataStatus
 	(*User)(nil),                      // 1: friendlyfire.account.v1.User
@@ -1215,40 +1320,46 @@ var file_friendlyfire_account_v1_account_service_proto_goTypes = []any{
 	(*GetDataStatusRequest)(nil),      // 17: friendlyfire.account.v1.GetDataStatusRequest
 	(*GetDataStatusResponse)(nil),     // 18: friendlyfire.account.v1.GetDataStatusResponse
 	(*UserDataStatus)(nil),            // 19: friendlyfire.account.v1.UserDataStatus
-	(*timestamppb.Timestamp)(nil),     // 20: google.protobuf.Timestamp
+	(*FinishOnboardingRequest)(nil),   // 20: friendlyfire.account.v1.FinishOnboardingRequest
+	(*FinishOnboardingResponse)(nil),  // 21: friendlyfire.account.v1.FinishOnboardingResponse
+	(*timestamppb.Timestamp)(nil),     // 22: google.protobuf.Timestamp
 }
 var file_friendlyfire_account_v1_account_service_proto_depIdxs = []int32{
-	20, // 0: friendlyfire.account.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	22, // 0: friendlyfire.account.v1.User.created_at:type_name -> google.protobuf.Timestamp
 	2,  // 1: friendlyfire.account.v1.User.riot_link:type_name -> friendlyfire.account.v1.RiotLink
-	20, // 2: friendlyfire.account.v1.RiotLink.linked_at:type_name -> google.protobuf.Timestamp
-	1,  // 3: friendlyfire.account.v1.EnsureUserResponse.user:type_name -> friendlyfire.account.v1.User
-	1,  // 4: friendlyfire.account.v1.GetUserResponse.user:type_name -> friendlyfire.account.v1.User
-	1,  // 5: friendlyfire.account.v1.UpdateDisplayNameResponse.user:type_name -> friendlyfire.account.v1.User
-	2,  // 6: friendlyfire.account.v1.CompleteRiotLinkResponse.riot_link:type_name -> friendlyfire.account.v1.RiotLink
-	19, // 7: friendlyfire.account.v1.GetDataStatusResponse.statuses:type_name -> friendlyfire.account.v1.UserDataStatus
-	0,  // 8: friendlyfire.account.v1.UserDataStatus.status:type_name -> friendlyfire.account.v1.DataStatus
-	20, // 9: friendlyfire.account.v1.UserDataStatus.last_synced_at:type_name -> google.protobuf.Timestamp
-	3,  // 10: friendlyfire.account.v1.AccountService.EnsureUser:input_type -> friendlyfire.account.v1.EnsureUserRequest
-	5,  // 11: friendlyfire.account.v1.AccountService.GetUser:input_type -> friendlyfire.account.v1.GetUserRequest
-	7,  // 12: friendlyfire.account.v1.AccountService.UpdateDisplayName:input_type -> friendlyfire.account.v1.UpdateDisplayNameRequest
-	9,  // 13: friendlyfire.account.v1.AccountService.StartRiotLink:input_type -> friendlyfire.account.v1.StartRiotLinkRequest
-	11, // 14: friendlyfire.account.v1.AccountService.CompleteRiotLink:input_type -> friendlyfire.account.v1.CompleteRiotLinkRequest
-	13, // 15: friendlyfire.account.v1.AccountService.UnlinkRiot:input_type -> friendlyfire.account.v1.UnlinkRiotRequest
-	15, // 16: friendlyfire.account.v1.AccountService.DeleteAccount:input_type -> friendlyfire.account.v1.DeleteAccountRequest
-	17, // 17: friendlyfire.account.v1.AccountService.GetDataStatus:input_type -> friendlyfire.account.v1.GetDataStatusRequest
-	4,  // 18: friendlyfire.account.v1.AccountService.EnsureUser:output_type -> friendlyfire.account.v1.EnsureUserResponse
-	6,  // 19: friendlyfire.account.v1.AccountService.GetUser:output_type -> friendlyfire.account.v1.GetUserResponse
-	8,  // 20: friendlyfire.account.v1.AccountService.UpdateDisplayName:output_type -> friendlyfire.account.v1.UpdateDisplayNameResponse
-	10, // 21: friendlyfire.account.v1.AccountService.StartRiotLink:output_type -> friendlyfire.account.v1.StartRiotLinkResponse
-	12, // 22: friendlyfire.account.v1.AccountService.CompleteRiotLink:output_type -> friendlyfire.account.v1.CompleteRiotLinkResponse
-	14, // 23: friendlyfire.account.v1.AccountService.UnlinkRiot:output_type -> friendlyfire.account.v1.UnlinkRiotResponse
-	16, // 24: friendlyfire.account.v1.AccountService.DeleteAccount:output_type -> friendlyfire.account.v1.DeleteAccountResponse
-	18, // 25: friendlyfire.account.v1.AccountService.GetDataStatus:output_type -> friendlyfire.account.v1.GetDataStatusResponse
-	18, // [18:26] is the sub-list for method output_type
-	10, // [10:18] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	22, // 2: friendlyfire.account.v1.User.onboarded_at:type_name -> google.protobuf.Timestamp
+	22, // 3: friendlyfire.account.v1.RiotLink.linked_at:type_name -> google.protobuf.Timestamp
+	1,  // 4: friendlyfire.account.v1.EnsureUserResponse.user:type_name -> friendlyfire.account.v1.User
+	1,  // 5: friendlyfire.account.v1.GetUserResponse.user:type_name -> friendlyfire.account.v1.User
+	1,  // 6: friendlyfire.account.v1.UpdateDisplayNameResponse.user:type_name -> friendlyfire.account.v1.User
+	2,  // 7: friendlyfire.account.v1.CompleteRiotLinkResponse.riot_link:type_name -> friendlyfire.account.v1.RiotLink
+	19, // 8: friendlyfire.account.v1.GetDataStatusResponse.statuses:type_name -> friendlyfire.account.v1.UserDataStatus
+	0,  // 9: friendlyfire.account.v1.UserDataStatus.status:type_name -> friendlyfire.account.v1.DataStatus
+	22, // 10: friendlyfire.account.v1.UserDataStatus.last_synced_at:type_name -> google.protobuf.Timestamp
+	1,  // 11: friendlyfire.account.v1.FinishOnboardingResponse.user:type_name -> friendlyfire.account.v1.User
+	3,  // 12: friendlyfire.account.v1.AccountService.EnsureUser:input_type -> friendlyfire.account.v1.EnsureUserRequest
+	5,  // 13: friendlyfire.account.v1.AccountService.GetUser:input_type -> friendlyfire.account.v1.GetUserRequest
+	7,  // 14: friendlyfire.account.v1.AccountService.UpdateDisplayName:input_type -> friendlyfire.account.v1.UpdateDisplayNameRequest
+	9,  // 15: friendlyfire.account.v1.AccountService.StartRiotLink:input_type -> friendlyfire.account.v1.StartRiotLinkRequest
+	11, // 16: friendlyfire.account.v1.AccountService.CompleteRiotLink:input_type -> friendlyfire.account.v1.CompleteRiotLinkRequest
+	13, // 17: friendlyfire.account.v1.AccountService.UnlinkRiot:input_type -> friendlyfire.account.v1.UnlinkRiotRequest
+	15, // 18: friendlyfire.account.v1.AccountService.DeleteAccount:input_type -> friendlyfire.account.v1.DeleteAccountRequest
+	17, // 19: friendlyfire.account.v1.AccountService.GetDataStatus:input_type -> friendlyfire.account.v1.GetDataStatusRequest
+	20, // 20: friendlyfire.account.v1.AccountService.FinishOnboarding:input_type -> friendlyfire.account.v1.FinishOnboardingRequest
+	4,  // 21: friendlyfire.account.v1.AccountService.EnsureUser:output_type -> friendlyfire.account.v1.EnsureUserResponse
+	6,  // 22: friendlyfire.account.v1.AccountService.GetUser:output_type -> friendlyfire.account.v1.GetUserResponse
+	8,  // 23: friendlyfire.account.v1.AccountService.UpdateDisplayName:output_type -> friendlyfire.account.v1.UpdateDisplayNameResponse
+	10, // 24: friendlyfire.account.v1.AccountService.StartRiotLink:output_type -> friendlyfire.account.v1.StartRiotLinkResponse
+	12, // 25: friendlyfire.account.v1.AccountService.CompleteRiotLink:output_type -> friendlyfire.account.v1.CompleteRiotLinkResponse
+	14, // 26: friendlyfire.account.v1.AccountService.UnlinkRiot:output_type -> friendlyfire.account.v1.UnlinkRiotResponse
+	16, // 27: friendlyfire.account.v1.AccountService.DeleteAccount:output_type -> friendlyfire.account.v1.DeleteAccountResponse
+	18, // 28: friendlyfire.account.v1.AccountService.GetDataStatus:output_type -> friendlyfire.account.v1.GetDataStatusResponse
+	21, // 29: friendlyfire.account.v1.AccountService.FinishOnboarding:output_type -> friendlyfire.account.v1.FinishOnboardingResponse
+	21, // [21:30] is the sub-list for method output_type
+	12, // [12:21] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_friendlyfire_account_v1_account_service_proto_init() }
@@ -1262,7 +1373,7 @@ func file_friendlyfire_account_v1_account_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_friendlyfire_account_v1_account_service_proto_rawDesc), len(file_friendlyfire_account_v1_account_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

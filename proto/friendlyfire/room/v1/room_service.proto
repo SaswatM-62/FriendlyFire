@@ -33,9 +33,10 @@ service RoomService {
 
   // Adds the user to a room. If they're already in it (after a page
   // refresh or dropped connection), marks them connected again instead.
+  // Someone new who joins while a quiz is preparing or running joins as a
+  // spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
   // Errors:
-  //   RESOURCE_EXHAUSTED   the room already has 8 players
-  //   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+  //   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
 
   // The user leaves for good. If the host leaves, the player who joined
@@ -50,14 +51,21 @@ service RoomService {
   rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse);
 
   // Host only. Allowed in the lobby, or after a quiz finishes to play again.
-  // Checks every player's data status again, generates all questions, then
-  // starts a short countdown.
-  // FAILED_PRECONDITION (with a message for the host) if:
+  // Checks every player's data status again, then moves the room to
+  // ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+  // the quiz engine for every question in the background, and moves to
+  // ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+  // have passed (so everyone can read the loading screen). If someone is
+  // disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+  // If generation fails, or takes more than 60 seconds, the room goes back
+  // to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+  // saying why (e.g. not enough match data for the chosen number of
+  // questions). The host can't cancel preparing.
+  // FAILED_PRECONDITION (with a message for the host), before preparing, if:
   //   - there are fewer than 2 players
   //   - someone's data status isn't SYNCED
   //   - fewer than 2 players have enough matches, or more than half of the
   //     room doesn't (Player.not_enough_matches)
-  //   - there isn't enough match data for the chosen number of questions
   rpc StartQuiz(StartQuizRequest) returns (StartQuizResponse);
 
   // Records a player's answer to the current question, using the time it
@@ -113,7 +121,8 @@ enum RoomPhase {
   ROOM_PHASE_QUESTION = 3;
   // The answer and updated scores are showing for a few seconds.
   ROOM_PHASE_REVEAL = 4;
-  // After a reveal, the others vote about someone who disconnected.
+  // After a reveal, or after preparing, the others vote about someone who
+  // disconnected.
   ROOM_PHASE_VOTE = 5;
   // The quiz is over and the final standings are showing.
   ROOM_PHASE_FINISHED = 6;
@@ -121,6 +130,11 @@ enum RoomPhase {
   // (RoomSnapshot.waiting_for_user_id). If they come back, the next question
   // starts; if not, the room votes again.
   ROOM_PHASE_PAUSED = 7;
+  // After the host pressed Start: the quiz engine is building the questions
+  // and every browser shows the loading screen. Settings, kicks and a second
+  // Start are refused. Ends in STARTING (or VOTE), or back in LOBBY if
+  // generation fails (event QUIZ_START_FAILED).
+  ROOM_PHASE_PREPARING = 8;
 }
 
 enum PlayerStatus {
@@ -130,6 +144,10 @@ enum PlayerStatus {
   PLAYER_STATUS_DISCONNECTED = 2;
   // The room voted to continue without them. They can still rejoin.
   PLAYER_STATUS_SITTING_OUT = 3;
+  // Joined while a quiz was preparing or running. They see the room and can
+  // chat, but can't answer or vote, aren't an option and have no score. They
+  // become CONNECTED when the quiz finishes, and play from the next one.
+  PLAYER_STATUS_SPECTATING = 4;
 }
 
 enum ConnectionQuality {
@@ -194,6 +212,12 @@ enum RoomEventType {
   ROOM_EVENT_TYPE_VOTE_CAST = 19;
   // The room started a pause (ROOM_PHASE_PAUSED).
   ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;
+  // The host pressed Start and the questions are being built
+  // (ROOM_PHASE_PREPARING).
+  ROOM_EVENT_TYPE_QUIZ_PREPARING = 21;
+  // Building the questions failed or took too long; the room is back in the
+  // lobby. RoomEvent.message says why.
+  ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;
 }
 
 // ---------- Shared messages ----------
@@ -215,7 +239,9 @@ message RoomSnapshot {
   // Set during QUESTION and REVEAL.
   QuestionView current_question = 8;
   // When the current phase ends: the countdown, the question timer, the
-  // reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
+  // reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+  // PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+  // phase lasts longer if the questions aren't ready yet.
   google.protobuf.Timestamp phase_deadline = 9;
   // Empty in the lobby.
   repeated ScoreEntry scoreboard = 10;
@@ -316,6 +342,10 @@ message RoomEvent {
   google.protobuf.Timestamp occurred_at = 3;
   // The room's state right after the event.
   RoomSnapshot snapshot = 4;
+  // A short sentence safe to show every player, when the event needs one
+  // (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+  // Try 10.").
+  string message = 5;
 }
 
 // ---------- Requests and responses ----------

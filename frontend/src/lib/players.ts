@@ -61,6 +61,7 @@ export function isReady(player: Player): boolean {
 /** Who the host is waiting on before Start works (Lobby board), with the player when there is one; empty when everyone is ready. */
 export function startWaits(snapshot: RoomSnapshot, names: Map<string, string>): { userId?: string; text: string }[] {
   const waits: { userId?: string; text: string }[] = [];
+  // Spectators (who joined during the last quiz) play in the next one, so they count too.
   const present = snapshot.players.filter((p) => p.status !== "SITTING_OUT");
   if (present.length < 2) waits.push({ text: "You need at least 2 players" });
   for (const p of present) {
@@ -87,9 +88,9 @@ export function startWaits(snapshot: RoomSnapshot, names: Map<string, string>): 
   return waits;
 }
 
-/** The people who can answer: everyone still playing. */
+/** The people who can answer: everyone still playing (not sitting out or spectating). */
 export function activePlayers(players: Player[]): Player[] {
-  return players.filter((p) => p.status !== "SITTING_OUT");
+  return players.filter((p) => p.status !== "SITTING_OUT" && p.status !== "SPECTATING");
 }
 
 /**

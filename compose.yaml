@@ -142,6 +142,8 @@ services:
     depends_on:
       match-data-service:
         condition: service_healthy
+      scoring-service:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       mock-rso-service:

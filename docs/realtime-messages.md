@@ -69,13 +69,19 @@ replaces its state with `snapshot` and uses `type` only for effects (a sound, a 
   "type": "PLAYER_JOINED",
   "subjectUserId": "8f0c…",
   "occurredAt": "2026-11-09T18:20:05.120Z",
-  "snapshot": { "...": "a RoomSnapshot" }
+  "snapshot": { "...": "a RoomSnapshot" },
+  "message": "Not enough matches for 15 questions. Try 10."
 }
 ```
 
+`message` is a sentence safe to show every player, left out unless the event has one. Today
+only `QUIZ_START_FAILED` sets it (the reason the room went back to the lobby).
+
 `type` is one of `SNAPSHOT` (always the first message after subscribing), `PLAYER_JOINED`,
 `PLAYER_LEFT`, `PLAYER_KICKED`, `PLAYER_DISCONNECTED`, `PLAYER_RECONNECTED`, `HOST_CHANGED`,
-`SETTINGS_CHANGED`, `PLAYER_DATA_READY`, `CONNECTION_QUALITY_CHANGED`, `QUIZ_STARTING`,
+`SETTINGS_CHANGED`, `PLAYER_DATA_READY`, `CONNECTION_QUALITY_CHANGED`, `QUIZ_PREPARING` (the
+host pressed Start; the questions are being built), `QUIZ_START_FAILED` (back to the lobby,
+see `message`), `QUIZ_STARTING`,
 `QUESTION_STARTED`, `PLAYER_ANSWERED`, `QUESTION_REVEALED`, `VOTE_STARTED`, `VOTE_CAST`
 (the counts changed), `VOTE_RESOLVED`, `QUIZ_PAUSED` (ADR-026),
 `QUIZ_FINISHED`, `ROOM_CLOSED` (the last message), and `CHAT_MESSAGE` (proposed, see
@@ -140,10 +146,11 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 
 | Field | Notes |
 |---|---|
-| `phase` | `LOBBY`, `STARTING`, `QUESTION`, `REVEAL`, `VOTE`, `PAUSED` (ADR-026), `FINISHED` |
+| `phase` | `LOBBY`, `PREPARING`, `STARTING`, `QUESTION`, `REVEAL`, `VOTE`, `PAUSED` (ADR-026), `FINISHED` |
+| `phase` = `PREPARING` | After Start, while the quiz engine builds the questions. Every browser shows the loading screen (how a quiz works). It lasts at least 8 seconds (`phaseDeadline`) and at most 60; then `STARTING`, or `VOTE` first if someone dropped meanwhile, or back to `LOBBY` with `QUIZ_START_FAILED`. Settings, kicks and a second Start are refused; the host can't cancel |
 | `phase` = `STARTING` | The 3-second countdown before the first question (`roundNumber` 0). Proposed, needs FF-417 updated: the same 3 seconds before every later question and after a pause, with `roundNumber` still the question just played, so the browser shows "Get ready, question N+1". The design gives the reveal 10 seconds (FF-417 says 5) |
 | `players` | In the order they joined; the frontend gives player N the Nth character and colour |
-| `players[].status` | `CONNECTED`, `DISCONNECTED`, `SITTING_OUT` |
+| `players[].status` | `CONNECTED`, `DISCONNECTED`, `SITTING_OUT`, `SPECTATING` (joined while a quiz was preparing or running: sees the room and chats, but can't answer or vote, isn't an option and has no score; plays from the next quiz) |
 | `players[].dataStatus` | `SYNCED`, `SYNCING`, `NOT_SYNCED`, `NOT_LINKED`, `FAILED`, from Account (ADR-010; replaces `matchDataReady`). Left out until Room fills it (FF-307) |
 | `players[].dataEstimatedSeconds` | Only while `SYNCING` with an estimate |
 | `players[].riotTagLine` | Shown as "Sam (NA1)" when two players share a name; left out if not linked |
@@ -151,7 +158,7 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 | `players[].look` | Proposed, needs a story: `{icon, colour, expression, random}`. Room hands out favourite icons and colours first come, first served (`random` when someone got a free one instead); `expression` is one of the 8 pickable faces and never changes. Without it the frontend uses the join order |
 | `currentQuestion.options[].optionId` | For "pick the player" questions, the player's `userId` |
 | `currentQuestion.reveal` | **Only during `REVEAL`**: `{correctOptionId, explanation, results: [{userId, chosenOptionId, correct, points}]}` |
-| `phaseDeadline` | When the countdown, question, reveal, vote or pause ends; not set in `LOBBY` and `FINISHED` |
+| `phaseDeadline` | When the countdown, question, reveal, vote or pause ends; during `PREPARING` the earliest the countdown can start (Start + 8 s); not set in `LOBBY` and `FINISHED` |
 | `scoreboard` | Empty in the lobby; `rank` 1 is first, equal points share a rank; `correctAnswers` from Scoring |
 | `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseAllowed` is false once the quiz's 3 minutes of pauses are used (ADR-026) |
 | `waitingForUserId` | During `PAUSED`: the disconnected player the room is waiting for (ADR-026) |
