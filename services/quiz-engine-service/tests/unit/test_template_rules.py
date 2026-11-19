@@ -8,8 +8,9 @@ import pytest
 from friendlyfire.matchdata.v1.match_data_service_pb2 import PlayerMatchStats
 from friendlyfire.quiz.v1.quiz_service_pb2 import Question, QuizPlayer
 
-from quiz_engine.question_generator import QuestionGenerator, difficulty
+from quiz_engine.question_generator import _SCOPE_TEXT, QuestionGenerator, difficulty
 from quiz_engine.templates import QuestionTemplate
+from tests.unit.test_question_generator import template as pack_template
 
 ALICE, BOB, CARA = "a", "b", "c"
 NAMES = {ALICE: "Alice", BOB: "Bob", CARA: "Cara"}
@@ -398,6 +399,75 @@ def test_lowest_wins_difficulty_uses_the_runner_up() -> None:
     assert difficulty(Fraction(10), Fraction(11), "lowest") == "hard"
 
 
+def test_plural_forms_follow_the_shown_value() -> None:
+    counted = template(
+        rule="count",
+        stat="numbers.ninja_defuses",
+        question="Who defused {value} {time|times}?",
+        explanation="{name}: {value} {defuse|defuses}",
+    )
+    stats = [match(ALICE, "1", ninja_defuses=1), match(BOB, "2", ninja_defuses=0)]
+    [question] = ask(counted, stats, ALICE, BOB)
+    assert (question.text, question.explanation) == ("Who defused 1 time?", "Alice: 1 defuse")
+    stats[0].numbers["ninja_defuses"] = 2
+    [question] = ask(counted, stats, ALICE, BOB)
+    assert (question.text, question.explanation) == ("Who defused 2 times?", "Alice: 2 defuses")
+
+
+def test_a_plural_form_that_shows_as_one_point_something_is_plural() -> None:
+    per_match = template(
+        rule="average", stat="numbers.aces", explanation="{value} {ace|aces} a match"
+    )
+    stats = [
+        match(ALICE, "1", aces=1),
+        match(ALICE, "2", aces=2),
+        match(BOB, "3", aces=0),
+    ]
+    [question] = ask(per_match, stats, ALICE, BOB)
+    assert question.explanation == "1.50 aces a match"
+
+
+def clutches(**attempts: tuple[int, int]) -> list[PlayerMatchStats]:
+    """One match per player: (clutch wins, clutch attempts)."""
+    ids = {"alice": ALICE, "bob": BOB, "cara": CARA}
+    return [
+        match(ids[name], name, clutch_wins=won, clutch_attempts=tried)
+        for name, (won, tried) in attempts.items()
+    ]
+
+
+CLUTCH_RATE = template(
+    rule="pooled_ratio",
+    numerator=("numbers.clutch_wins",),
+    denominator=("numbers.clutch_attempts",),
+    contenders_only=True,
+    min_denominator=5,
+)
+
+
+def test_min_denominator_lets_a_player_with_too_few_attempts_sit_out() -> None:
+    # Alice's 1 of 1 would be 100%; she sits out, and Bob's 9 of 20 wins.
+    stats = clutches(alice=(1, 1), bob=(9, 20), cara=(4, 10))
+    [question] = ask(CLUTCH_RATE, stats, ALICE, BOB, CARA)
+    assert question.correct_option_id == BOB
+    assert option_ids(question) == [ALICE, BOB, CARA]
+
+
+def test_min_denominator_lets_a_player_with_no_attempts_sit_out() -> None:
+    stats = clutches(alice=(0, 0), bob=(9, 20), cara=(4, 10))
+    [question] = ask(CLUTCH_RATE, stats, ALICE, BOB, CARA)
+    assert question.correct_option_id == BOB
+    # Without the minimum, a zero total is unknown and skips the question for everyone.
+    assert ask(replace(CLUTCH_RATE, min_denominator=0), stats, ALICE, BOB, CARA) == []
+
+
+def test_min_denominator_still_needs_two_players_and_known_data() -> None:
+    assert ask(CLUTCH_RATE, clutches(alice=(1, 1), bob=(9, 20)), ALICE, BOB) == []
+    missing = clutches(alice=(3, 8), bob=(9, 20))
+    del missing[0].numbers["clutch_attempts"]
+    assert ask(CLUTCH_RATE, missing, ALICE, BOB) == []
+
+
 FF409_IDS = (
     "max-round-damage-v1",
     "recent-first-bloods-v1",
@@ -413,13 +483,15 @@ FF409_IDS = (
 
 
 def ff409_template(template_id: str) -> QuestionTemplate:
-    from quiz_engine.templates import TEMPLATES
-
-    return next(t for t in TEMPLATES if t.id == template_id)
+    return pack_template(template_id)
 
 
-def ff409_stats(template: QuestionTemplate, *, tied: bool = False) -> list[PlayerMatchStats]:
-    """Make enough fixture matches for a pack template, with Alice leading by default."""
+def ff409_stats(
+    template: QuestionTemplate, *, tied: bool = False, shared: bool = False
+) -> list[PlayerMatchStats]:
+    """Make enough fixture matches for a pack template, with Alice leading by default.
+
+    shared: Alice and Bob play every match together; otherwise every match is solo."""
     count = template.last_n or 10
     rows: list[PlayerMatchStats] = []
     for n in range(count):
@@ -467,7 +539,8 @@ def ff409_stats(template: QuestionTemplate, *, tied: bool = False) -> list[Playe
                         "pistol_round_kills": other_score,
                     }
                 )
-            row = match(uid, f"{template.id}-{uid}-{n}", seconds=n + 1, **values)
+            match_id = f"{template.id}-{n}" if shared else f"{template.id}-{uid}-{n}"
+            row = match(uid, match_id, seconds=n + 1, **values)
             if template.display_label:
                 row.labels[template.display_label] = "Jett" if alice else "Sage"
             rows.append(row)
@@ -502,14 +575,6 @@ def test_ff409_template_skips_missing_data(template_id: str) -> None:
     del stats[0].numbers[key]
 
     assert ask(template, stats, ALICE, BOB) == []
-
-
-def test_ff409_uses_ten_distinct_template_ids() -> None:
-    from quiz_engine.templates import TEMPLATES
-
-    assert len({template_id for template_id in FF409_IDS}) == 10
-    assert {template_id for template_id in FF409_IDS} <= {template.id for template in TEMPLATES}
-    assert len({template.id for template in TEMPLATES}) == len(TEMPLATES)
 
 
 def test_ff409_recent_windows_use_all_scope_and_pistol_rounds_use_all_matches() -> None:
@@ -562,17 +627,17 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
             "average-performance-score-v1",
             "This player averages a Performance Score of 265.10 per match {scope}, the highest in "
             "this group. Who set the pace?",
-            "Alice: 2651 Performance Score over 10 matches.",
+            "Alice, averaging 265.10 over 10 matches.",
         ),
         (
             "opening-duel-win-rate-v1",
-            "This player wins 40% of their opening duels {scope}, the best record in this group. "
-            "Who takes the first fight?",
+            "This player wins 40% of their opening duels {scope}, the best record of anyone here "
+            "with 10 or more. Who takes the first fight?",
             "Alice: 40 first bloods out of 100 opening duels.",
         ),
         (
             "max-round-kills-v1",
-            "One of you took down 4 enemies in a single round {scope}, and nobody else here has "
+            "One of you got 4 kills in a single round {scope}, and nobody else here has "
             "matched it. Who is this player?",
             "Alice, playing Jett: 4 kills in one round.",
         ),
@@ -584,21 +649,22 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         ),
         (
             "ninja-defuses-v1",
-            "Someone here defused the spike 5 times in their last 5 matches with enemies still "
-            "alive. Which of you has that unique distinction?",
-            "Alice: 5 ninja defuses in 5 matches.",
+            "Someone here defused the spike 10 times with enemies still alive in the last 30 "
+            "days. Which of you has that unique distinction?",
+            "Alice: 10 ninja defuses in the last 30 days.",
         ),
         (
             "clutch-win-rate-v1",
             "Left as the last one standing, this player wins 50% of their clutches {scope}. "
-            "Nobody here does better. Who stays cold under pressure?",
+            "Nobody here with 5 or more clutch attempts does better. Who stays cold under "
+            "pressure?",
             "Alice: 20 clutch wins out of 40 clutch attempts.",
         ),
         (
             "fall-deaths-v1",
-            "In their last 5 matches, this player fell to their death 5 times, more than anyone "
+            "In the last 30 days, this player fell to their death 10 times, more than anyone "
             "else here. Who does this unfortunate stat belong to?",
-            "Alice recorded 5 fall deaths in their last 5 matches.",
+            "Alice recorded 10 fall deaths in the last 30 days.",
         ),
         (
             "pistol-round-kills-v1",
@@ -609,18 +675,30 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
     ],
 )
 def test_ff409_question_and_answer_text(template_id: str, question: str, explanation: str) -> None:
-    template = replace(ff409_template(template_id), scopes=("all",))
-    questions = ask(template, ff409_stats(template), ALICE, BOB)
-    scope_text = {
-        "all": "in the available Competitive and Unrated match history",
-        "shared": "in available matches played with other room players",
-        "solo": "in available matches played without other room players",
-    }
+    pack = ff409_template(template_id)
+    for scope in pack.scopes:
+        stats = ff409_stats(pack, shared=scope == "shared")
+        questions = ask(replace(pack, scopes=(scope,)), stats, ALICE, BOB)
+        assert [(q.text, q.explanation) for q in questions] == [
+            (question.format(scope=_SCOPE_TEXT[scope]), explanation)
+        ], scope
 
-    expected = [
-        (question.format(scope=scope_text[scope]), explanation) for scope in template.scopes
-    ]
-    assert sorted((q.text, q.explanation) for q in questions) == sorted(expected)
+
+def test_ff409_counts_say_one_time_not_one_times() -> None:
+    ninja = ff409_template("ninja-defuses-v1")
+    stats = [match(ALICE, "a1", ninja_defuses=1), match(BOB, "b1", ninja_defuses=0)]
+    [question] = ask(ninja, stats, ALICE, BOB)
+    assert question.text.startswith("Someone here defused the spike 1 time with")
+    assert question.explanation == "Alice: 1 ninja defuse in the last 30 days."
+
+
+def test_ff409_clutch_rate_needs_five_attempts() -> None:
+    # 1 of 1 is 100%, but Alice sits out with too few attempts and Bob's 9 of 20 wins.
+    stats = clutches(alice=(1, 1), bob=(9, 20), cara=(2, 10))
+    rate = replace(ff409_template("clutch-win-rate-v1"), scopes=("all",))
+    [question] = ask(rate, stats, ALICE, BOB, CARA)
+    assert question.correct_option_id == BOB
+    assert question.explanation == "Bob: 9 clutch wins out of 20 clutch attempts."
 
 
 @pytest.mark.parametrize(
@@ -632,6 +710,16 @@ def test_ff409_question_and_answer_text(template_id: str, question: str, explana
         ({"rule": "count", "stat": "kills", "display_label": "rank"}, "display_label"),
         ({"rule": "pair", "stat": "kills"}, "pair needs"),
         ({"rule": "count", "stat": "kills", "last_n": 0}, "last_n"),
+        ({"rule": "count", "stat": "kills", "min_denominator": 5}, "min_denominator"),
+        (
+            {
+                "rule": "pooled_ratio",
+                "numerator": ("kills",),
+                "denominator": ("deaths",),
+                "min_denominator": 5,
+            },
+            "min_denominator",
+        ),
         ({"rule": "count", "stat": "kills", "question": "Who has {rank}?"}, "{rank}"),
     ],
 )

@@ -32,10 +32,13 @@ How a template is evaluated, for every room player who is compared (see below):
    as the runner-up's (it wouldn't single out the winner). Any player with a
    missing value skips it too, except that with contenders_only players without
    enough matches sit the question out (2+ must remain). "Enough" means at least
-   one match in the scope (and at least last_n of them), plus one after the filter.
-   Use it for agent or map questions, and for the solo scope: players who mostly
-   squad up still have the odd solo game, so pair a solo template with
-   contenders_only and a small or no last_n. Pair questions always compare only the
+   one match in the scope (and at least last_n of them), plus one after the filter,
+   and for a pooled_ratio with min_denominator, at least that much denominator in
+   those matches (e.g. 5 clutch attempts, so 1 of 1 can't beat 9 of 20; a player with
+   none sits out instead of skipping the question). Use it for agent or map
+   questions, and for the solo scope: players who mostly squad up still have the
+   odd solo game, so pair a solo template with contenders_only and a small or no
+   last_n. Pair questions always compare only the
    players who played with the friend.
 
 Every room player is an option in every question, including players who sat it out,
@@ -50,7 +53,8 @@ Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
 Placeholders: {name} (winner), {value}, {numerator}, {denominator}, {percent}
 (value x 100), {scope}, {last_n}, {parameter}, {friend} and {<display_label>_name}.
 Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
-for {percent} (29.7).
+for {percent} (29.7). {singular|plural}, e.g. "{value} {time|times}", shows the first
+form when {value} shows as 1 and the second otherwise.
 """
 
 from dataclasses import dataclass
@@ -83,6 +87,9 @@ class QuestionTemplate:
     parameter_label: ParameterLabel = ""
     display_label: str = ""
     contenders_only: bool = False
+    # pooled_ratio with contenders_only: the least denominator a player needs to be
+    # compared (see Compare above); 0 means no minimum.
+    min_denominator: int = 0
 
 
 TEMPLATES = (
@@ -136,9 +143,10 @@ TEMPLATES = (
     QuestionTemplate(
         id="recent-first-bloods-v1",
         question="Over their last {last_n} matches, this player drew first blood "
-        "{value} times, the most in this group. Who is this player?",
+        "{value} {time|times}, the most in this group. Who is this player?",
         explanation=(
-            "{name} opened {value} rounds with the first kill in their last {last_n} matches."
+            "{name} opened {value} {round|rounds} with the first kill in their last {last_n} "
+            "matches."
         ),
         stats=("numbers.first_bloods", "played_at", "labels.queue_id"),
         rule="count",
@@ -149,7 +157,7 @@ TEMPLATES = (
         id="average-performance-score-v1",
         question="This player averages a Performance Score of {value} per match {scope}, "
         "the highest in this group. Who set the pace?",
-        explanation="{name}: {numerator} Performance Score over {denominator} matches.",
+        explanation="{name}, averaging {value} over {denominator} matches.",
         stats=("numbers.performance_score", "labels.queue_id"),
         rule="average",
         stat="numbers.performance_score",
@@ -159,20 +167,25 @@ TEMPLATES = (
     QuestionTemplate(
         id="opening-duel-win-rate-v1",
         question="This player wins {percent}% of their opening duels {scope}, "
-        "the best record in this group. Who takes the first fight?",
+        "the best record of anyone here with 10 or more. Who takes the first fight?",
         explanation="{name}: {numerator} first bloods out of {denominator} opening duels.",
         stats=("numbers.first_bloods", "numbers.first_deaths", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_bloods",),
+        # The catalogue leaves first_deaths out of a round whose two earliest kills share
+        # a time, but not first_bloods: such a round counts as a duel won, never as one
+        # lost. It's rare (3 rounds in the sample data), so the rate is close enough.
         denominator=("numbers.first_bloods", "numbers.first_deaths"),
         scopes=ALL_SCOPES,
         last_n=None,
+        contenders_only=True,
+        min_denominator=10,
     ),
     QuestionTemplate(
         id="max-round-kills-v1",
-        question="One of you took down {value} enemies in a single round {scope}, and nobody "
+        question="One of you got {value} {kill|kills} in a single round {scope}, and nobody "
         "else here has matched it. Who is this player?",
-        explanation="{name}, playing {agent_name}: {value} kills in one round.",
+        explanation="{name}, playing {agent_name}: {value} {kill|kills} in one round.",
         stats=("numbers.max_round_kills", "labels.agent", "labels.queue_id"),
         rule="max_in_match",
         stat="numbers.max_round_kills",
@@ -182,9 +195,11 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="post-plant-kills-v1",
-        question="Once the spike is down, this player gets to work: {value} post-plant kills in "
-        "their last {last_n} matches, the most in this group. Who might this player be?",
-        explanation="{name} got {value} kills after the plant in their last {last_n} matches.",
+        question="Once the spike is down, this player gets to work: {value} post-plant "
+        "{kill|kills} in their last {last_n} matches, the most in this group. Who might this "
+        "player be?",
+        explanation="{name} got {value} {kill|kills} after the plant in their last {last_n} "
+        "matches.",
         stats=("numbers.post_plant_kills", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.post_plant_kills",
@@ -192,18 +207,20 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="ninja-defuses-v1",
-        question="Someone here defused the spike {value} times in their last {last_n} matches "
-        "with enemies still alive. Which of you has that unique distinction?",
-        explanation="{name}: {value} ninja defuses in {last_n} matches.",
-        stats=("numbers.ninja_defuses", "played_at", "labels.queue_id"),
+        question="Someone here defused the spike {value} {time|times} with enemies still alive "
+        "in the last 30 days. Which of you has that unique distinction?",
+        explanation="{name}: {value} ninja {defuse|defuses} in the last 30 days.",
+        stats=("numbers.ninja_defuses", "labels.queue_id"),
         rule="count",
         stat="numbers.ninja_defuses",
-        last_n=5,
+        # Rare: every stored match (the last 30 days), or most rooms would tie at 0.
+        last_n=None,
     ),
     QuestionTemplate(
         id="clutch-win-rate-v1",
         question="Left as the last one standing, this player wins {percent}% of their clutches "
-        "{scope}. Nobody here does better. Who stays cold under pressure?",
+        "{scope}. Nobody here with 5 or more clutch attempts does better. Who stays cold "
+        "under pressure?",
         explanation="{name}: {numerator} clutch wins out of {denominator} clutch attempts.",
         stats=("numbers.clutch_wins", "numbers.clutch_attempts", "labels.queue_id"),
         rule="pooled_ratio",
@@ -211,20 +228,24 @@ TEMPLATES = (
         denominator=("numbers.clutch_attempts",),
         scopes=ALL_SCOPES,
         last_n=None,
+        # So 1 of 1 can't beat 9 of 20; players with fewer attempts sit it out.
+        contenders_only=True,
+        min_denominator=5,
     ),
     QuestionTemplate(
         id="fall-deaths-v1",
-        question="In their last {last_n} matches, this player fell to their death "
-        "{value} times, more than anyone else here. Who does this unfortunate stat belong to?",
-        explanation="{name} recorded {value} fall deaths in their last {last_n} matches.",
-        stats=("numbers.fall_deaths", "played_at", "labels.queue_id"),
+        question="In the last 30 days, this player fell to their death {value} {time|times}, "
+        "more than anyone else here. Who does this unfortunate stat belong to?",
+        explanation="{name} recorded {value} fall {death|deaths} in the last 30 days.",
+        stats=("numbers.fall_deaths", "labels.queue_id"),
         rule="count",
         stat="numbers.fall_deaths",
-        last_n=5,
+        # Rare: every stored match (the last 30 days), or most rooms would tie at 0.
+        last_n=None,
     ),
     QuestionTemplate(
         id="pistol-round-kills-v1",
-        question="This player averages {value} pistol-round kills per match {scope}, "
+        question="This player averages {value} pistol-round {kill|kills} per match {scope}, "
         "the most in this group. Who starts rounds with a bang?",
         explanation="{name}: {numerator} pistol-round kills in {denominator} matches.",
         stats=("numbers.pistol_round_kills", "labels.queue_id"),
