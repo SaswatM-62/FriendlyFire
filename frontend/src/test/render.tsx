@@ -12,7 +12,7 @@ import { createHandlers } from "@/mocks/handlers";
 import { server } from "@/test/server";
 
 export function signedInSession(): Session {
-  return { status: "signedIn", email: "alex@example.com", getToken: async () => "test-token", signIn: vi.fn(), signOut: vi.fn() };
+  return { status: "signedIn", email: "alex@example.com", getToken: async () => "test-token", signIn: vi.fn(), signInWith: vi.fn(), signOut: vi.fn() };
 }
 
 /**

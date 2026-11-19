@@ -1,5 +1,6 @@
 package com.friendlyfire.gateway.web;
 
+import static com.friendlyfire.gateway.testsupport.FakeServices.ACCOUNT;
 import static com.friendlyfire.gateway.testsupport.FakeServices.ROOM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -7,8 +8,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.friendlyfire.gateway.testsupport.FakeAccountService;
 import com.friendlyfire.gateway.testsupport.FakeTokens;
 import com.friendlyfire.gateway.testsupport.GatewayTestBase;
+import com.friendlyfire.gateway.testsupport.TestNames;
+import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.CreateRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest;
@@ -43,6 +48,24 @@ class RoomControllerTest extends GatewayTestBase {
         CreateRoomRequest request = ROOM.calls.last(CreateRoomRequest.class);
         assertThat(request.getHostUserId()).isEqualTo("user-riley");
         assertThat(request.getHostDisplayName()).isEqualTo("Riley");
+        assertThat(request.getHostRiotTagLine()).isEmpty();
+    }
+
+    @Test
+    void aLinkedPlayerCreatesAndJoinsWithTheirRiotTag() throws Exception {
+        // A new player, so the Gateway's user cache doesn't already hold them unlinked.
+        String player = TestNames.player();
+        ACCOUNT.calls.answer(EnsureUserRequest.class, request -> EnsureUserResponse.newBuilder()
+                .setUser(FakeAccountService.user(player, "Riley").toBuilder().setRiotLink(FakeAccountService.riotLink()))
+                .build());
+
+        mvc.perform(post("/api/rooms").header(HttpHeaders.AUTHORIZATION, bearer(player)))
+                .andExpect(status().isCreated());
+        mvc.perform(post("/api/rooms/P4CWRT/join").header(HttpHeaders.AUTHORIZATION, bearer(player)))
+                .andExpect(status().isOk());
+
+        assertThat(ROOM.calls.last(CreateRoomRequest.class).getHostRiotTagLine()).isEqualTo("NA1");
+        assertThat(ROOM.calls.last(JoinRoomRequest.class).getRiotTagLine()).isEqualTo("NA1");
     }
 
     @Test

@@ -6,10 +6,13 @@ import { useEffect } from "react";
 import { useSession } from "@/components/providers/SessionProvider";
 import { LogoLink } from "@/components/ui/Brand";
 import { Icon } from "@/components/ui/Icon";
+import { signInPath } from "@/lib/signIn";
 
 /**
- * /login (FF-102, Sign in board). Auth0's hosted page does the actual sign-in with
- * Google or email; this is the way in, and where a failed sign-in comes back to.
+ * /login (FF-102, Sign in board): the way in, and where a failed sign-in comes back to.
+ * Google goes straight to Google's account picker; email opens Auth0's hosted email form
+ * (passwords never touch our servers). There's no separate sign-up for Google: the first
+ * sign-in creates the account.
  */
 export function SignInCard({ available }: { available: boolean }) {
   const session = useSession();
@@ -39,13 +42,25 @@ export function SignInCard({ available }: { available: boolean }) {
       )}
       {available ? (
         <>
-          <button type="button" className="btn btn--primary btn--block" onClick={session.signIn}>
-            Continue
+          <button type="button" className="btn btn--primary btn--block" onClick={() => session.signInWith("google")}>
+            Continue with Google
             <Icon name="arrowRight" />
+          </button>
+          <button type="button" className="btn btn--line btn--block" onClick={() => session.signInWith("email")}>
+            Continue with email
           </button>
           <p className="alinks" style={{ justifyContent: "center" }}>
             <span className="muted">
-              New here? <a href="/auth/login?screen_hint=signup">Sign up</a>
+              New here? Continue with Google, or{" "}
+              <a
+                href={signInPath("emailSignUp")}
+                onClick={(event) => {
+                  event.preventDefault();
+                  session.signInWith("emailSignUp");
+                }}
+              >
+                sign up with email
+              </a>
             </span>
           </p>
         </>
@@ -56,7 +71,7 @@ export function SignInCard({ available }: { available: boolean }) {
         </p>
       )}
       <p className="afoot">
-        Hosted by Auth0 · <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link>
+        Email sign-in by Auth0 · <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link>
       </p>
     </section>
   );

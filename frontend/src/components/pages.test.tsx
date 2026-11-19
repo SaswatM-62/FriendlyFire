@@ -180,6 +180,15 @@ describe("RiotCallback", () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/profile?error=access_denied"));
   });
 
+  it("goes back to the tutorial while the player hasn't finished it", async () => {
+    location.search = new URLSearchParams("code=fake-code&state=fake-state");
+    const gateway = new FakeGateway();
+    gateway.newPlayer();
+    renderWithApp(<RiotCallback />, { gateway });
+
+    await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/welcome?linked=1"));
+  });
+
   it("passes the Gateway's error code on to Profile", async () => {
     location.search = new URLSearchParams("code=taken&state=fake-state");
     renderWithApp(<RiotCallback />);

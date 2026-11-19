@@ -27,6 +27,8 @@ export function SignedIn({
   if (session.status === "loading" || status === "loading" || (session.status === "signedIn" && status === "idle")) {
     return <PageSkeleton />;
   }
+  // A new player is on their way to the tutorial (OnboardingGate); don't flash this page first.
+  if (me && !me.onboardedAt && what !== "the tutorial") return <PageSkeleton />;
   if (session.status === "signedOut") {
     return (
       <MessageCard

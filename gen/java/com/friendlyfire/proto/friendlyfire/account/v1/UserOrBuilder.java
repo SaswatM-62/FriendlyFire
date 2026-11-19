@@ -95,4 +95,37 @@ public interface UserOrBuilder extends
    * <code>.friendlyfire.account.v1.RiotLink riot_link = 5 [json_name = "riotLink"];</code>
    */
   com.friendlyfire.proto.friendlyfire.account.v1.RiotLinkOrBuilder getRiotLinkOrBuilder();
+
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   * @return Whether the onboardedAt field is set.
+   */
+  boolean hasOnboardedAt();
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   * @return The onboardedAt.
+   */
+  com.google.protobuf.Timestamp getOnboardedAt();
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   */
+  com.google.protobuf.TimestampOrBuilder getOnboardedAtOrBuilder();
 }

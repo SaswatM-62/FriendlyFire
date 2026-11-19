@@ -3,10 +3,15 @@ package com.friendlyfire.gateway.testsupport;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.CompleteRiotLinkResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.DataStatus;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkResponse;
@@ -15,6 +20,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
+import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
 import com.google.protobuf.Timestamp;
 import io.grpc.stub.StreamObserver;
 
@@ -25,6 +31,7 @@ import io.grpc.stub.StreamObserver;
 public final class FakeAccountService extends AccountServiceGrpc.AccountServiceImplBase {
 
     static final Timestamp CREATED_AT = Timestamp.newBuilder().setSeconds(1_762_000_000L).build();
+    static final Timestamp ONBOARDED_AT = Timestamp.newBuilder().setSeconds(1_762_000_600L).build();
 
     public final FakeCalls calls = new FakeCalls();
 
@@ -78,5 +85,24 @@ public final class FakeAccountService extends AccountServiceGrpc.AccountServiceI
     @Override
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> observer) {
         calls.handle(request, DeleteAccountResponse.getDefaultInstance(), observer);
+    }
+
+    /** Finishing the tutorial stamps the fake user with ONBOARDED_AT. */
+    @Override
+    public void finishOnboarding(FinishOnboardingRequest request, StreamObserver<FinishOnboardingResponse> observer) {
+        String name = request.getUserId().replaceFirst("^user-", "");
+        String displayName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        calls.handle(request, FinishOnboardingResponse.newBuilder()
+                .setUser(user(name, displayName).toBuilder().setOnboardedAt(ONBOARDED_AT))
+                .build(), observer);
+    }
+
+    /** By default nobody has linked a Riot account. */
+    @Override
+    public void getDataStatus(GetDataStatusRequest request, StreamObserver<GetDataStatusResponse> observer) {
+        GetDataStatusResponse.Builder response = GetDataStatusResponse.newBuilder();
+        request.getUserIdsList().forEach(id -> response.addStatuses(UserDataStatus.newBuilder()
+                .setUserId(id).setStatus(DataStatus.DATA_STATUS_NOT_LINKED)));
+        calls.handle(request, response.build(), observer);
     }
 }

@@ -2,6 +2,7 @@
 
 import { getAccessToken, useUser } from "@auth0/nextjs-auth0";
 import { createContext, useCallback, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { signInPath, type SignInMethod } from "@/lib/signIn";
 import type { FakeBackend } from "@/mocks/browser";
 
 export interface Session {
@@ -11,6 +12,8 @@ export interface Session {
   getToken: () => Promise<string | null>;
   /** Auth0's sign-in page. Sign-in always comes back to the home page (FF-102). */
   signIn: () => void;
+  /** A sign-in method from the sign-in card: straight to Google, or Auth0's email form. */
+  signInWith: (method: SignInMethod) => void;
   signOut: () => void;
 }
 
@@ -19,6 +22,7 @@ const signedOut: Session = {
   email: null,
   getToken: async () => null,
   signIn: () => {},
+  signInWith: () => {},
   signOut: () => {},
 };
 
@@ -32,8 +36,8 @@ export function useSession(): Session {
 // Stable across renders, so the API client isn't rebuilt every time the session updates.
 const auth0Token = () => getAccessToken();
 // /auth/* are the Auth0 SDK's routes in src/proxy.ts, not Next.js pages: they need a full navigation.
-// eslint-disable-next-line @next/next/no-location-assign-relative-destination
-const auth0SignIn = () => window.location.assign("/auth/login");
+const auth0SignIn = () => window.location.assign(signInPath());
+const auth0SignInWith = (method: SignInMethod) => window.location.assign(signInPath(method));
 // eslint-disable-next-line @next/next/no-location-assign-relative-destination
 const auth0SignOut = () => window.location.assign("/auth/logout");
 
@@ -46,6 +50,7 @@ function Auth0Session({ children }: { children: ReactNode }) {
       email: user?.email ?? null,
       getToken: auth0Token,
       signIn: auth0SignIn,
+      signInWith: auth0SignInWith,
       signOut: auth0SignOut,
     }),
     [user, isLoading],
@@ -64,6 +69,8 @@ function FakeSession({ fake, children }: { fake: FakeBackend; children: ReactNod
       email: state?.signedIn ? state.email : null,
       getToken,
       signIn: fake.auth.signIn,
+      // The fake has no Google or email: every method just signs in.
+      signInWith: () => fake.auth.signIn(),
       signOut: fake.auth.signOut,
     }),
     [state, fake, getToken],

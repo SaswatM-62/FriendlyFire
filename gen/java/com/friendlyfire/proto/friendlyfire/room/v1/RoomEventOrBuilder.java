@@ -82,4 +82,28 @@ public interface RoomEventOrBuilder extends
    * <code>.friendlyfire.room.v1.RoomSnapshot snapshot = 4 [json_name = "snapshot"];</code>
    */
   com.friendlyfire.proto.friendlyfire.room.v1.RoomSnapshotOrBuilder getSnapshotOrBuilder();
+
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The message.
+   */
+  java.lang.String getMessage();
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The bytes for message.
+   */
+  com.google.protobuf.ByteString
+      getMessageBytes();
 }

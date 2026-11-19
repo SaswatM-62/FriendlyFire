@@ -208,6 +208,37 @@ class RoomSnapshotJsonTest {
     }
 
     @Test
+    void aFailedStartCarriesItsMessageAndOtherEventsLeaveItOut() {
+        RoomEventJson failed = RoomEventJson.from(RoomEvent.newBuilder()
+                .setType(RoomEventType.ROOM_EVENT_TYPE_QUIZ_START_FAILED)
+                .setMessage("Not enough matches for 15 questions. Try 10.")
+                .setSnapshot(RoomSnapshot.newBuilder().setPhase(RoomPhase.ROOM_PHASE_LOBBY))
+                .build());
+        RoomEventJson joined = RoomEventJson.from(RoomEvent.newBuilder()
+                .setType(RoomEventType.ROOM_EVENT_TYPE_PLAYER_JOINED)
+                .build());
+
+        assertThat(failed.type()).isEqualTo("QUIZ_START_FAILED");
+        assertThat(failed.message()).isEqualTo("Not enough matches for 15 questions. Try 10.");
+        assertThat(joined.message()).isNull();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void preparingShowsItsMinimumDeadlineAndASpectatorIsMarked() {
+        Map<String, Object> json = json(RoomSnapshot.newBuilder()
+                .setPhase(RoomPhase.ROOM_PHASE_PREPARING)
+                .setPhaseDeadline(DEADLINE)
+                .addPlayers(Player.newBuilder().setUserId("user-ana").setStatus(PlayerStatus.PLAYER_STATUS_SPECTATING))
+                .build());
+
+        assertThat(json.get("phase")).isEqualTo("PREPARING");
+        assertThat(json.get("phaseDeadline")).isEqualTo("2025-11-09T14:53:20.120Z");
+        assertThat((List<Map<String, Object>>) json.get("players"))
+                .first().satisfies(player -> assertThat(player.get("status")).isEqualTo("SPECTATING"));
+    }
+
+    @Test
     void anUnspecifiedEnumIsLeftOut() {
         assertThat(json(RoomSnapshot.newBuilder().setRoomCode("K7QM2X").build())).doesNotContainKey("phase");
     }

@@ -34,6 +34,7 @@ public class SignedInUserArgumentResolver implements HandlerMethodArgumentResolv
             throw ApiException.unauthenticated();
         }
         User user = users.resolve(token.getToken());
-        return new SignedInUser(user.getUserId(), user.getDisplayName(), token.getToken().getSubject());
+        return new SignedInUser(user.getUserId(), user.getDisplayName(), token.getToken().getSubject(),
+                user.getRiotLink().getTagLine());
     }
 }

@@ -241,6 +241,50 @@ private static final long serialVersionUID = 0L;
     return riotLink_ == null ? com.friendlyfire.proto.friendlyfire.account.v1.RiotLink.getDefaultInstance() : riotLink_;
   }
 
+  public static final int ONBOARDED_AT_FIELD_NUMBER = 6;
+  private com.google.protobuf.Timestamp onboardedAt_;
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   * @return Whether the onboardedAt field is set.
+   */
+  @java.lang.Override
+  public boolean hasOnboardedAt() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   * @return The onboardedAt.
+   */
+  @java.lang.Override
+  public com.google.protobuf.Timestamp getOnboardedAt() {
+    return onboardedAt_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : onboardedAt_;
+  }
+  /**
+   * <pre>
+   * When they finished (or skipped the end of) the new-player tutorial. Not
+   * set until then. Accounts made before the tutorial existed count as done
+   * (set to created_at).
+   * </pre>
+   *
+   * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+   */
+  @java.lang.Override
+  public com.google.protobuf.TimestampOrBuilder getOnboardedAtOrBuilder() {
+    return onboardedAt_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : onboardedAt_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -270,6 +314,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(5, getRiotLink());
     }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(6, getOnboardedAt());
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -290,6 +337,10 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(5, getRiotLink());
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(6, getOnboardedAt());
     }
     return size;
   }
@@ -331,6 +382,11 @@ private static final long serialVersionUID = 0L;
       if (!getRiotLink()
           .equals(other.getRiotLink())) return false;
     }
+    if (hasOnboardedAt() != other.hasOnboardedAt()) return false;
+    if (hasOnboardedAt()) {
+      if (!getOnboardedAt()
+          .equals(other.getOnboardedAt())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -355,6 +411,10 @@ private static final long serialVersionUID = 0L;
     if (hasRiotLink()) {
       hash = (37 * hash) + RIOT_LINK_FIELD_NUMBER;
       hash = (53 * hash) + getRiotLink().hashCode();
+    }
+    if (hasOnboardedAt()) {
+      hash = (37 * hash) + ONBOARDED_AT_FIELD_NUMBER;
+      hash = (53 * hash) + getOnboardedAt().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -488,6 +548,7 @@ private static final long serialVersionUID = 0L;
               .alwaysUseFieldBuilders) {
         internalGetCreatedAtFieldBuilder();
         internalGetRiotLinkFieldBuilder();
+        internalGetOnboardedAtFieldBuilder();
       }
     }
     @java.lang.Override
@@ -506,6 +567,11 @@ private static final long serialVersionUID = 0L;
       if (riotLinkBuilder_ != null) {
         riotLinkBuilder_.dispose();
         riotLinkBuilder_ = null;
+      }
+      onboardedAt_ = null;
+      if (onboardedAtBuilder_ != null) {
+        onboardedAtBuilder_.dispose();
+        onboardedAtBuilder_ = null;
       }
       return this;
     }
@@ -562,6 +628,12 @@ private static final long serialVersionUID = 0L;
             : riotLinkBuilder_.build();
         to_bitField0_ |= 0x00000002;
       }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.onboardedAt_ = onboardedAtBuilder_ == null
+            ? onboardedAt_
+            : onboardedAtBuilder_.build();
+        to_bitField0_ |= 0x00000004;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -597,6 +669,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasRiotLink()) {
         mergeRiotLink(other.getRiotLink());
+      }
+      if (other.hasOnboardedAt()) {
+        mergeOnboardedAt(other.getOnboardedAt());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -651,6 +726,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000010;
               break;
             } // case 42
+            case 50: {
+              input.readMessage(
+                  internalGetOnboardedAtFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 50
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1176,6 +1258,179 @@ private static final long serialVersionUID = 0L;
         riotLink_ = null;
       }
       return riotLinkBuilder_;
+    }
+
+    private com.google.protobuf.Timestamp onboardedAt_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> onboardedAtBuilder_;
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     * @return Whether the onboardedAt field is set.
+     */
+    public boolean hasOnboardedAt() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     * @return The onboardedAt.
+     */
+    public com.google.protobuf.Timestamp getOnboardedAt() {
+      if (onboardedAtBuilder_ == null) {
+        return onboardedAt_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : onboardedAt_;
+      } else {
+        return onboardedAtBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public Builder setOnboardedAt(com.google.protobuf.Timestamp value) {
+      if (onboardedAtBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        onboardedAt_ = value;
+      } else {
+        onboardedAtBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public Builder setOnboardedAt(
+        com.google.protobuf.Timestamp.Builder builderForValue) {
+      if (onboardedAtBuilder_ == null) {
+        onboardedAt_ = builderForValue.build();
+      } else {
+        onboardedAtBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public Builder mergeOnboardedAt(com.google.protobuf.Timestamp value) {
+      if (onboardedAtBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0) &&
+          onboardedAt_ != null &&
+          onboardedAt_ != com.google.protobuf.Timestamp.getDefaultInstance()) {
+          getOnboardedAtBuilder().mergeFrom(value);
+        } else {
+          onboardedAt_ = value;
+        }
+      } else {
+        onboardedAtBuilder_.mergeFrom(value);
+      }
+      if (onboardedAt_ != null) {
+        bitField0_ |= 0x00000020;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public Builder clearOnboardedAt() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      onboardedAt_ = null;
+      if (onboardedAtBuilder_ != null) {
+        onboardedAtBuilder_.dispose();
+        onboardedAtBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public com.google.protobuf.Timestamp.Builder getOnboardedAtBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return internalGetOnboardedAtFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    public com.google.protobuf.TimestampOrBuilder getOnboardedAtOrBuilder() {
+      if (onboardedAtBuilder_ != null) {
+        return onboardedAtBuilder_.getMessageOrBuilder();
+      } else {
+        return onboardedAt_ == null ?
+            com.google.protobuf.Timestamp.getDefaultInstance() : onboardedAt_;
+      }
+    }
+    /**
+     * <pre>
+     * When they finished (or skipped the end of) the new-player tutorial. Not
+     * set until then. Accounts made before the tutorial existed count as done
+     * (set to created_at).
+     * </pre>
+     *
+     * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder> 
+        internalGetOnboardedAtFieldBuilder() {
+      if (onboardedAtBuilder_ == null) {
+        onboardedAtBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.google.protobuf.Timestamp, com.google.protobuf.Timestamp.Builder, com.google.protobuf.TimestampOrBuilder>(
+                getOnboardedAt(),
+                getParentForChildren(),
+                isClean());
+        onboardedAt_ = null;
+      }
+      return onboardedAtBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.account.v1.User)

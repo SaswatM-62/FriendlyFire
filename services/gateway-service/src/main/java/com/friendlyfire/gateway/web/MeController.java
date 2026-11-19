@@ -6,14 +6,18 @@ import com.friendlyfire.gateway.security.SignedInUser;
 import com.friendlyfire.gateway.security.UserResolver;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,11 +29,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class MeController {
 
     private final AccountServiceBlockingStub accounts;
+    private final RoomServiceBlockingStub rooms;
     private final UserResolver users;
     private final SessionCloser sockets;
 
-    public MeController(AccountServiceBlockingStub accounts, UserResolver users, SessionCloser sockets) {
+    public MeController(
+            AccountServiceBlockingStub accounts, RoomServiceBlockingStub rooms, UserResolver users,
+            SessionCloser sockets) {
         this.accounts = accounts;
+        this.rooms = rooms;
         this.users = users;
         this.sockets = sockets;
     }
@@ -57,17 +65,29 @@ public class MeController {
     }
 
     /**
-     * Deletes the user, their Riot link and their match data (FF-111). 204 when done. A
-     * live WebSocket of theirs (another tab or device) is closed: tokens are only checked
-     * when a socket connects (ADR-022).
+     * Marks the new-player tutorial as done (finished, or skipped from the Riot step on) and
+     * returns the user with {@code onboardedAt}. Calling it again keeps the first time.
+     */
+    @PostMapping("/onboarding")
+    public MeJson finishOnboarding(SignedInUser me) {
+        User user = accounts.finishOnboarding(FinishOnboardingRequest.newBuilder().setUserId(me.userId()).build())
+                .getUser();
+        users.update(me.subject(), user);
+        return MeJson.from(user);
+    }
+
+    /**
+     * Deletes the user, their Riot link and their match data (FF-111). 204 when done. It
+     * takes them out of any room first (ADR-027); if Room or Account can't finish, nothing
+     * more happens and the error goes back (e.g. 503), so the player can try again. A live
+     * WebSocket of theirs (another tab or device) is closed: tokens are only checked when a
+     * socket connects (ADR-022).
      */
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteAccount(SignedInUser me) {
-        // TODO(ff): take the player out of any room first (FF-111, ADR-027)
-        //   - call RoomService.RemovePlayer before DeleteAccount (in the contract; Room
-        //     still answers UNIMPLEMENTED)
-        //   - uses: a RoomServiceBlockingStub
+        // Account never calls Room (Room calls Account), so the Gateway does it.
+        rooms.removePlayer(RemovePlayerRequest.newBuilder().setUserId(me.userId()).build());
         accounts.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(me.userId()).build());
         users.evict(me.subject());
         sockets.closeUser(me.userId(), ErrorCodes.ACCOUNT_DELETED, "Your FriendlyFire account was deleted.");

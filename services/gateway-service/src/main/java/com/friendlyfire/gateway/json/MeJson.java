@@ -11,7 +11,9 @@ public record MeJson(
         String email,
         String createdAt,
         /** Left out until the player links a Riot account. */
-        RiotLinkJson riotLink) {
+        RiotLinkJson riotLink,
+        /** When they finished the new-player tutorial; left out until then (the frontend shows /welcome). */
+        String onboardedAt) {
 
     public static MeJson from(User user) {
         return new MeJson(
@@ -19,6 +21,7 @@ public record MeJson(
                 user.getDisplayName(),
                 user.getEmail(),
                 ProtoJson.timestamp(user.hasCreatedAt(), user.getCreatedAt()),
-                user.hasRiotLink() ? RiotLinkJson.from(user.getRiotLink()) : null);
+                user.hasRiotLink() ? RiotLinkJson.from(user.getRiotLink()) : null,
+                ProtoJson.timestamp(user.hasOnboardedAt(), user.getOnboardedAt()));
     }
 }

@@ -1,10 +1,12 @@
 package com.friendlyfire.gateway.web;
 
 import static com.friendlyfire.gateway.testsupport.FakeServices.ACCOUNT;
+import static com.friendlyfire.gateway.testsupport.FakeServices.ROOM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,7 +19,9 @@ import com.friendlyfire.gateway.testsupport.TestNames;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +113,31 @@ class MeControllerTest extends GatewayTestBase {
     }
 
     @Test
+    void aNewPlayerHasNoOnboardedAt() throws Exception {
+        mvc.perform(get("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.onboardedAt").doesNotExist());
+    }
+
+    @Test
+    void finishingTheTutorialReturnsOnboardedAt() throws Exception {
+        mvc.perform(post("/api/me/onboarding").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("user-maya"))
+                .andExpect(jsonPath("$.onboardedAt").value("2025-11-01T12:36:40Z"));
+
+        assertThat(ACCOUNT.calls.last(FinishOnboardingRequest.class).getUserId()).isEqualTo("user-maya");
+    }
+
+    @Test
+    void finishingTheTutorialWhenAccountIsDownIs503() throws Exception {
+        ACCOUNT.calls.fail(FinishOnboardingRequest.class, Status.UNAVAILABLE);
+
+        mvc.perform(post("/api/me/onboarding").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
     void changesTheDisplayName() throws Exception {
         mvc.perform(patch("/api/me")
                         .header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya")))
@@ -137,11 +166,30 @@ class MeControllerTest extends GatewayTestBase {
     }
 
     @Test
-    void deletesTheAccount() throws Exception {
+    void deletesTheAccountAfterTakingThePlayerOutOfAnyRoom() throws Exception {
         mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
                 .andExpect(status().isNoContent());
 
+        assertThat(ROOM.calls.last(RemovePlayerRequest.class).getUserId()).isEqualTo("user-maya");
         assertThat(ACCOUNT.calls.last(DeleteAccountRequest.class).getUserId()).isEqualTo("user-maya");
+    }
+
+    @Test
+    void theAccountStaysWhenRoomCantRemoveThePlayer() throws Exception {
+        ROOM.calls.fail(RemovePlayerRequest.class, Status.UNIMPLEMENTED);
+
+        mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isNotImplemented());
+
+        assertThat(ACCOUNT.calls.received(DeleteAccountRequest.class)).isEmpty();
+    }
+
+    @Test
+    void aDeleteAccountCantFinishIs503() throws Exception {
+        ACCOUNT.calls.fail(DeleteAccountRequest.class, Status.UNAVAILABLE);
+
+        mvc.perform(delete("/api/me").header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya"))))
+                .andExpect(status().isServiceUnavailable());
     }
 
     @Test

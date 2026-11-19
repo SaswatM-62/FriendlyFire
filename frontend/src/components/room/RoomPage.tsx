@@ -63,7 +63,9 @@ export function RoomPage({ rawCode }: { rawCode: string }) {
   const valid = isRoomCode(code);
   const session = useSession();
   const { me, status: meStatus, error: meError, reload } = useMe();
-  const load = useRoomLoad(code, valid && session.status === "signedIn", me?.userId ?? null);
+  // A new player finishes the tutorial first (OnboardingGate keeps this room as their invite), so don't join yet.
+  const onboarding = me !== null && !me.onboardedAt;
+  const load = useRoomLoad(code, valid && session.status === "signedIn" && !onboarding, me?.userId ?? null);
 
   // A signed-out player with an invite link: remember the room for after sign-in (FF-503).
   useEffect(() => {

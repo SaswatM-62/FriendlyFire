@@ -13,6 +13,8 @@ interface Persisted {
   syncMode: FakeSyncMode;
   syncStartedAt: number;
   createdRooms: string[];
+  /** False for a brand-new player who hasn't finished the tutorial (/welcome). */
+  onboarded: boolean;
 }
 
 const STORAGE_KEY = "ff-fake-backend";
@@ -23,7 +25,10 @@ const SYNC_SECONDS = 150;
 export const GUEST_ROOM = "K7QM2X";
 /** Codes that fail like the real Gateway would. Any other unknown code is "Room not found". */
 export const FULL_ROOM = "PACKED";
+/** A quiz already running: you join it as a spectator and play from the next quiz. */
 export const STARTED_ROOM = "BUSY22";
+/** What an email sign-up is called until they pick a name. */
+export const NEW_PLAYER_NAME = "Player 4821";
 
 /**
  * The fake backend's server side (FF-513): the signed-in user, their Riot link and sync,
@@ -47,6 +52,7 @@ export class FakeGateway {
       syncMode: "synced",
       syncStartedAt: 0,
       createdRooms: [],
+      onboarded: true,
     };
     this.state = { ...defaults, ...(this.persist ? this.load() : {}) };
     this.history = fakeHistory(Date.now());
@@ -102,12 +108,28 @@ export class FakeGateway {
     this.change({ signedIn: false });
   }
 
+  get onboarded() {
+    return this.state.onboarded;
+  }
+
   me(): Me {
     return {
       ...FAKE_ME,
       displayName: this.state.displayName,
       riotLink: this.state.linked ? FAKE_ME.riotLink : null,
+      onboardedAt: this.state.onboarded ? FAKE_ME.onboardedAt : undefined,
     };
+  }
+
+  /** The dev panel's "New player": a fresh email sign-up who hasn't done the tutorial. */
+  newPlayer() {
+    this.change({ onboarded: false, displayName: NEW_PLAYER_NAME, linked: false, syncMode: "synced" });
+  }
+
+  /** POST /api/me/onboarding: the first time is kept. */
+  finishOnboarding(): Me {
+    if (!this.state.onboarded) this.change({ onboarded: true });
+    return this.me();
   }
 
   rename(displayName: string) {
@@ -142,7 +164,8 @@ export class FakeGateway {
   }
 
   syncStatus(): SyncStatusResponse {
-    if (!this.state.linked) return { status: "NOT_LINKED" };
+    // Like the real Gateway: an unlinked player has 0 matches stored.
+    if (!this.state.linked) return { status: "NOT_LINKED", matchesStored: 0 };
     const lastSyncedAt = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
     switch (this.state.syncMode) {
       case "syncing": {
@@ -167,6 +190,7 @@ export class FakeGateway {
     const existing = this.rooms.get(code);
     if (existing) return existing;
     if (code === GUEST_ROOM) return this.store(this.makeGuestRoom());
+    if (code === STARTED_ROOM) return this.store(this.makeStartedRoom());
     if (this.state.createdRooms.includes(code)) return this.store(this.makeHostRoom(code));
     return undefined;
   }
@@ -229,7 +253,20 @@ export class FakeGateway {
     });
   }
 
-  /** POST /api/rooms/{code}/join: you're added (or marked connected again). */
+  /** Maya's squad is mid-quiz; whoever joins now watches until it ends. */
+  private makeStartedRoom() {
+    const p = FAKE_PLAYERS;
+    const room = new FakeRoom({
+      code: STARTED_ROOM,
+      hostUserId: p.maya.userId,
+      meId: ME_ID,
+      players: [fakePlayer(p.maya), fakePlayer(p.sam), fakePlayer(p.jordan), fakePlayer(p.riley)],
+    });
+    room.jumpTo("question");
+    return room;
+  }
+
+  /** POST /api/rooms/{code}/join: you're added (or marked connected again); mid-quiz you spectate. */
   join(room: FakeRoom) {
     room.addPlayer(this.meAsPlayer());
     return room.snapshot;

@@ -58,7 +58,8 @@ const (
 	RoomPhase_ROOM_PHASE_QUESTION RoomPhase = 3
 	// The answer and updated scores are showing for a few seconds.
 	RoomPhase_ROOM_PHASE_REVEAL RoomPhase = 4
-	// After a reveal, the others vote about someone who disconnected.
+	// After a reveal, or after preparing, the others vote about someone who
+	// disconnected.
 	RoomPhase_ROOM_PHASE_VOTE RoomPhase = 5
 	// The quiz is over and the final standings are showing.
 	RoomPhase_ROOM_PHASE_FINISHED RoomPhase = 6
@@ -66,6 +67,11 @@ const (
 	// (RoomSnapshot.waiting_for_user_id). If they come back, the next question
 	// starts; if not, the room votes again.
 	RoomPhase_ROOM_PHASE_PAUSED RoomPhase = 7
+	// After the host pressed Start: the quiz engine is building the questions
+	// and every browser shows the loading screen. Settings, kicks and a second
+	// Start are refused. Ends in STARTING (or VOTE), or back in LOBBY if
+	// generation fails (event QUIZ_START_FAILED).
+	RoomPhase_ROOM_PHASE_PREPARING RoomPhase = 8
 )
 
 // Enum value maps for RoomPhase.
@@ -79,6 +85,7 @@ var (
 		5: "ROOM_PHASE_VOTE",
 		6: "ROOM_PHASE_FINISHED",
 		7: "ROOM_PHASE_PAUSED",
+		8: "ROOM_PHASE_PREPARING",
 	}
 	RoomPhase_value = map[string]int32{
 		"ROOM_PHASE_UNSPECIFIED": 0,
@@ -89,6 +96,7 @@ var (
 		"ROOM_PHASE_VOTE":        5,
 		"ROOM_PHASE_FINISHED":    6,
 		"ROOM_PHASE_PAUSED":      7,
+		"ROOM_PHASE_PREPARING":   8,
 	}
 )
 
@@ -128,6 +136,10 @@ const (
 	PlayerStatus_PLAYER_STATUS_DISCONNECTED PlayerStatus = 2
 	// The room voted to continue without them. They can still rejoin.
 	PlayerStatus_PLAYER_STATUS_SITTING_OUT PlayerStatus = 3
+	// Joined while a quiz was preparing or running. They see the room and can
+	// chat, but can't answer or vote, aren't an option and have no score. They
+	// become CONNECTED when the quiz finishes, and play from the next one.
+	PlayerStatus_PLAYER_STATUS_SPECTATING PlayerStatus = 4
 )
 
 // Enum value maps for PlayerStatus.
@@ -137,12 +149,14 @@ var (
 		1: "PLAYER_STATUS_CONNECTED",
 		2: "PLAYER_STATUS_DISCONNECTED",
 		3: "PLAYER_STATUS_SITTING_OUT",
+		4: "PLAYER_STATUS_SPECTATING",
 	}
 	PlayerStatus_value = map[string]int32{
 		"PLAYER_STATUS_UNSPECIFIED":  0,
 		"PLAYER_STATUS_CONNECTED":    1,
 		"PLAYER_STATUS_DISCONNECTED": 2,
 		"PLAYER_STATUS_SITTING_OUT":  3,
+		"PLAYER_STATUS_SPECTATING":   4,
 	}
 )
 
@@ -376,6 +390,12 @@ const (
 	RoomEventType_ROOM_EVENT_TYPE_VOTE_CAST RoomEventType = 19
 	// The room started a pause (ROOM_PHASE_PAUSED).
 	RoomEventType_ROOM_EVENT_TYPE_QUIZ_PAUSED RoomEventType = 20
+	// The host pressed Start and the questions are being built
+	// (ROOM_PHASE_PREPARING).
+	RoomEventType_ROOM_EVENT_TYPE_QUIZ_PREPARING RoomEventType = 21
+	// Building the questions failed or took too long; the room is back in the
+	// lobby. RoomEvent.message says why.
+	RoomEventType_ROOM_EVENT_TYPE_QUIZ_START_FAILED RoomEventType = 22
 )
 
 // Enum value maps for RoomEventType.
@@ -402,6 +422,8 @@ var (
 		18: "ROOM_EVENT_TYPE_ROOM_CLOSED",
 		19: "ROOM_EVENT_TYPE_VOTE_CAST",
 		20: "ROOM_EVENT_TYPE_QUIZ_PAUSED",
+		21: "ROOM_EVENT_TYPE_QUIZ_PREPARING",
+		22: "ROOM_EVENT_TYPE_QUIZ_START_FAILED",
 	}
 	RoomEventType_value = map[string]int32{
 		"ROOM_EVENT_TYPE_UNSPECIFIED":                0,
@@ -425,6 +447,8 @@ var (
 		"ROOM_EVENT_TYPE_ROOM_CLOSED":                18,
 		"ROOM_EVENT_TYPE_VOTE_CAST":                  19,
 		"ROOM_EVENT_TYPE_QUIZ_PAUSED":                20,
+		"ROOM_EVENT_TYPE_QUIZ_PREPARING":             21,
+		"ROOM_EVENT_TYPE_QUIZ_START_FAILED":          22,
 	}
 )
 
@@ -473,7 +497,9 @@ type RoomSnapshot struct {
 	// Set during QUESTION and REVEAL.
 	CurrentQuestion *QuestionView `protobuf:"bytes,8,opt,name=current_question,json=currentQuestion,proto3" json:"current_question,omitempty"`
 	// When the current phase ends: the countdown, the question timer, the
-	// reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
+	// reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+	// PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+	// phase lasts longer if the questions aren't ready yet.
 	PhaseDeadline *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=phase_deadline,json=phaseDeadline,proto3" json:"phase_deadline,omitempty"`
 	// Empty in the lobby.
 	Scoreboard []*ScoreEntry `protobuf:"bytes,10,rep,name=scoreboard,proto3" json:"scoreboard,omitempty"`
@@ -1209,7 +1235,11 @@ type RoomEvent struct {
 	SubjectUserId string                 `protobuf:"bytes,2,opt,name=subject_user_id,json=subjectUserId,proto3" json:"subject_user_id,omitempty"`
 	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
 	// The room's state right after the event.
-	Snapshot      *RoomSnapshot `protobuf:"bytes,4,opt,name=snapshot,proto3" json:"snapshot,omitempty"`
+	Snapshot *RoomSnapshot `protobuf:"bytes,4,opt,name=snapshot,proto3" json:"snapshot,omitempty"`
+	// A short sentence safe to show every player, when the event needs one
+	// (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+	// Try 10.").
+	Message       string `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1270,6 +1300,13 @@ func (x *RoomEvent) GetSnapshot() *RoomSnapshot {
 		return x.Snapshot
 	}
 	return nil
+}
+
+func (x *RoomEvent) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
 }
 
 type CreateRoomRequest struct {
@@ -2608,13 +2645,14 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x0econtinue_votes\x18\x04 \x01(\x05R\rcontinueVotes\x12\x1b\n" +
 	"\tend_votes\x18\x05 \x01(\x05R\bendVotes\x12$\n" +
 	"\x0evoted_user_ids\x18\x06 \x03(\tR\fvotedUserIds\x12#\n" +
-	"\rpause_allowed\x18\a \x01(\bR\fpauseAllowed\"\xe9\x01\n" +
+	"\rpause_allowed\x18\a \x01(\bR\fpauseAllowed\"\x83\x02\n" +
 	"\tRoomEvent\x127\n" +
 	"\x04type\x18\x01 \x01(\x0e2#.friendlyfire.room.v1.RoomEventTypeR\x04type\x12&\n" +
 	"\x0fsubject_user_id\x18\x02 \x01(\tR\rsubjectUserId\x12;\n" +
 	"\voccurred_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"occurredAt\x12>\n" +
-	"\bsnapshot\x18\x04 \x01(\v2\".friendlyfire.room.v1.RoomSnapshotR\bsnapshot\"\x8e\x01\n" +
+	"\bsnapshot\x18\x04 \x01(\v2\".friendlyfire.room.v1.RoomSnapshotR\bsnapshot\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\"\x8e\x01\n" +
 	"\x11CreateRoomRequest\x12 \n" +
 	"\fhost_user_id\x18\x01 \x01(\tR\n" +
 	"hostUserId\x12*\n" +
@@ -2682,7 +2720,7 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x05event\x18\x01 \x01(\v2\x1f.friendlyfire.room.v1.RoomEventR\x05event\".\n" +
 	"\x13RemovePlayerRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x16\n" +
-	"\x14RemovePlayerResponse*\xcb\x01\n" +
+	"\x14RemovePlayerResponse*\xe5\x01\n" +
 	"\tRoomPhase\x12\x1a\n" +
 	"\x16ROOM_PHASE_UNSPECIFIED\x10\x00\x12\x14\n" +
 	"\x10ROOM_PHASE_LOBBY\x10\x01\x12\x17\n" +
@@ -2691,12 +2729,14 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x11ROOM_PHASE_REVEAL\x10\x04\x12\x13\n" +
 	"\x0fROOM_PHASE_VOTE\x10\x05\x12\x17\n" +
 	"\x13ROOM_PHASE_FINISHED\x10\x06\x12\x15\n" +
-	"\x11ROOM_PHASE_PAUSED\x10\a*\x89\x01\n" +
+	"\x11ROOM_PHASE_PAUSED\x10\a\x12\x18\n" +
+	"\x14ROOM_PHASE_PREPARING\x10\b*\xa7\x01\n" +
 	"\fPlayerStatus\x12\x1d\n" +
 	"\x19PLAYER_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17PLAYER_STATUS_CONNECTED\x10\x01\x12\x1e\n" +
 	"\x1aPLAYER_STATUS_DISCONNECTED\x10\x02\x12\x1d\n" +
-	"\x19PLAYER_STATUS_SITTING_OUT\x10\x03*\x8e\x01\n" +
+	"\x19PLAYER_STATUS_SITTING_OUT\x10\x03\x12\x1c\n" +
+	"\x18PLAYER_STATUS_SPECTATING\x10\x04*\x8e\x01\n" +
 	"\x11ConnectionQuality\x12\"\n" +
 	"\x1eCONNECTION_QUALITY_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17CONNECTION_QUALITY_GOOD\x10\x01\x12\x1b\n" +
@@ -2714,7 +2754,7 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x17VOTE_OPTION_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11VOTE_OPTION_PAUSE\x10\x01\x12'\n" +
 	"#VOTE_OPTION_CONTINUE_WITHOUT_PLAYER\x10\x02\x12\x18\n" +
-	"\x14VOTE_OPTION_END_QUIZ\x10\x03*\x83\x06\n" +
+	"\x14VOTE_OPTION_END_QUIZ\x10\x03*\xce\x06\n" +
 	"\rRoomEventType\x12\x1f\n" +
 	"\x1bROOM_EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18ROOM_EVENT_TYPE_SNAPSHOT\x10\x01\x12!\n" +
@@ -2737,7 +2777,9 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x1dROOM_EVENT_TYPE_QUIZ_FINISHED\x10\x11\x12\x1f\n" +
 	"\x1bROOM_EVENT_TYPE_ROOM_CLOSED\x10\x12\x12\x1d\n" +
 	"\x19ROOM_EVENT_TYPE_VOTE_CAST\x10\x13\x12\x1f\n" +
-	"\x1bROOM_EVENT_TYPE_QUIZ_PAUSED\x10\x142\xe3\n" +
+	"\x1bROOM_EVENT_TYPE_QUIZ_PAUSED\x10\x14\x12\"\n" +
+	"\x1eROOM_EVENT_TYPE_QUIZ_PREPARING\x10\x15\x12%\n" +
+	"!ROOM_EVENT_TYPE_QUIZ_START_FAILED\x10\x162\xe3\n" +
 	"\n" +
 	"\vRoomService\x12_\n" +
 	"\n" +

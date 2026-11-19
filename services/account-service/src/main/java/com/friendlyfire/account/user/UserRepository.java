@@ -2,6 +2,8 @@ package com.friendlyfire.account.user;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.RowMapper;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRepository {
 
-    private static final String USER_COLUMNS = "user_id, auth_subject, email, display_name, created_at";
+    private static final String USER_COLUMNS = "user_id, auth_subject, email, display_name, created_at, onboarded_at";
 
     private static final RowMapper<AccountUser> USER_ROW_MAPPER = UserRepository::mapUser;
 
@@ -84,6 +86,20 @@ public class UserRepository {
                 .optional();
     }
 
+    /** Marks the tutorial as done at {@code at}, keeping an earlier time if it's already set. */
+    public Optional<AccountUser> finishOnboarding(UUID userId, Instant at) {
+        return jdbcClient.sql("""
+                        UPDATE account.users
+                        SET onboarded_at = COALESCE(onboarded_at, :at)
+                        WHERE user_id = :userId
+                        RETURNING %s
+                        """.formatted(USER_COLUMNS))
+                .param("userId", userId)
+                .param("at", Timestamp.from(at))
+                .query(USER_ROW_MAPPER)
+                .optional();
+    }
+
     public boolean delete(UUID userId) {
         return jdbcClient.sql("DELETE FROM account.users WHERE user_id = :userId")
                         .param("userId", userId)
@@ -97,6 +113,11 @@ public class UserRepository {
                 resultSet.getString("auth_subject"),
                 resultSet.getString("email"),
                 resultSet.getString("display_name"),
-                resultSet.getTimestamp("created_at").toInstant());
+                resultSet.getTimestamp("created_at").toInstant(),
+                instantOrNull(resultSet.getTimestamp("onboarded_at")));
+    }
+
+    private static Instant instantOrNull(Timestamp timestamp) {
+        return timestamp == null ? null : timestamp.toInstant();
     }
 }

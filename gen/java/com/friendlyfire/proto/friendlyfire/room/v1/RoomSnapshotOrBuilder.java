@@ -172,7 +172,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -182,7 +184,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -192,7 +196,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>

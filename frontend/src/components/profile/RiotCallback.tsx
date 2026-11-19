@@ -13,7 +13,8 @@ import { ApiError } from "@/lib/api";
 /**
  * /link/riot/callback (ADR-007): Riot Sign-On (or the mock) sends the browser here with
  * ?code=&state=. A browser redirect carries no sign-in token, so this page sends them
- * to the Gateway itself, then goes to Profile. If the player pressed Deny, Riot sends
+ * to the Gateway itself, then goes to Profile, or back to the tutorial (/welcome) while
+ * the player hasn't finished it. If the player pressed Deny, Riot sends
  * ?error=access_denied and nothing is sent to the Gateway.
  */
 export function RiotCallback() {
@@ -21,7 +22,7 @@ export function RiotCallback() {
   const router = useRouter();
   const api = useApi();
   const session = useSession();
-  const { reload } = useMe();
+  const { me, status: meStatus, reload } = useMe();
   const started = useRef(false);
   const [slow, setSlow] = useState(false);
 
@@ -35,28 +36,31 @@ export function RiotCallback() {
   const state = params.get("state");
   const riotError = params.get("error");
 
+  // Wait for the account, to know whether the player is still in the tutorial.
+  const meKnown = meStatus === "ready" || meStatus === "error";
   useEffect(() => {
-    if (started.current || session.status !== "signedIn") return;
+    if (started.current || session.status !== "signedIn" || !meKnown) return;
     started.current = true;
+    const back = me && !me.onboardedAt ? "/welcome" : "/profile";
     if (riotError) {
-      router.replace(`/profile?error=${encodeURIComponent(riotError)}`);
+      router.replace(`${back}?error=${encodeURIComponent(riotError)}`);
       return;
     }
     if (!code || !state) {
-      router.replace("/profile?error=INVALID_ARGUMENT");
+      router.replace(`${back}?error=INVALID_ARGUMENT`);
       return;
     }
     api.completeRiotLink(code, state, { quiet: true }).then(
       () => {
         reload();
-        router.replace("/profile?linked=1");
+        router.replace(`${back}?linked=1`);
       },
       (e: unknown) => {
         const errorCode = e instanceof ApiError ? e.code : "UNKNOWN";
-        router.replace(`/profile?error=${encodeURIComponent(errorCode)}`);
+        router.replace(`${back}?error=${encodeURIComponent(errorCode)}`);
       },
     );
-  }, [session.status, riotError, code, state, api, reload, router]);
+  }, [session.status, meKnown, me, riotError, code, state, api, reload, router]);
 
   if (session.status === "signedOut") {
     return (
