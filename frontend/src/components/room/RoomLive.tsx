@@ -21,7 +21,7 @@ import { RoomMessage } from "@/components/room/RoomMessages";
 import { PausedScreen, VoteScreen } from "@/components/room/VoteScreens";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Spinner } from "@/components/ui/States";
-import { CHAT_KEEP, chatLinesFor, type ChatLine } from "@/lib/chat";
+import { CHAT_KEEP, chatLinesFor, type ChatLine, withHistory } from "@/lib/chat";
 import { useToast } from "@/components/ui/Toasts";
 import type { RealtimeError, RoomEvent, RoomSnapshot } from "@/lib/api-types";
 import { msUntil } from "@/lib/clock";
@@ -123,7 +123,8 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
   const onEffects = useEventEffects(meId);
   const myExpression = useFavouriteLook().expression;
 
-  // Room chat: what people said and what happened, newest last (planned for the server).
+  // Room chat: what people said and what happened, newest last. The room's kept messages
+  // load once on open and again after a rejoin (FF-315).
   const [chat, setChat] = useState<ChatLine[]>(() => [firstLine(initial, meId)]);
   const nextLine = useRef(1);
   const phone = usePhone();
@@ -161,10 +162,24 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
     [toast],
   );
 
+  const loadChat = useCallback(
+    (where: "before" | "after") => {
+      api.getChat(code, { quiet: true }).then(
+        (history) => setChat((all) => withHistory(all, history.messages, () => `c${nextLine.current++}`, where)),
+        () => {},
+      );
+    },
+    [api, code],
+  );
+  useEffect(() => {
+    loadChat("before");
+  }, [loadChat]);
+
   // Back after a dropped connection: rejoin over REST, then the new snapshot takes over (FF-309).
   const onReconnected = useCallback(() => {
     api.joinRoom(code, { quiet: true }).then(setBase, () => {});
-  }, [api, code]);
+    loadChat("after");
+  }, [api, code, loadChat]);
 
   const socket = useRoomSocket(code, { enabled: !left, transport, initialSnapshot: base, onEvent, onError, onReconnected });
   const snapshot = socket.snapshot ?? base;

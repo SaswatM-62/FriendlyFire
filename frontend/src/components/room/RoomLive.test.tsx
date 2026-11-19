@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiProvider } from "@/components/providers/ApiProvider";
 import { SoundProvider } from "@/components/providers/SoundProvider";
@@ -7,6 +8,7 @@ import { ToastProvider } from "@/components/ui/Toasts";
 import type { RoomTransportFactory } from "@/lib/realtime";
 import { FAKE_PLAYERS, ME_ID } from "@/mocks/data";
 import { FAKE_TIMING, FakeRoom, fakePlayer } from "@/mocks/fakeRoom";
+import { server } from "@/test/server";
 
 const p = FAKE_PLAYERS;
 let transport: RoomTransportFactory | null = null;
@@ -25,7 +27,11 @@ function hostedRoom() {
 }
 
 describe("RoomLive", () => {
-  beforeEach(() => vi.useFakeTimers());
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // No chat yet when the room opens.
+    server.use(http.get("*/api/rooms/:code/chat", () => HttpResponse.json({ messages: [] })));
+  });
   afterEach(() => {
     vi.useRealTimers();
     transport = null;
@@ -101,5 +107,33 @@ describe("RoomLive", () => {
     expect(screen.getByRole("alert")).toHaveTextContent("The quiz couldn't start. Not enough matches for 15 questions. Try 10.");
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Dismiss" })));
     expect(screen.queryByText(/couldn't start/)).not.toBeInTheDocument();
+  });
+
+  it("loads the room's chat so far when it opens", async () => {
+    const room = hostedRoom();
+    transport = (_code, handlers) => room.connect(handlers);
+    const history = {
+      messages: [{ messageId: "m-old", userId: "gone-user", displayName: "Riley", text: "brb, grabbing food", sentAt: "2026-11-19T18:00:00Z" }],
+    };
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL) =>
+      String(input).endsWith("/api/rooms/TEST22/chat")
+        ? new Response(JSON.stringify(history), { status: 200, headers: { "Content-Type": "application/json" } })
+        : new Response(null, { status: 404 }),
+    );
+    render(
+      <ToastProvider>
+        <ApiProvider fetchImpl={fetchImpl as unknown as typeof fetch}>
+          <SoundProvider>
+            <RoomLive code="TEST22" meId={ME_ID} initial={room.snapshot} />
+          </SoundProvider>
+        </ApiProvider>
+      </ToastProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(300));
+
+    const chat = screen.getAllByRole("list", { name: "Chat messages" })[0];
+    // Riley has left the room, so the name comes from the message.
+    expect(within(chat).getByText("brb, grabbing food")).toBeInTheDocument();
+    expect(within(chat).getByText("Riley")).toBeInTheDocument();
   });
 });

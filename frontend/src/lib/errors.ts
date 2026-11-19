@@ -17,7 +17,6 @@ export const ERROR_CODES = {
   accountDeleted: "ACCOUNT_DELETED",
   roomNotFound: "ROOM_NOT_FOUND",
   roomFull: "ROOM_FULL",
-  quizAlreadyStarted: "QUIZ_ALREADY_STARTED",
   notInRoom: "NOT_IN_ROOM",
   riotAlreadyLinked: "RIOT_ALREADY_LINKED",
   invalidLinkState: "INVALID_LINK_STATE",
@@ -29,7 +28,6 @@ const MESSAGES: Record<string, string> = {
   [ERROR_CODES.notImplemented]: "That part of FriendlyFire isn't ready yet.",
   [ERROR_CODES.roomNotFound]: "Room not found. Check the code and try again.",
   [ERROR_CODES.roomFull]: "That room is full (8 players).",
-  [ERROR_CODES.quizAlreadyStarted]: "That quiz has already started. Ask them to play again after it ends.",
   [ERROR_CODES.riotAlreadyLinked]: "That Riot account is already linked to another FriendlyFire account.",
   [ERROR_CODES.invalidLinkState]: "That link request expired. Start linking again.",
 };
