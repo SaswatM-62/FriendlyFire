@@ -3,9 +3,7 @@ package com.friendlyfire.room.room;
 
 import java.util.random.RandomGenerator;
 
-import org.springframework.stereotype.Component;
-
-@Component
+/** Six-character room codes without look-alike characters (0/O, 1/I/L, 2/Z, 5/S). */
 public class RoomCodeGenerator {
 
     private static final String CHARACTERS = "ABCDEFGHJKMNPQRTUVWXY346789";

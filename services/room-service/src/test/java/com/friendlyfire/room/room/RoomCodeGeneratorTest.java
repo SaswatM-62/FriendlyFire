@@ -39,7 +39,7 @@ class RoomCodeGeneratorTest {
         String takenCode = firstGenerator.generateCode();
         String expectedNextCode = firstGenerator.generateCode();
 
-        repository.save(new Room(takenCode, "host", "Host"));
+        repository.save(new Room(takenCode, java.time.Instant.EPOCH));
 
         RoomCodeGenerator generator =
                 new RoomCodeGenerator(repository, new Random(42));
