@@ -236,6 +236,12 @@ def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value
         source = rows[0].match_id
         return _Value(numerator / denominator, numerator, denominator, tuple(evidence), source)
     values = [_stat(row, template.stat) for row in rows]
+    if template.skip_missing:
+        # Only max_in_match (_check): a match without the stat can't be the best one.
+        rows = [row for row, v in zip(rows, values, strict=True) if v is not None]
+        values = [v for v in values if v is not None]
+        if not rows:
+            return None
     known = [v for v in values if v is not None]
     if len(known) != len(values):
         return None
@@ -293,6 +299,8 @@ def _check(template: QuestionTemplate) -> None:
         problem = "pair needs a numbers.<key> stat and no parameter_label"
     if template.display_label and template.rule != "max_in_match":
         problem = "display_label only works with max_in_match"
+    if template.skip_missing and template.rule != "max_in_match":
+        problem = "skip_missing only works with max_in_match"
     if template.last_n is not None and template.last_n < 1:
         problem = "last_n must be at least 1"
     if not template.scopes:

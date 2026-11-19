@@ -92,6 +92,8 @@ services:
     volumes:
       - ./services/quiz-engine-service:/workspace/services/quiz-engine-service
       - ./gen/python:/workspace/gen/python
+      # The template tests check stat keys against docs/stats-catalogue.md.
+      - ./docs:/workspace/docs:ro
     healthcheck:
       <<: *healthcheck
       test: ["CMD", "grpc_health_probe", "-addr=:9093"]
