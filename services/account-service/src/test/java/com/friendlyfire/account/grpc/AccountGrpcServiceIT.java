@@ -16,6 +16,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.DataStatus;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
@@ -465,7 +466,58 @@ class AccountGrpcServiceIT {
         assertStatus(() -> accounts.completeRiotLink(complete(user, "code-1", state)), Status.Code.INVALID_ARGUMENT);
     }
 
+    // ---------- FinishOnboarding ----------
+
+    @Test
+    void aNewUserHasNotFinishedTheTutorial() {
+        User user = newUser("Sam");
+
+        assertThat(user.hasOnboardedAt()).isFalse();
+        assertThat(accounts.getUser(GetUserRequest.newBuilder().setUserId(user.getUserId()).build())
+                        .getUser()
+                        .hasOnboardedAt())
+                .isFalse();
+    }
+
+    @Test
+    void finishingTheTutorialKeepsTheFirstTime() {
+        User user = newUser("Sam");
+
+        User finished = accounts.finishOnboarding(finish(user)).getUser();
+        clock.advance(Duration.ofHours(1));
+        User again = accounts.finishOnboarding(finish(user)).getUser();
+
+        assertThat(finished.getOnboardedAt().getSeconds()).isEqualTo(FakesConfig.NOW.getEpochSecond());
+        assertThat(again.getOnboardedAt()).isEqualTo(finished.getOnboardedAt());
+        assertThat(accounts.getUser(GetUserRequest.newBuilder().setUserId(user.getUserId()).build())
+                        .getUser()
+                        .getOnboardedAt())
+                .isEqualTo(finished.getOnboardedAt());
+    }
+
+    @Test
+    void finishingTheTutorialKeepsTheRiotLink() {
+        User user = linkedUser("Sam", "puuid-1");
+
+        User finished = accounts.finishOnboarding(finish(user)).getUser();
+
+        assertThat(finished.getRiotLink().getGameName()).isEqualTo("Sam");
+    }
+
+    @Test
+    void finishingTheTutorialForAnUnknownUserIsNotFound() {
+        assertStatus(
+                () -> accounts.finishOnboarding(FinishOnboardingRequest.newBuilder()
+                        .setUserId(UUID.randomUUID().toString())
+                        .build()),
+                Status.Code.NOT_FOUND);
+    }
+
     // ---------- Helpers ----------
+
+    private static FinishOnboardingRequest finish(User user) {
+        return FinishOnboardingRequest.newBuilder().setUserId(user.getUserId()).build();
+    }
 
     private User newUser(String name) {
         return accounts.ensureUser(EnsureUserRequest.newBuilder()

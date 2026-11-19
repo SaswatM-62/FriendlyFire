@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -58,6 +59,14 @@ class AccountGrpcServiceTest {
                     .isThrownBy(() -> accounts.getUser(GetUserRequest.newBuilder().setUserId(userId).build()))
                     .satisfies(e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND));
         }
+    }
+
+    @Test
+    void finishingTheTutorialWithAnIdThatIsNotAUuidIsNotFound() {
+        assertThatExceptionOfType(StatusRuntimeException.class)
+                .isThrownBy(() -> accounts.finishOnboarding(
+                        FinishOnboardingRequest.newBuilder().setUserId("not-a-uuid").build()))
+                .satisfies(e -> assertThat(e.getStatus().getCode()).isEqualTo(Status.Code.NOT_FOUND));
     }
 
     @Test

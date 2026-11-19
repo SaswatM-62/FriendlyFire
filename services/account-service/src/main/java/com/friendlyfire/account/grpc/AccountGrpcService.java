@@ -17,6 +17,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
@@ -33,6 +35,7 @@ import com.google.protobuf.Timestamp;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +59,7 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
     private final RiotLinkService riotLinking;
     private final DataStatusService dataStatus;
     private final AccountDeletion deletion;
+    private final Clock clock;
 
     public AccountGrpcService(
             UserRepository users,
@@ -63,13 +67,15 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
             RiotLinkRepository riotLinks,
             RiotLinkService riotLinking,
             DataStatusService dataStatus,
-            AccountDeletion deletion) {
+            AccountDeletion deletion,
+            Clock clock) {
         this.users = users;
         this.newUserNames = newUserNames;
         this.riotLinks = riotLinks;
         this.riotLinking = riotLinking;
         this.dataStatus = dataStatus;
         this.deletion = deletion;
+        this.clock = clock;
     }
 
     @Override
@@ -160,6 +166,19 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
                 .build());
     }
 
+    @Override
+    public void finishOnboarding(
+            FinishOnboardingRequest request, StreamObserver<FinishOnboardingResponse> responseObserver) {
+        respond(responseObserver, () -> {
+            AccountUser user = userId(request.getUserId())
+                    .flatMap(id -> users.finishOnboarding(id, clock.instant()))
+                    .orElseThrow(AccountGrpcService::notFound);
+            return FinishOnboardingResponse.newBuilder()
+                    .setUser(toProto(user, riotLinks.findByUserId(user.userId())))
+                    .build();
+        });
+    }
+
     /**
      * Answers with the response, or with the gRPC status it throws. Anything else (a
      * database failure) goes to the exception handlers.
@@ -205,6 +224,9 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
                 .setEmail(user.email())
                 .setDisplayName(user.displayName())
                 .setCreatedAt(timestamp(user.createdAt()));
+        if (user.onboardedAt() != null) {
+            builder.setOnboardedAt(timestamp(user.onboardedAt()));
+        }
         riotLink.ifPresent(link -> builder.setRiotLink(toProto(link)));
         return builder.build();
     }
