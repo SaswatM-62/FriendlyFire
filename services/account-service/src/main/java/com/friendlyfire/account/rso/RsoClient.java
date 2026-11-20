@@ -9,8 +9,12 @@ package com.friendlyfire.account.rso;
  */
 public interface RsoClient {
 
-    /** Where to send the browser to sign in to Riot, carrying the one-time state. */
-    String authorizeUrl(String state, String redirectUri);
+    /**
+     * Where to send the browser to sign in to Riot, carrying the one-time state.
+     * {@code email} is the FriendlyFire account's email: the mock checks it against the
+     * test player's (login_hint); the real Riot Sign-On never gets it.
+     */
+    String authorizeUrl(String state, String redirectUri, String email);
 
     /**
      * Swaps a code from the authorize step for the player's Riot account. The access

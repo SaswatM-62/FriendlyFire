@@ -56,6 +56,8 @@ const (
 	RoomService_GetRoomSnapshot_FullMethodName         = "/friendlyfire.room.v1.RoomService/GetRoomSnapshot"
 	RoomService_StreamRoomEvents_FullMethodName        = "/friendlyfire.room.v1.RoomService/StreamRoomEvents"
 	RoomService_RemovePlayer_FullMethodName            = "/friendlyfire.room.v1.RoomService/RemovePlayer"
+	RoomService_SendChatMessage_FullMethodName         = "/friendlyfire.room.v1.RoomService/SendChatMessage"
+	RoomService_GetChatHistory_FullMethodName          = "/friendlyfire.room.v1.RoomService/GetChatHistory"
 )
 
 // RoomServiceClient is the client API for RoomService service.
@@ -68,6 +70,8 @@ type RoomServiceClient interface {
 	// refresh or dropped connection), marks them connected again instead.
 	// Someone new who joins while a quiz is preparing or running joins as a
 	// spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+	// A user is in one room at a time: joining another room takes them out of
+	// the one they were in first, like LeaveRoom.
 	// Errors:
 	//
 	//	RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
@@ -75,9 +79,11 @@ type RoomServiceClient interface {
 	// The user leaves for good. If the host leaves, the player who joined
 	// next becomes host. The room closes when the last player leaves.
 	LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*LeaveRoomResponse, error)
-	// Host only. Removes another player. Only allowed in the lobby.
+	// Host only. Removes another player. Only allowed in the lobby, or after a
+	// quiz finishes (ROOM_PHASE_FINISHED, before playing again).
 	KickPlayer(ctx context.Context, in *KickPlayerRequest, opts ...grpc.CallOption) (*KickPlayerResponse, error)
-	// Host only. Only allowed in the lobby.
+	// Host only. Only allowed in the lobby, or after a quiz finishes
+	// (ROOM_PHASE_FINISHED, before playing again).
 	// INVALID_ARGUMENT if a value is outside the allowed range.
 	UpdateSettings(ctx context.Context, in *UpdateSettingsRequest, opts ...grpc.CallOption) (*UpdateSettingsResponse, error)
 	// Host only. Allowed in the lobby, or after a quiz finishes to play again.
@@ -131,6 +137,14 @@ type RoomServiceClient interface {
 	// (the host role moves on, an empty room closes). Not an error if they
 	// aren't in a room.
 	RemovePlayer(ctx context.Context, in *RemovePlayerRequest, opts ...grpc.CallOption) (*RemovePlayerResponse, error)
+	// A chat message from someone in the room (spectators too), in any phase.
+	// The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+	// otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+	// The room keeps its last 200 messages until it closes.
+	SendChatMessage(ctx context.Context, in *SendChatMessageRequest, opts ...grpc.CallOption) (*SendChatMessageResponse, error)
+	// The room's kept messages, oldest first, for a browser that just opened
+	// or rejoined the room.
+	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryResponse, error)
 }
 
 type roomServiceClient struct {
@@ -280,6 +294,26 @@ func (c *roomServiceClient) RemovePlayer(ctx context.Context, in *RemovePlayerRe
 	return out, nil
 }
 
+func (c *roomServiceClient) SendChatMessage(ctx context.Context, in *SendChatMessageRequest, opts ...grpc.CallOption) (*SendChatMessageResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SendChatMessageResponse)
+	err := c.cc.Invoke(ctx, RoomService_SendChatMessage_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomServiceClient) GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetChatHistoryResponse)
+	err := c.cc.Invoke(ctx, RoomService_GetChatHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RoomServiceServer is the server API for RoomService service.
 // All implementations must embed UnimplementedRoomServiceServer
 // for forward compatibility.
@@ -290,6 +324,8 @@ type RoomServiceServer interface {
 	// refresh or dropped connection), marks them connected again instead.
 	// Someone new who joins while a quiz is preparing or running joins as a
 	// spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+	// A user is in one room at a time: joining another room takes them out of
+	// the one they were in first, like LeaveRoom.
 	// Errors:
 	//
 	//	RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
@@ -297,9 +333,11 @@ type RoomServiceServer interface {
 	// The user leaves for good. If the host leaves, the player who joined
 	// next becomes host. The room closes when the last player leaves.
 	LeaveRoom(context.Context, *LeaveRoomRequest) (*LeaveRoomResponse, error)
-	// Host only. Removes another player. Only allowed in the lobby.
+	// Host only. Removes another player. Only allowed in the lobby, or after a
+	// quiz finishes (ROOM_PHASE_FINISHED, before playing again).
 	KickPlayer(context.Context, *KickPlayerRequest) (*KickPlayerResponse, error)
-	// Host only. Only allowed in the lobby.
+	// Host only. Only allowed in the lobby, or after a quiz finishes
+	// (ROOM_PHASE_FINISHED, before playing again).
 	// INVALID_ARGUMENT if a value is outside the allowed range.
 	UpdateSettings(context.Context, *UpdateSettingsRequest) (*UpdateSettingsResponse, error)
 	// Host only. Allowed in the lobby, or after a quiz finishes to play again.
@@ -353,6 +391,14 @@ type RoomServiceServer interface {
 	// (the host role moves on, an empty room closes). Not an error if they
 	// aren't in a room.
 	RemovePlayer(context.Context, *RemovePlayerRequest) (*RemovePlayerResponse, error)
+	// A chat message from someone in the room (spectators too), in any phase.
+	// The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+	// otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+	// The room keeps its last 200 messages until it closes.
+	SendChatMessage(context.Context, *SendChatMessageRequest) (*SendChatMessageResponse, error)
+	// The room's kept messages, oldest first, for a browser that just opened
+	// or rejoined the room.
+	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryResponse, error)
 	mustEmbedUnimplementedRoomServiceServer()
 }
 
@@ -401,6 +447,12 @@ func (UnimplementedRoomServiceServer) StreamRoomEvents(*StreamRoomEventsRequest,
 }
 func (UnimplementedRoomServiceServer) RemovePlayer(context.Context, *RemovePlayerRequest) (*RemovePlayerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemovePlayer not implemented")
+}
+func (UnimplementedRoomServiceServer) SendChatMessage(context.Context, *SendChatMessageRequest) (*SendChatMessageResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendChatMessage not implemented")
+}
+func (UnimplementedRoomServiceServer) GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetChatHistory not implemented")
 }
 func (UnimplementedRoomServiceServer) mustEmbedUnimplementedRoomServiceServer() {}
 func (UnimplementedRoomServiceServer) testEmbeddedByValue()                     {}
@@ -650,6 +702,42 @@ func _RoomService_RemovePlayer_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoomService_SendChatMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendChatMessageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).SendChatMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RoomService_SendChatMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).SendChatMessage(ctx, req.(*SendChatMessageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomService_GetChatHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChatHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).GetChatHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RoomService_GetChatHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).GetChatHistory(ctx, req.(*GetChatHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RoomService_ServiceDesc is the grpc.ServiceDesc for RoomService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -704,6 +792,14 @@ var RoomService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemovePlayer",
 			Handler:    _RoomService_RemovePlayer_Handler,
+		},
+		{
+			MethodName: "SendChatMessage",
+			Handler:    _RoomService_SendChatMessage_Handler,
+		},
+		{
+			MethodName: "GetChatHistory",
+			Handler:    _RoomService_GetChatHistory_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

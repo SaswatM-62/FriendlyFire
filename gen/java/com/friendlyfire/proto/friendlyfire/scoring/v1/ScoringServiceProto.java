@@ -122,87 +122,91 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
     java.lang.String[] descriptorData = {
       "\n-friendlyfire/scoring/v1/scoring_servic" +
       "e.proto\022\027friendlyfire.scoring.v1\032\037google" +
-      "/protobuf/timestamp.proto\"\341\001\n\020StartQuizR" +
+      "/protobuf/timestamp.proto\"\215\002\n\020StartQuizR" +
       "equest\022\027\n\007quiz_id\030\001 \001(\tR\006quizId\022\033\n\troom_" +
       "code\030\002 \001(\tR\010roomCode\022B\n\007players\030\003 \003(\0132(." +
       "friendlyfire.scoring.v1.QuizParticipantR" +
       "\007players\022!\n\014total_rounds\030\004 \001(\005R\013totalRou" +
       "nds\0220\n\024seconds_per_question\030\005 \001(\005R\022secon" +
-      "dsPerQuestion\"M\n\017QuizParticipant\022\027\n\007user" +
-      "_id\030\001 \001(\tR\006userId\022!\n\014display_name\030\002 \001(\tR" +
-      "\013displayName\"\023\n\021StartQuizResponse\"\221\001\n\022Re" +
-      "cordRoundRequest\022\027\n\007quiz_id\030\001 \001(\tR\006quizI" +
-      "d\022!\n\014round_number\030\002 \001(\005R\013roundNumber\022?\n\007" +
-      "answers\030\003 \003(\0132%.friendlyfire.scoring.v1." +
-      "PlayerAnswerR\007answers\"\207\001\n\014PlayerAnswer\022\027" +
-      "\n\007user_id\030\001 \001(\tR\006userId\022\032\n\010answered\030\002 \001(" +
-      "\010R\010answered\022\030\n\007correct\030\003 \001(\010R\007correct\022(\n" +
-      "\020response_time_ms\030\004 \001(\005R\016responseTimeMs\"" +
-      "\250\001\n\023RecordRoundResponse\022G\n\014round_points\030" +
-      "\001 \003(\0132$.friendlyfire.scoring.v1.RoundPoi" +
-      "ntsR\013roundPoints\022H\n\nscoreboard\030\002 \003(\0132(.f" +
-      "riendlyfire.scoring.v1.ScoreboardEntryR\n" +
-      "scoreboard\">\n\013RoundPoints\022\027\n\007user_id\030\001 \001" +
-      "(\tR\006userId\022\026\n\006points\030\002 \001(\005R\006points\"\255\001\n\017S" +
-      "coreboardEntry\022\027\n\007user_id\030\001 \001(\tR\006userId\022" +
-      "!\n\014display_name\030\002 \001(\tR\013displayName\022!\n\014to" +
-      "tal_points\030\003 \001(\005R\013totalPoints\022\'\n\017correct" +
-      "_answers\030\004 \001(\005R\016correctAnswers\022\022\n\004rank\030\005" +
-      " \001(\005R\004rank\"\226\001\n\023FinalizeQuizRequest\022\027\n\007qu" +
-      "iz_id\030\001 \001(\tR\006quizId\022#\n\rrounds_played\030\002 \001" +
-      "(\005R\014roundsPlayed\022A\n\nend_reason\030\003 \001(\0162\".f" +
-      "riendlyfire.scoring.v1.EndReasonR\tendRea" +
-      "son\"V\n\024FinalizeQuizResponse\022>\n\007summary\030\001" +
-      " \001(\0132$.friendlyfire.scoring.v1.QuizSumma" +
-      "ryR\007summary\"\376\002\n\013QuizSummary\022\027\n\007quiz_id\030\001" +
-      " \001(\tR\006quizId\0229\n\nstarted_at\030\002 \001(\0132\032.googl" +
-      "e.protobuf.TimestampR\tstartedAt\022;\n\013finis" +
-      "hed_at\030\003 \001(\0132\032.google.protobuf.Timestamp" +
-      "R\nfinishedAt\022!\n\014total_rounds\030\004 \001(\005R\013tota" +
-      "lRounds\022#\n\rrounds_played\030\005 \001(\005R\014roundsPl" +
-      "ayed\022A\n\nend_reason\030\006 \001(\0162\".friendlyfire." +
-      "scoring.v1.EndReasonR\tendReason\022S\n\020final" +
-      "_scoreboard\030\007 \003(\0132(.friendlyfire.scoring" +
-      ".v1.ScoreboardEntryR\017finalScoreboard\"/\n\024" +
-      "GetQuizResultRequest\022\027\n\007quiz_id\030\001 \001(\tR\006q" +
-      "uizId\"W\n\025GetQuizResultResponse\022>\n\007summar" +
-      "y\030\001 \001(\0132$.friendlyfire.scoring.v1.QuizSu" +
-      "mmaryR\007summary\"n\n\027GetPlayerHistoryReques" +
-      "t\022\027\n\007user_id\030\001 \001(\tR\006userId\022\033\n\tpage_size\030" +
-      "\002 \001(\005R\010pageSize\022\035\n\npage_token\030\003 \001(\tR\tpag" +
-      "eToken\"\202\001\n\030GetPlayerHistoryResponse\022>\n\007q" +
-      "uizzes\030\001 \003(\0132$.friendlyfire.scoring.v1.Q" +
-      "uizSummaryR\007quizzes\022&\n\017next_page_token\030\002" +
-      " \001(\tR\rnextPageToken\"1\n\026AnonymizePlayerRe" +
-      "quest\022\027\n\007user_id\030\001 \001(\tR\006userId\"\031\n\027Anonym" +
-      "izePlayerResponse*\201\001\n\tEndReason\022\032\n\026END_R" +
-      "EASON_UNSPECIFIED\020\000\022\030\n\024END_REASON_COMPLE" +
-      "TED\020\001\022\033\n\027END_REASON_VOTED_TO_END\020\002\022!\n\035EN" +
-      "D_REASON_NOT_ENOUGH_PLAYERS\020\0032\252\005\n\016Scorin" +
-      "gService\022b\n\tStartQuiz\022).friendlyfire.sco" +
-      "ring.v1.StartQuizRequest\032*.friendlyfire." +
-      "scoring.v1.StartQuizResponse\022h\n\013RecordRo" +
-      "und\022+.friendlyfire.scoring.v1.RecordRoun" +
-      "dRequest\032,.friendlyfire.scoring.v1.Recor" +
-      "dRoundResponse\022k\n\014FinalizeQuiz\022,.friendl" +
-      "yfire.scoring.v1.FinalizeQuizRequest\032-.f" +
-      "riendlyfire.scoring.v1.FinalizeQuizRespo" +
-      "nse\022n\n\rGetQuizResult\022-.friendlyfire.scor" +
-      "ing.v1.GetQuizResultRequest\032..friendlyfi" +
-      "re.scoring.v1.GetQuizResultResponse\022w\n\020G" +
-      "etPlayerHistory\0220.friendlyfire.scoring.v" +
-      "1.GetPlayerHistoryRequest\0321.friendlyfire" +
-      ".scoring.v1.GetPlayerHistoryResponse\022t\n\017" +
-      "AnonymizePlayer\022/.friendlyfire.scoring.v" +
-      "1.AnonymizePlayerRequest\0320.friendlyfire." +
-      "scoring.v1.AnonymizePlayerResponseB\220\002\n.c" +
-      "om.friendlyfire.proto.friendlyfire.scori" +
-      "ng.v1B\023ScoringServiceProtoP\001ZKgithub.com" +
-      "/SaswatM-62/FriendlyFire/gen/go/friendly" +
-      "fire/scoring/v1;scoringv1\242\002\003FSX\252\002\027Friend" +
-      "lyfire.Scoring.V1\312\002\027Friendlyfire\\Scoring" +
-      "\\V1\342\002#Friendlyfire\\Scoring\\V1\\GPBMetadat" +
-      "a\352\002\031Friendlyfire::Scoring::V1b\006proto3"
+      "dsPerQuestion\022*\n\021host_display_name\030\006 \001(\t" +
+      "R\017hostDisplayName\"M\n\017QuizParticipant\022\027\n\007" +
+      "user_id\030\001 \001(\tR\006userId\022!\n\014display_name\030\002 " +
+      "\001(\tR\013displayName\"\023\n\021StartQuizResponse\"\221\001" +
+      "\n\022RecordRoundRequest\022\027\n\007quiz_id\030\001 \001(\tR\006q" +
+      "uizId\022!\n\014round_number\030\002 \001(\005R\013roundNumber" +
+      "\022?\n\007answers\030\003 \003(\0132%.friendlyfire.scoring" +
+      ".v1.PlayerAnswerR\007answers\"\207\001\n\014PlayerAnsw" +
+      "er\022\027\n\007user_id\030\001 \001(\tR\006userId\022\032\n\010answered\030" +
+      "\002 \001(\010R\010answered\022\030\n\007correct\030\003 \001(\010R\007correc" +
+      "t\022(\n\020response_time_ms\030\004 \001(\005R\016responseTim" +
+      "eMs\"\250\001\n\023RecordRoundResponse\022G\n\014round_poi" +
+      "nts\030\001 \003(\0132$.friendlyfire.scoring.v1.Roun" +
+      "dPointsR\013roundPoints\022H\n\nscoreboard\030\002 \003(\013" +
+      "2(.friendlyfire.scoring.v1.ScoreboardEnt" +
+      "ryR\nscoreboard\">\n\013RoundPoints\022\027\n\007user_id" +
+      "\030\001 \001(\tR\006userId\022\026\n\006points\030\002 \001(\005R\006points\"\255" +
+      "\001\n\017ScoreboardEntry\022\027\n\007user_id\030\001 \001(\tR\006use" +
+      "rId\022!\n\014display_name\030\002 \001(\tR\013displayName\022!" +
+      "\n\014total_points\030\003 \001(\005R\013totalPoints\022\'\n\017cor" +
+      "rect_answers\030\004 \001(\005R\016correctAnswers\022\022\n\004ra" +
+      "nk\030\005 \001(\005R\004rank\"\226\001\n\023FinalizeQuizRequest\022\027" +
+      "\n\007quiz_id\030\001 \001(\tR\006quizId\022#\n\rrounds_played" +
+      "\030\002 \001(\005R\014roundsPlayed\022A\n\nend_reason\030\003 \001(\016" +
+      "2\".friendlyfire.scoring.v1.EndReasonR\ten" +
+      "dReason\"V\n\024FinalizeQuizResponse\022>\n\007summa" +
+      "ry\030\001 \001(\0132$.friendlyfire.scoring.v1.QuizS" +
+      "ummaryR\007summary\"\334\003\n\013QuizSummary\022\027\n\007quiz_" +
+      "id\030\001 \001(\tR\006quizId\0229\n\nstarted_at\030\002 \001(\0132\032.g" +
+      "oogle.protobuf.TimestampR\tstartedAt\022;\n\013f" +
+      "inished_at\030\003 \001(\0132\032.google.protobuf.Times" +
+      "tampR\nfinishedAt\022!\n\014total_rounds\030\004 \001(\005R\013" +
+      "totalRounds\022#\n\rrounds_played\030\005 \001(\005R\014roun" +
+      "dsPlayed\022A\n\nend_reason\030\006 \001(\0162\".friendlyf" +
+      "ire.scoring.v1.EndReasonR\tendReason\022S\n\020f" +
+      "inal_scoreboard\030\007 \003(\0132(.friendlyfire.sco" +
+      "ring.v1.ScoreboardEntryR\017finalScoreboard" +
+      "\022*\n\021host_display_name\030\010 \001(\tR\017hostDisplay" +
+      "Name\0220\n\024seconds_per_question\030\t \001(\005R\022seco" +
+      "ndsPerQuestion\"/\n\024GetQuizResultRequest\022\027" +
+      "\n\007quiz_id\030\001 \001(\tR\006quizId\"W\n\025GetQuizResult" +
+      "Response\022>\n\007summary\030\001 \001(\0132$.friendlyfire" +
+      ".scoring.v1.QuizSummaryR\007summary\"n\n\027GetP" +
+      "layerHistoryRequest\022\027\n\007user_id\030\001 \001(\tR\006us" +
+      "erId\022\033\n\tpage_size\030\002 \001(\005R\010pageSize\022\035\n\npag" +
+      "e_token\030\003 \001(\tR\tpageToken\"\202\001\n\030GetPlayerHi" +
+      "storyResponse\022>\n\007quizzes\030\001 \003(\0132$.friendl" +
+      "yfire.scoring.v1.QuizSummaryR\007quizzes\022&\n" +
+      "\017next_page_token\030\002 \001(\tR\rnextPageToken\"1\n" +
+      "\026AnonymizePlayerRequest\022\027\n\007user_id\030\001 \001(\t" +
+      "R\006userId\"\031\n\027AnonymizePlayerResponse*\201\001\n\t" +
+      "EndReason\022\032\n\026END_REASON_UNSPECIFIED\020\000\022\030\n" +
+      "\024END_REASON_COMPLETED\020\001\022\033\n\027END_REASON_VO" +
+      "TED_TO_END\020\002\022!\n\035END_REASON_NOT_ENOUGH_PL" +
+      "AYERS\020\0032\252\005\n\016ScoringService\022b\n\tStartQuiz\022" +
+      ").friendlyfire.scoring.v1.StartQuizReque" +
+      "st\032*.friendlyfire.scoring.v1.StartQuizRe" +
+      "sponse\022h\n\013RecordRound\022+.friendlyfire.sco" +
+      "ring.v1.RecordRoundRequest\032,.friendlyfir" +
+      "e.scoring.v1.RecordRoundResponse\022k\n\014Fina" +
+      "lizeQuiz\022,.friendlyfire.scoring.v1.Final" +
+      "izeQuizRequest\032-.friendlyfire.scoring.v1" +
+      ".FinalizeQuizResponse\022n\n\rGetQuizResult\022-" +
+      ".friendlyfire.scoring.v1.GetQuizResultRe" +
+      "quest\032..friendlyfire.scoring.v1.GetQuizR" +
+      "esultResponse\022w\n\020GetPlayerHistory\0220.frie" +
+      "ndlyfire.scoring.v1.GetPlayerHistoryRequ" +
+      "est\0321.friendlyfire.scoring.v1.GetPlayerH" +
+      "istoryResponse\022t\n\017AnonymizePlayer\022/.frie" +
+      "ndlyfire.scoring.v1.AnonymizePlayerReque" +
+      "st\0320.friendlyfire.scoring.v1.AnonymizePl" +
+      "ayerResponseB\220\002\n.com.friendlyfire.proto." +
+      "friendlyfire.scoring.v1B\023ScoringServiceP" +
+      "rotoP\001ZKgithub.com/SaswatM-62/FriendlyFi" +
+      "re/gen/go/friendlyfire/scoring/v1;scorin" +
+      "gv1\242\002\003FSX\252\002\027Friendlyfire.Scoring.V1\312\002\027Fr" +
+      "iendlyfire\\Scoring\\V1\342\002#Friendlyfire\\Sco" +
+      "ring\\V1\\GPBMetadata\352\002\031Friendlyfire::Scor" +
+      "ing::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -214,7 +218,7 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
     internal_static_friendlyfire_scoring_v1_StartQuizRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_scoring_v1_StartQuizRequest_descriptor,
-        new java.lang.String[] { "QuizId", "RoomCode", "Players", "TotalRounds", "SecondsPerQuestion", });
+        new java.lang.String[] { "QuizId", "RoomCode", "Players", "TotalRounds", "SecondsPerQuestion", "HostDisplayName", });
     internal_static_friendlyfire_scoring_v1_QuizParticipant_descriptor =
       getDescriptor().getMessageType(1);
     internal_static_friendlyfire_scoring_v1_QuizParticipant_fieldAccessorTable = new
@@ -274,7 +278,7 @@ public final class ScoringServiceProto extends com.google.protobuf.GeneratedFile
     internal_static_friendlyfire_scoring_v1_QuizSummary_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_scoring_v1_QuizSummary_descriptor,
-        new java.lang.String[] { "QuizId", "StartedAt", "FinishedAt", "TotalRounds", "RoundsPlayed", "EndReason", "FinalScoreboard", });
+        new java.lang.String[] { "QuizId", "StartedAt", "FinishedAt", "TotalRounds", "RoundsPlayed", "EndReason", "FinalScoreboard", "HostDisplayName", "SecondsPerQuestion", });
     internal_static_friendlyfire_scoring_v1_GetQuizResultRequest_descriptor =
       getDescriptor().getMessageType(11);
     internal_static_friendlyfire_scoring_v1_GetQuizResultRequest_fieldAccessorTable = new

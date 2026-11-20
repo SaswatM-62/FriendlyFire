@@ -199,13 +199,25 @@ export class FakeRoom {
     return this.snapshot.players.filter((p) => p.status !== "SITTING_OUT" && p.status !== "SPECTATING");
   }
 
-  // ---------- room chat (planned) ----------
+  // ---------- room chat (FF-315) ----------
 
-  /** A chat message from someone in the room, to everyone. */
+  /** The room's kept messages, oldest first (GET /api/rooms/{code}/chat). */
+  readonly chatLog: ChatMessage[] = [];
+
+  /** A chat message from someone in the room, to everyone; the room keeps the last 200. */
   say(userId: string, text: string) {
-    if (!this.player(userId)) return;
+    const from = this.player(userId);
+    if (!from) return;
     this.chatCount += 1;
-    const chat: ChatMessage = { messageId: `m${this.chatCount}`, userId, text, sentAt: new Date().toISOString() };
+    const chat: ChatMessage = {
+      messageId: `m${this.chatCount}`,
+      userId,
+      displayName: from.displayName,
+      text,
+      sentAt: new Date().toISOString(),
+    };
+    this.chatLog.push(chat);
+    if (this.chatLog.length > 200) this.chatLog.shift();
     this.emit("CHAT_MESSAGE", userId, chat);
   }
 

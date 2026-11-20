@@ -1,5 +1,6 @@
 import type {
   ApiErrorBody,
+  ChatHistory,
   HistoryPage,
   LiveStats,
   Me,
@@ -127,6 +128,8 @@ export function createApiClient(options: ApiClientOptions) {
       request<RoomSnapshot>("POST", `/api/rooms/${encodeURIComponent(code)}/join`, opts),
     getRoom: (code: string, opts?: RequestOptions) =>
       request<RoomSnapshot>("GET", `/api/rooms/${encodeURIComponent(code)}`, opts),
+    getChat: (code: string, opts?: RequestOptions) =>
+      request<ChatHistory>("GET", `/api/rooms/${encodeURIComponent(code)}/chat`, opts),
 
     getHistory: (page: { pageSize?: number; pageToken?: string } = {}, opts?: RequestOptions) =>
       request<HistoryPage>("GET", "/api/history", { ...opts, query: page }),

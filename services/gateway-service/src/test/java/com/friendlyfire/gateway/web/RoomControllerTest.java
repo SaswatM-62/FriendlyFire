@@ -15,6 +15,7 @@ import com.friendlyfire.gateway.testsupport.TestNames;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.CreateRoomRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest;
 import io.grpc.Status;
@@ -102,7 +103,6 @@ class RoomControllerTest extends GatewayTestBase {
     void joinErrorsGetTheCodesTheFrontendKnows() throws Exception {
         expectJoinError(Status.NOT_FOUND, 404, "ROOM_NOT_FOUND");
         expectJoinError(Status.RESOURCE_EXHAUSTED, 409, "ROOM_FULL");
-        expectJoinError(Status.FAILED_PRECONDITION, 409, "QUIZ_ALREADY_STARTED");
     }
 
     @Test
@@ -113,6 +113,29 @@ class RoomControllerTest extends GatewayTestBase {
 
         GetRoomSnapshotRequest request = ROOM.calls.last(GetRoomSnapshotRequest.class);
         assertThat(request.getUserId()).isEqualTo("user-riley");
+    }
+
+    @Test
+    void chatHistoryForAMember() throws Exception {
+        mvc.perform(get("/api/rooms/P4CWRT/chat").header(HttpHeaders.AUTHORIZATION, bearer("riley")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.messages[0].messageId").value("msg-1"))
+                .andExpect(jsonPath("$.messages[0].displayName").value("Host"))
+                .andExpect(jsonPath("$.messages[0].text").value("hello"))
+                .andExpect(jsonPath("$.messages[0].sentAt").value("2025-11-09T14:53:20Z"));
+
+        GetChatHistoryRequest request = ROOM.calls.last(GetChatHistoryRequest.class);
+        assertThat(request.getRoomCode()).isEqualTo("P4CWRT");
+        assertThat(request.getUserId()).isEqualTo("user-riley");
+    }
+
+    @Test
+    void chatHistoryForSomeoneNotInTheRoomIs403NotInRoom() throws Exception {
+        ROOM.calls.fail(GetChatHistoryRequest.class, Status.PERMISSION_DENIED);
+
+        mvc.perform(get("/api/rooms/P4CWRT/chat").header(HttpHeaders.AUTHORIZATION, bearer("riley")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("NOT_IN_ROOM"));
     }
 
     @Test

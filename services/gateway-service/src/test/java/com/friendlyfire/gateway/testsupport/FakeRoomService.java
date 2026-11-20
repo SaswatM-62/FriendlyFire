@@ -1,6 +1,12 @@
 package com.friendlyfire.gateway.testsupport;
 
 import com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage;
+import com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse;
+import com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse;
+import com.google.protobuf.Timestamp;
 import com.friendlyfire.proto.friendlyfire.room.v1.CastVoteResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.CreateRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.CreateRoomResponse;
@@ -208,5 +214,26 @@ public final class FakeRoomService extends RoomServiceGrpc.RoomServiceImplBase {
     @Override
     public void removePlayer(RemovePlayerRequest request, StreamObserver<RemovePlayerResponse> observer) {
         calls.handle(request, RemovePlayerResponse.getDefaultInstance(), observer);
+    }
+
+    /** The chat message every fake room has, from the host. */
+    public static final ChatMessage HELLO = ChatMessage.newBuilder()
+            .setMessageId("msg-1")
+            .setUserId("user-host")
+            .setDisplayName("Host")
+            .setText("hello")
+            .setSentAt(Timestamp.newBuilder().setSeconds(1_762_700_000L))
+            .build();
+
+    @Override
+    public void sendChatMessage(SendChatMessageRequest request, StreamObserver<SendChatMessageResponse> observer) {
+        calls.handle(request, SendChatMessageResponse.newBuilder()
+                .setMessage(HELLO.toBuilder().setUserId(request.getUserId()).setText(request.getText()))
+                .build(), observer);
+    }
+
+    @Override
+    public void getChatHistory(GetChatHistoryRequest request, StreamObserver<GetChatHistoryResponse> observer) {
+        calls.handle(request, GetChatHistoryResponse.newBuilder().addMessages(HELLO).build(), observer);
     }
 }

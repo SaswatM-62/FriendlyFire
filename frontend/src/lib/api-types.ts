@@ -223,7 +223,7 @@ export interface Vote {
   endVotes: number;
   /** Who has voted so far (not what they voted). */
   votedUserIds: string[];
-  /** Planned (ADR-026): false once 3 minutes of pauses are used up. */
+  /** False once 3 minutes of pauses are used up (ADR-026). */
   pauseAllowed?: boolean;
 }
 
@@ -248,13 +248,13 @@ export interface RoomSnapshot {
   scoreboard: ScoreEntry[];
   /** During VOTE. */
   activeVote?: Vote;
-  /** Planned (ADR-026): during PAUSED, who the room is waiting for. */
+  /** During PAUSED, who the room is waiting for (ADR-026). */
   waitingForUserId?: string;
-  /** Planned (ADR-026): pause time left in this quiz (3 minutes in total). */
+  /** Pause time left in this quiz (3 minutes in total, ADR-026). */
   pauseSecondsLeft?: number;
-  /** Planned: set when FINISHED, so an early end can say why. */
+  /** Set when FINISHED, so an early end can say why. */
   endReason?: EndReason;
-  /** Planned: the quickest correct answer of the quiz, for the podium. */
+  /** Set when FINISHED: the quickest correct answer of the quiz, for the podium. */
   fastestAnswer?: { userId: string; seconds: number };
 }
 
@@ -278,26 +278,33 @@ export type RoomEventType =
   | "PLAYER_ANSWERED"
   | "QUESTION_REVEALED"
   | "VOTE_STARTED"
-  /** Planned: someone voted, so the counts changed (the Vote board shows live counts). */
+  /** Someone voted, so the counts changed (the Vote board shows live counts). */
   | "VOTE_CAST"
   | "VOTE_RESOLVED"
-  /** Planned (ADR-026). */
+  /** The room started a pause (ADR-026). */
   | "QUIZ_PAUSED"
   | "QUIZ_FINISHED"
   | "ROOM_CLOSED"
-  /** Planned (Calmer revamp, room chat): someone sent a chat message; it's in `chat`. */
+  /** Someone sent a chat message; it's in `chat`. */
   | "CHAT_MESSAGE";
 
 /**
- * Planned (Calmer revamp): one room chat message. Messages aren't in the snapshot: the
- * browser keeps the ones it saw since it joined (docs/realtime-messages.md, proposed).
+ * One room chat message (FF-315). The room keeps its last 200 until it closes:
+ * GET /api/rooms/{code}/chat on load and after a rejoin, then CHAT_MESSAGE events.
  */
 export interface ChatMessage {
   messageId: string;
   userId: string;
+  /** The name when it was sent, so it still shows after they leave; "Deleted player" after an account deletion. */
+  displayName?: string;
   /** 1 to 200 characters, trimmed by the server. */
   text: string;
   sentAt: string;
+}
+
+/** GET /api/rooms/{code}/chat: oldest first. */
+export interface ChatHistory {
+  messages: ChatMessage[];
 }
 
 /** Every message on /topic/room/{code}. Use `type` only for effects (toasts, sounds). */
@@ -310,7 +317,7 @@ export interface RoomEvent {
   snapshot: RoomSnapshot;
   /** A sentence safe to show everyone, when the event has one (QUIZ_START_FAILED). */
   message?: string;
-  /** Planned: the message, on CHAT_MESSAGE only. */
+  /** The message, on CHAT_MESSAGE only. */
   chat?: ChatMessage;
 }
 
@@ -324,7 +331,7 @@ export interface RoomActions {
   answer: { questionId: string; optionId: string };
   vote: { option: VoteOption };
   "connection-quality": { quality: ConnectionQuality };
-  /** Planned (Calmer revamp): send a room chat message. */
+  /** A room chat message (FF-315): open in every phase; 5 per 5 seconds. */
   chat: { text: string };
 }
 
@@ -367,9 +374,9 @@ export interface QuizSummary {
   roundsPlayed: number;
   endReason: EndReason;
   finalScoreboard: ScoreboardEntry[];
-  /** Planned: who hosted, for "Maya's room". Not in ScoringService yet. */
+  /** Who hosted, for "Maya's room". */
   hostDisplayName?: string;
-  /** Planned: shown on the detail page. Not in ScoringService yet. */
+  /** Shown on the detail page. */
   secondsPerQuestion?: number;
 }
 

@@ -23,6 +23,8 @@ public final class FakeScoringService extends ScoringServiceGrpc.ScoringServiceI
                 .setFinishedAt(Timestamp.newBuilder().setSeconds(1_762_700_300L))
                 .setTotalRounds(10)
                 .setRoundsPlayed(10)
+                .setHostDisplayName("Maya")
+                .setSecondsPerQuestion(20)
                 .setEndReason(EndReason.END_REASON_COMPLETED)
                 .addFinalScoreboard(ScoreboardEntry.newBuilder()
                         .setUserId("user-maya").setDisplayName("Maya").setTotalPoints(3180).setCorrectAnswers(6).setRank(1))

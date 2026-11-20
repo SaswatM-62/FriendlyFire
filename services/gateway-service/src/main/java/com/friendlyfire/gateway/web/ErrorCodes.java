@@ -18,7 +18,6 @@ public final class ErrorCodes {
     public static final String ACCOUNT_DELETED = "ACCOUNT_DELETED";
     public static final String ROOM_NOT_FOUND = "ROOM_NOT_FOUND";
     public static final String ROOM_FULL = "ROOM_FULL";
-    public static final String QUIZ_ALREADY_STARTED = "QUIZ_ALREADY_STARTED";
     public static final String NOT_IN_ROOM = "NOT_IN_ROOM";
     public static final String RIOT_ALREADY_LINKED = "RIOT_ALREADY_LINKED";
     public static final String INVALID_LINK_STATE = "INVALID_LINK_STATE";

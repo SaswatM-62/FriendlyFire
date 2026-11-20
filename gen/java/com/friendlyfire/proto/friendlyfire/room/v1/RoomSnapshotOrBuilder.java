@@ -305,4 +305,53 @@ public interface RoomSnapshotOrBuilder extends
    * @return The pauseSecondsLeft.
    */
   int getPauseSecondsLeft();
+
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The enum numeric value on the wire for endReason.
+   */
+  int getEndReasonValue();
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The endReason.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason();
+
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return Whether the fastestAnswer field is set.
+   */
+  boolean hasFastestAnswer();
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return The fastestAnswer.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer();
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder();
 }

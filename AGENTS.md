@@ -4,8 +4,9 @@ Instructions for AI coding agents working in this repo (Claude Code reads this f
 through `CLAUDE.md`, which only imports it).
 
 FriendlyFire: trivia built from friends' VALORANT matches. Polyglot microservices that
-talk gRPC, run locally with Docker Compose. Currently **stubs**: every RPC returns
-`UNIMPLEMENTED` except the health services. Planned work is tracked on the team's
+talk gRPC, run locally with Docker Compose. The Gateway, Account, Room, Scoring and the
+quiz engine are built; match-data-service is still a stub (its RPCs return
+`UNIMPLEMENTED`), so a real quiz can't be built yet. Planned work is tracked on the team's
 project board and marked in the code with `TODO(ff)` comments.
 
 The human-facing guide is `CONTRIBUTING.md`: setup, workflow, per-service coding

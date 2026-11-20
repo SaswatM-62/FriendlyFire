@@ -11,7 +11,9 @@ public enum RateLimit {
     JOIN_ROOM(new Allowance(30, Duration.ofMinutes(1)), new Allowance(80, Duration.ofMinutes(1))),
     START_RIOT_LINK(new Allowance(5, Duration.ofMinutes(1)), new Allowance(20, Duration.ofMinutes(1))),
     /** One answer per question, plus room for a few repeated taps. */
-    ANSWER(new Allowance(10, Duration.ofSeconds(10)), new Allowance(80, Duration.ofSeconds(10)));
+    ANSWER(new Allowance(10, Duration.ofSeconds(10)), new Allowance(80, Duration.ofSeconds(10))),
+    /** Room chat (FF-315): about 5 messages per 5 seconds per player. */
+    CHAT(new Allowance(5, Duration.ofSeconds(5)), new Allowance(40, Duration.ofSeconds(5)));
 
     private final Allowance perUser;
     private final Allowance perIp;

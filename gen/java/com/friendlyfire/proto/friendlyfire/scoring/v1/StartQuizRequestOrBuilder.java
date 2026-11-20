@@ -69,4 +69,24 @@ public interface StartQuizRequestOrBuilder extends
    * @return The secondsPerQuestion.
    */
   int getSecondsPerQuestion();
+
+  /**
+   * <pre>
+   * Saved for the history page ("Maya's room").
+   * </pre>
+   *
+   * <code>string host_display_name = 6 [json_name = "hostDisplayName"];</code>
+   * @return The hostDisplayName.
+   */
+  java.lang.String getHostDisplayName();
+  /**
+   * <pre>
+   * Saved for the history page ("Maya's room").
+   * </pre>
+   *
+   * <code>string host_display_name = 6 [json_name = "hostDisplayName"];</code>
+   * @return The bytes for hostDisplayName.
+   */
+  com.google.protobuf.ByteString
+      getHostDisplayNameBytes();
 }

@@ -59,6 +59,8 @@ message StartQuizRequest {
   repeated QuizParticipant players = 3;
   int32 total_rounds = 4;
   int32 seconds_per_question = 5;
+  // Saved for the history page ("Maya's room").
+  string host_display_name = 6;
 }
 
 message QuizParticipant {
@@ -121,6 +123,9 @@ message QuizSummary {
   int32 rounds_played = 5;
   EndReason end_reason = 6;
   repeated ScoreboardEntry final_scoreboard = 7;
+  // From StartQuiz.
+  string host_display_name = 8;
+  int32 seconds_per_question = 9;
 }
 
 message GetQuizResultRequest {
