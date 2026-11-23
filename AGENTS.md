@@ -4,9 +4,10 @@ Instructions for AI coding agents working in this repo (Claude Code reads this f
 through `CLAUDE.md`, which only imports it).
 
 FriendlyFire: trivia built from friends' VALORANT matches. Polyglot microservices that
-talk gRPC, run locally with Docker Compose. Currently **stubs**: every RPC returns
-`UNIMPLEMENTED` except the health services. Planned work is tracked on the team's
-project board and marked in the code with `TODO(ff)` comments.
+talk gRPC, run locally with Docker Compose. Every service is built. Without a HenrikDev
+key, match-data-service serves saved, anonymized matches of the mock RSO's example players
+(`MATCH_SOURCE=fixtures`), so a whole quiz works locally. Planned work is tracked on the
+team's project board and marked in the code with `TODO(ff)` comments.
 
 The human-facing guide is `CONTRIBUTING.md`: setup, workflow, per-service coding
 guidelines and troubleshooting. Follow it; when you change a rule here, change it there too.
@@ -34,9 +35,9 @@ compose.yaml, Makefile, mise.toml      local dev; mise.toml pins every tool vers
 | Service | Depends on |
 |---|---|
 | frontend | gateway-service (HTTP and WebSocket) |
-| gateway-service | account, room, scoring, matchdata (gRPC) |
-| account-service | matchdata (gRPC), postgres (`account`), mock-rso-service (HTTP) |
-| room-service | quiz, scoring, matchdata (gRPC) |
+| gateway-service | account, room, scoring (gRPC) |
+| account-service | matchdata, scoring (gRPC), postgres (`account`), mock-rso-service (HTTP) |
+| room-service | account, quiz, scoring (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring`) |
 | match-data-service | postgres (`matchdata`); later HenrikDev / Riot over HTTPS |
@@ -58,7 +59,8 @@ make coverage           unit tests + coverage reports
 ## Rules
 
 - **Never edit `gen/` by hand.** After changing a `.proto`, run `make proto` and commit
-  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval.
+  the result. Contract changes (`proto/`, `gen/`) need a project manager's approval;
+  CI's `buf breaking` only lets a break through when a PM adds the `breaking-change` label.
 - **Config comes from environment variables only** (`.env`, copied from `.env.example`).
   Never commit secrets or `.env`. The one config file is the mock RSO's real test players
   (`services/mock-rso-service/testplayers.json`, gitignored): never commit those either.
@@ -101,7 +103,8 @@ Where tests live and how they're named:
   (`addopts = "-m 'not integration'"` in `pyproject.toml`).
 - **Go:** `_test.go` next to the code. Integration tests start with `//go:build integration`.
 - **Frontend:** `*.test.ts(x)` next to the component. Playwright specs in `e2e/tests/`.
-- **Shared fakes:** one place per service: `FakeDependencyCheck` (Java),
+- **Shared fakes:** one place per service: `FakeDependencyCheck` (Java; the Gateway's
+  fake services and tokens are in `testsupport/`),
   `tests/fakes.py` (Python), `internal/testutil` (Go). Prefer fakes over mocking
   libraries for our own interfaces.
 - **Timing asserts are loose:** assert "under 3 seconds", never "about 1 second".

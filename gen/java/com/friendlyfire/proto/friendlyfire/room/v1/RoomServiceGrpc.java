@@ -384,6 +384,99 @@ public final class RoomServiceGrpc {
     return getStreamRoomEventsMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> getRemovePlayerMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "RemovePlayer",
+      requestType = com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> getRemovePlayerMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest, com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> getRemovePlayerMethod;
+    if ((getRemovePlayerMethod = RoomServiceGrpc.getRemovePlayerMethod) == null) {
+      synchronized (RoomServiceGrpc.class) {
+        if ((getRemovePlayerMethod = RoomServiceGrpc.getRemovePlayerMethod) == null) {
+          RoomServiceGrpc.getRemovePlayerMethod = getRemovePlayerMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest, com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "RemovePlayer"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new RoomServiceMethodDescriptorSupplier("RemovePlayer"))
+              .build();
+        }
+      }
+    }
+    return getRemovePlayerMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> getSendChatMessageMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "SendChatMessage",
+      requestType = com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> getSendChatMessageMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest, com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> getSendChatMessageMethod;
+    if ((getSendChatMessageMethod = RoomServiceGrpc.getSendChatMessageMethod) == null) {
+      synchronized (RoomServiceGrpc.class) {
+        if ((getSendChatMessageMethod = RoomServiceGrpc.getSendChatMessageMethod) == null) {
+          RoomServiceGrpc.getSendChatMessageMethod = getSendChatMessageMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest, com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "SendChatMessage"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new RoomServiceMethodDescriptorSupplier("SendChatMessage"))
+              .build();
+        }
+      }
+    }
+    return getSendChatMessageMethod;
+  }
+
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> getGetChatHistoryMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "GetChatHistory",
+      requestType = com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest,
+      com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> getGetChatHistoryMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest, com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> getGetChatHistoryMethod;
+    if ((getGetChatHistoryMethod = RoomServiceGrpc.getGetChatHistoryMethod) == null) {
+      synchronized (RoomServiceGrpc.class) {
+        if ((getGetChatHistoryMethod = RoomServiceGrpc.getGetChatHistoryMethod) == null) {
+          RoomServiceGrpc.getGetChatHistoryMethod = getGetChatHistoryMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest, com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "GetChatHistory"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new RoomServiceMethodDescriptorSupplier("GetChatHistory"))
+              .build();
+        }
+      }
+    }
+    return getGetChatHistoryMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -461,9 +554,12 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+     * A user is in one room at a time: joining another room takes them out of
+     * the one they were in first, like LeaveRoom.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     default void joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request,
@@ -484,7 +580,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Removes another player. Only allowed in the lobby.
+     * Host only. Removes another player. Only allowed in the lobby, or after a
+     * quiz finishes (ROOM_PHASE_FINISHED, before playing again).
      * </pre>
      */
     default void kickPlayer(com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest request,
@@ -494,7 +591,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Only allowed in the lobby.
+     * Host only. Only allowed in the lobby, or after a quiz finishes
+     * (ROOM_PHASE_FINISHED, before playing again).
      * INVALID_ARGUMENT if a value is outside the allowed range.
      * </pre>
      */
@@ -506,10 +604,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Generates all questions, then starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if there are fewer
-     * than 2 players, someone's matches haven't finished syncing, or there
-     * isn't enough match data for the chosen number of questions.
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
+     *   - there are fewer than 2 players
+     *   - someone's data status isn't SYNCED
+     *   - fewer than 2 players have enough matches, or more than half of the
+     *     room doesn't (Player.not_enough_matches)
      * </pre>
      */
     default void startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request,
@@ -536,8 +645,8 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Called by the Gateway when a player's WebSocket connection drops.
-     * During a quiz, if they don't come back within 15 seconds, the room
-     * pauses and the others vote on what to do.
+     * During a quiz the current question still finishes (ADR-026); after its
+     * reveal, if they're still gone, the others vote on what to do.
      * </pre>
      */
     default void reportDisconnected(com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedRequest request,
@@ -561,7 +670,8 @@ public final class RoomServiceGrpc {
      * <pre>
      * A connected player's vote while the room is in ROOM_PHASE_VOTE.
      * The vote ends when everyone has voted or its deadline passes.
-     * The option with the most votes wins; a tie means WAIT.
+     * The option with the most votes wins. A tie pauses if pause time is left
+     * in this quiz, and otherwise continues without the player.
      * </pre>
      */
     default void castVote(com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest request,
@@ -590,6 +700,43 @@ public final class RoomServiceGrpc {
     default void streamRoomEvents(com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsRequest request,
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getStreamRoomEventsMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     * Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+     * Takes the user out of the room they're in for good, like LeaveRoom
+     * (the host role moves on, an empty room closes). Not an error if they
+     * aren't in a room.
+     * </pre>
+     */
+    default void removePlayer(com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getRemovePlayerMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     * A chat message from someone in the room (spectators too), in any phase.
+     * The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+     * otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+     * The room keeps its last 200 messages until it closes.
+     * </pre>
+     */
+    default void sendChatMessage(com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getSendChatMessageMethod(), responseObserver);
+    }
+
+    /**
+     * <pre>
+     * The room's kept messages, oldest first, for a browser that just opened
+     * or rejoined the room.
+     * </pre>
+     */
+    default void getChatHistory(com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetChatHistoryMethod(), responseObserver);
     }
   }
 
@@ -635,9 +782,12 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+     * A user is in one room at a time: joining another room takes them out of
+     * the one they were in first, like LeaveRoom.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public void joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request,
@@ -660,7 +810,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Removes another player. Only allowed in the lobby.
+     * Host only. Removes another player. Only allowed in the lobby, or after a
+     * quiz finishes (ROOM_PHASE_FINISHED, before playing again).
      * </pre>
      */
     public void kickPlayer(com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest request,
@@ -671,7 +822,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Only allowed in the lobby.
+     * Host only. Only allowed in the lobby, or after a quiz finishes
+     * (ROOM_PHASE_FINISHED, before playing again).
      * INVALID_ARGUMENT if a value is outside the allowed range.
      * </pre>
      */
@@ -684,10 +836,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Generates all questions, then starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if there are fewer
-     * than 2 players, someone's matches haven't finished syncing, or there
-     * isn't enough match data for the chosen number of questions.
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
+     *   - there are fewer than 2 players
+     *   - someone's data status isn't SYNCED
+     *   - fewer than 2 players have enough matches, or more than half of the
+     *     room doesn't (Player.not_enough_matches)
      * </pre>
      */
     public void startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request,
@@ -716,8 +879,8 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Called by the Gateway when a player's WebSocket connection drops.
-     * During a quiz, if they don't come back within 15 seconds, the room
-     * pauses and the others vote on what to do.
+     * During a quiz the current question still finishes (ADR-026); after its
+     * reveal, if they're still gone, the others vote on what to do.
      * </pre>
      */
     public void reportDisconnected(com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedRequest request,
@@ -743,7 +906,8 @@ public final class RoomServiceGrpc {
      * <pre>
      * A connected player's vote while the room is in ROOM_PHASE_VOTE.
      * The vote ends when everyone has voted or its deadline passes.
-     * The option with the most votes wins; a tie means WAIT.
+     * The option with the most votes wins. A tie pauses if pause time is left
+     * in this quiz, and otherwise continues without the player.
      * </pre>
      */
     public void castVote(com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest request,
@@ -775,6 +939,46 @@ public final class RoomServiceGrpc {
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncServerStreamingCall(
           getChannel().newCall(getStreamRoomEventsMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+     * Takes the user out of the room they're in for good, like LeaveRoom
+     * (the host role moves on, an empty room closes). Not an error if they
+     * aren't in a room.
+     * </pre>
+     */
+    public void removePlayer(com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getRemovePlayerMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * A chat message from someone in the room (spectators too), in any phase.
+     * The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+     * otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+     * The room keeps its last 200 messages until it closes.
+     * </pre>
+     */
+    public void sendChatMessage(com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getSendChatMessageMethod(), getCallOptions()), request, responseObserver);
+    }
+
+    /**
+     * <pre>
+     * The room's kept messages, oldest first, for a browser that just opened
+     * or rejoined the room.
+     * </pre>
+     */
+    public void getChatHistory(com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getGetChatHistoryMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
@@ -808,9 +1012,12 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+     * A user is in one room at a time: joining another room takes them out of
+     * the one they were in first, like LeaveRoom.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request) throws io.grpc.StatusException {
@@ -831,7 +1038,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Removes another player. Only allowed in the lobby.
+     * Host only. Removes another player. Only allowed in the lobby, or after a
+     * quiz finishes (ROOM_PHASE_FINISHED, before playing again).
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerResponse kickPlayer(com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest request) throws io.grpc.StatusException {
@@ -841,7 +1049,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Only allowed in the lobby.
+     * Host only. Only allowed in the lobby, or after a quiz finishes
+     * (ROOM_PHASE_FINISHED, before playing again).
      * INVALID_ARGUMENT if a value is outside the allowed range.
      * </pre>
      */
@@ -853,10 +1062,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Generates all questions, then starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if there are fewer
-     * than 2 players, someone's matches haven't finished syncing, or there
-     * isn't enough match data for the chosen number of questions.
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
+     *   - there are fewer than 2 players
+     *   - someone's data status isn't SYNCED
+     *   - fewer than 2 players have enough matches, or more than half of the
+     *     room doesn't (Player.not_enough_matches)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request) throws io.grpc.StatusException {
@@ -883,8 +1103,8 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Called by the Gateway when a player's WebSocket connection drops.
-     * During a quiz, if they don't come back within 15 seconds, the room
-     * pauses and the others vote on what to do.
+     * During a quiz the current question still finishes (ADR-026); after its
+     * reveal, if they're still gone, the others vote on what to do.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedResponse reportDisconnected(com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedRequest request) throws io.grpc.StatusException {
@@ -908,7 +1128,8 @@ public final class RoomServiceGrpc {
      * <pre>
      * A connected player's vote while the room is in ROOM_PHASE_VOTE.
      * The vote ends when everyone has voted or its deadline passes.
-     * The option with the most votes wins; a tie means WAIT.
+     * The option with the most votes wins. A tie pauses if pause time is left
+     * in this quiz, and otherwise continues without the player.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.CastVoteResponse castVote(com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest request) throws io.grpc.StatusException {
@@ -939,6 +1160,43 @@ public final class RoomServiceGrpc {
         streamRoomEvents(com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsRequest request) {
       return io.grpc.stub.ClientCalls.blockingV2ServerStreamingCall(
           getChannel(), getStreamRoomEventsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+     * Takes the user out of the room they're in for good, like LeaveRoom
+     * (the host role moves on, an empty room closes). Not an error if they
+     * aren't in a room.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse removePlayer(com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getRemovePlayerMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * A chat message from someone in the room (spectators too), in any phase.
+     * The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+     * otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+     * The room keeps its last 200 messages until it closes.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse sendChatMessage(com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getSendChatMessageMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * The room's kept messages, oldest first, for a browser that just opened
+     * or rejoined the room.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse getChatHistory(com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getGetChatHistoryMethod(), getCallOptions(), request);
     }
   }
 
@@ -972,9 +1230,12 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+     * A user is in one room at a time: joining another room takes them out of
+     * the one they were in first, like LeaveRoom.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse joinRoom(com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest request) {
@@ -995,7 +1256,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Removes another player. Only allowed in the lobby.
+     * Host only. Removes another player. Only allowed in the lobby, or after a
+     * quiz finishes (ROOM_PHASE_FINISHED, before playing again).
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerResponse kickPlayer(com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest request) {
@@ -1005,7 +1267,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Only allowed in the lobby.
+     * Host only. Only allowed in the lobby, or after a quiz finishes
+     * (ROOM_PHASE_FINISHED, before playing again).
      * INVALID_ARGUMENT if a value is outside the allowed range.
      * </pre>
      */
@@ -1017,10 +1280,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Generates all questions, then starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if there are fewer
-     * than 2 players, someone's matches haven't finished syncing, or there
-     * isn't enough match data for the chosen number of questions.
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
+     *   - there are fewer than 2 players
+     *   - someone's data status isn't SYNCED
+     *   - fewer than 2 players have enough matches, or more than half of the
+     *     room doesn't (Player.not_enough_matches)
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse startQuiz(com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest request) {
@@ -1047,8 +1321,8 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Called by the Gateway when a player's WebSocket connection drops.
-     * During a quiz, if they don't come back within 15 seconds, the room
-     * pauses and the others vote on what to do.
+     * During a quiz the current question still finishes (ADR-026); after its
+     * reveal, if they're still gone, the others vote on what to do.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedResponse reportDisconnected(com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedRequest request) {
@@ -1072,7 +1346,8 @@ public final class RoomServiceGrpc {
      * <pre>
      * A connected player's vote while the room is in ROOM_PHASE_VOTE.
      * The vote ends when everyone has voted or its deadline passes.
-     * The option with the most votes wins; a tie means WAIT.
+     * The option with the most votes wins. A tie pauses if pause time is left
+     * in this quiz, and otherwise continues without the player.
      * </pre>
      */
     public com.friendlyfire.proto.friendlyfire.room.v1.CastVoteResponse castVote(com.friendlyfire.proto.friendlyfire.room.v1.CastVoteRequest request) {
@@ -1102,6 +1377,43 @@ public final class RoomServiceGrpc {
         com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsRequest request) {
       return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
           getChannel(), getStreamRoomEventsMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+     * Takes the user out of the room they're in for good, like LeaveRoom
+     * (the host role moves on, an empty room closes). Not an error if they
+     * aren't in a room.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse removePlayer(com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getRemovePlayerMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * A chat message from someone in the room (spectators too), in any phase.
+     * The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+     * otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+     * The room keeps its last 200 messages until it closes.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse sendChatMessage(com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getSendChatMessageMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * The room's kept messages, oldest first, for a browser that just opened
+     * or rejoined the room.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse getChatHistory(com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getGetChatHistoryMethod(), getCallOptions(), request);
     }
   }
 
@@ -1136,9 +1448,12 @@ public final class RoomServiceGrpc {
      * <pre>
      * Adds the user to a room. If they're already in it (after a page
      * refresh or dropped connection), marks them connected again instead.
+     * Someone new who joins while a quiz is preparing or running joins as a
+     * spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+     * A user is in one room at a time: joining another room takes them out of
+     * the one they were in first, like LeaveRoom.
      * Errors:
-     *   RESOURCE_EXHAUSTED   the room already has 8 players
-     *   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+     *   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomResponse> joinRoom(
@@ -1161,7 +1476,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Removes another player. Only allowed in the lobby.
+     * Host only. Removes another player. Only allowed in the lobby, or after a
+     * quiz finishes (ROOM_PHASE_FINISHED, before playing again).
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerResponse> kickPlayer(
@@ -1172,7 +1488,8 @@ public final class RoomServiceGrpc {
 
     /**
      * <pre>
-     * Host only. Only allowed in the lobby.
+     * Host only. Only allowed in the lobby, or after a quiz finishes
+     * (ROOM_PHASE_FINISHED, before playing again).
      * INVALID_ARGUMENT if a value is outside the allowed range.
      * </pre>
      */
@@ -1185,10 +1502,21 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Host only. Allowed in the lobby, or after a quiz finishes to play again.
-     * Generates all questions, then starts a short countdown.
-     * FAILED_PRECONDITION (with a message for the host) if there are fewer
-     * than 2 players, someone's matches haven't finished syncing, or there
-     * isn't enough match data for the chosen number of questions.
+     * Checks every player's data status again, then moves the room to
+     * ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+     * the quiz engine for every question in the background, and moves to
+     * ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+     * have passed (so everyone can read the loading screen). If someone is
+     * disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+     * If generation fails, or takes more than 60 seconds, the room goes back
+     * to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+     * saying why (e.g. not enough match data for the chosen number of
+     * questions). The host can't cancel preparing.
+     * FAILED_PRECONDITION (with a message for the host), before preparing, if:
+     *   - there are fewer than 2 players
+     *   - someone's data status isn't SYNCED
+     *   - fewer than 2 players have enough matches, or more than half of the
+     *     room doesn't (Player.not_enough_matches)
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.StartQuizResponse> startQuiz(
@@ -1217,8 +1545,8 @@ public final class RoomServiceGrpc {
     /**
      * <pre>
      * Called by the Gateway when a player's WebSocket connection drops.
-     * During a quiz, if they don't come back within 15 seconds, the room
-     * pauses and the others vote on what to do.
+     * During a quiz the current question still finishes (ADR-026); after its
+     * reveal, if they're still gone, the others vote on what to do.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.ReportDisconnectedResponse> reportDisconnected(
@@ -1244,7 +1572,8 @@ public final class RoomServiceGrpc {
      * <pre>
      * A connected player's vote while the room is in ROOM_PHASE_VOTE.
      * The vote ends when everyone has voted or its deadline passes.
-     * The option with the most votes wins; a tie means WAIT.
+     * The option with the most votes wins. A tie pauses if pause time is left
+     * in this quiz, and otherwise continues without the player.
      * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.CastVoteResponse> castVote(
@@ -1263,6 +1592,46 @@ public final class RoomServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetRoomSnapshotMethod(), getCallOptions()), request);
     }
+
+    /**
+     * <pre>
+     * Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+     * Takes the user out of the room they're in for good, like LeaveRoom
+     * (the host role moves on, an empty room closes). Not an error if they
+     * aren't in a room.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse> removePlayer(
+        com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getRemovePlayerMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
+     * A chat message from someone in the room (spectators too), in any phase.
+     * The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+     * otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+     * The room keeps its last 200 messages until it closes.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse> sendChatMessage(
+        com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getSendChatMessageMethod(), getCallOptions()), request);
+    }
+
+    /**
+     * <pre>
+     * The room's kept messages, oldest first, for a browser that just opened
+     * or rejoined the room.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse> getChatHistory(
+        com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getGetChatHistoryMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_CREATE_ROOM = 0;
@@ -1277,6 +1646,9 @@ public final class RoomServiceGrpc {
   private static final int METHODID_CAST_VOTE = 9;
   private static final int METHODID_GET_ROOM_SNAPSHOT = 10;
   private static final int METHODID_STREAM_ROOM_EVENTS = 11;
+  private static final int METHODID_REMOVE_PLAYER = 12;
+  private static final int METHODID_SEND_CHAT_MESSAGE = 13;
+  private static final int METHODID_GET_CHAT_HISTORY = 14;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -1342,6 +1714,18 @@ public final class RoomServiceGrpc {
         case METHODID_STREAM_ROOM_EVENTS:
           serviceImpl.streamRoomEvents((com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsRequest) request,
               (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsResponse>) responseObserver);
+          break;
+        case METHODID_REMOVE_PLAYER:
+          serviceImpl.removePlayer((com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse>) responseObserver);
+          break;
+        case METHODID_SEND_CHAT_MESSAGE:
+          serviceImpl.sendChatMessage((com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse>) responseObserver);
+          break;
+        case METHODID_GET_CHAT_HISTORY:
+          serviceImpl.getChatHistory((com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -1445,6 +1829,27 @@ public final class RoomServiceGrpc {
               com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsRequest,
               com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsResponse>(
                 service, METHODID_STREAM_ROOM_EVENTS)))
+        .addMethod(
+          getRemovePlayerMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest,
+              com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerResponse>(
+                service, METHODID_REMOVE_PLAYER)))
+        .addMethod(
+          getSendChatMessageMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest,
+              com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageResponse>(
+                service, METHODID_SEND_CHAT_MESSAGE)))
+        .addMethod(
+          getGetChatHistoryMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest,
+              com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryResponse>(
+                service, METHODID_GET_CHAT_HISTORY)))
         .build();
   }
 
@@ -1505,6 +1910,9 @@ public final class RoomServiceGrpc {
               .addMethod(getCastVoteMethod())
               .addMethod(getGetRoomSnapshotMethod())
               .addMethod(getStreamRoomEventsMethod())
+              .addMethod(getRemovePlayerMethod())
+              .addMethod(getSendChatMessageMethod())
+              .addMethod(getGetChatHistoryMethod())
               .build();
         }
       }

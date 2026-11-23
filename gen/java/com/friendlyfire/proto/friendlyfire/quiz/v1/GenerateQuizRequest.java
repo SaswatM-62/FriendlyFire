@@ -29,6 +29,8 @@ private static final long serialVersionUID = 0L;
   }
   private GenerateQuizRequest() {
     players_ = java.util.Collections.emptyList();
+    askedTemplateIds_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -117,6 +119,71 @@ private static final long serialVersionUID = 0L;
     return seed_;
   }
 
+  public static final int ASKED_TEMPLATE_IDS_FIELD_NUMBER = 4;
+  @SuppressWarnings("serial")
+  private com.google.protobuf.LazyStringArrayList askedTemplateIds_ =
+      com.google.protobuf.LazyStringArrayList.emptyList();
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @return A list containing the askedTemplateIds.
+   */
+  public com.google.protobuf.ProtocolStringList
+      getAskedTemplateIdsList() {
+    return askedTemplateIds_;
+  }
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @return The count of askedTemplateIds.
+   */
+  public int getAskedTemplateIdsCount() {
+    return askedTemplateIds_.size();
+  }
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @param index The index of the element to return.
+   * @return The askedTemplateIds at the given index.
+   */
+  public java.lang.String getAskedTemplateIds(int index) {
+    return askedTemplateIds_.get(index);
+  }
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the askedTemplateIds at the given index.
+   */
+  public com.google.protobuf.ByteString
+      getAskedTemplateIdsBytes(int index) {
+    return askedTemplateIds_.getByteString(index);
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -140,6 +207,9 @@ private static final long serialVersionUID = 0L;
     if (seed_ != 0L) {
       output.writeInt64(3, seed_);
     }
+    for (int i = 0; i < askedTemplateIds_.size(); i++) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 4, askedTemplateIds_.getRaw(i));
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -160,6 +230,14 @@ private static final long serialVersionUID = 0L;
     if (seed_ != 0L) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt64Size(3, seed_);
+    }
+    {
+      int dataSize = 0;
+      for (int i = 0; i < askedTemplateIds_.size(); i++) {
+        dataSize += computeStringSizeNoTag(askedTemplateIds_.getRaw(i));
+      }
+      size += dataSize;
+      size += 1 * getAskedTemplateIdsList().size();
     }
     return size;
   }
@@ -191,6 +269,8 @@ private static final long serialVersionUID = 0L;
         != other.getQuestionCount()) return false;
     if (getSeed()
         != other.getSeed()) return false;
+    if (!getAskedTemplateIdsList()
+        .equals(other.getAskedTemplateIdsList())) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -211,6 +291,10 @@ private static final long serialVersionUID = 0L;
     hash = (37 * hash) + SEED_FIELD_NUMBER;
     hash = (53 * hash) + com.google.protobuf.Internal.hashLong(
         getSeed());
+    if (getAskedTemplateIdsCount() > 0) {
+      hash = (37 * hash) + ASKED_TEMPLATE_IDS_FIELD_NUMBER;
+      hash = (53 * hash) + getAskedTemplateIdsList().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -351,6 +435,8 @@ private static final long serialVersionUID = 0L;
       bitField0_ = (bitField0_ & ~0x00000001);
       questionCount_ = 0;
       seed_ = 0L;
+      askedTemplateIds_ =
+          com.google.protobuf.LazyStringArrayList.emptyList();
       return this;
     }
 
@@ -403,6 +489,10 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000004) != 0)) {
         result.seed_ = seed_;
       }
+      if (((from_bitField0_ & 0x00000008) != 0)) {
+        askedTemplateIds_.makeImmutable();
+        result.askedTemplateIds_ = askedTemplateIds_;
+      }
     }
 
     @java.lang.Override
@@ -448,6 +538,16 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getSeed() != 0L) {
         setSeed(other.getSeed());
+      }
+      if (!other.askedTemplateIds_.isEmpty()) {
+        if (askedTemplateIds_.isEmpty()) {
+          askedTemplateIds_ = other.askedTemplateIds_;
+          bitField0_ |= 0x00000008;
+        } else {
+          ensureAskedTemplateIdsIsMutable();
+          askedTemplateIds_.addAll(other.askedTemplateIds_);
+        }
+        onChanged();
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -496,6 +596,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000004;
               break;
             } // case 24
+            case 34: {
+              ensureAskedTemplateIdsIsMutable();
+              askedTemplateIds_.add(input.readStringRequireUtf8());
+              break;
+            } // case 34
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -822,6 +927,180 @@ private static final long serialVersionUID = 0L;
     public Builder clearSeed() {
       bitField0_ = (bitField0_ & ~0x00000004);
       seed_ = 0L;
+      onChanged();
+      return this;
+    }
+
+    private com.google.protobuf.LazyStringArrayList askedTemplateIds_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+    private void ensureAskedTemplateIdsIsMutable() {
+      if (!askedTemplateIds_.isModifiable()) {
+        askedTemplateIds_ = new com.google.protobuf.LazyStringArrayList(askedTemplateIds_);
+      }
+      bitField0_ |= 0x00000008;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @return A list containing the askedTemplateIds.
+     */
+    public com.google.protobuf.ProtocolStringList
+        getAskedTemplateIdsList() {
+      askedTemplateIds_.makeImmutable();
+      return askedTemplateIds_;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @return The count of askedTemplateIds.
+     */
+    public int getAskedTemplateIdsCount() {
+      return askedTemplateIds_.size();
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param index The index of the element to return.
+     * @return The askedTemplateIds at the given index.
+     */
+    public java.lang.String getAskedTemplateIds(int index) {
+      return askedTemplateIds_.get(index);
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param index The index of the value to return.
+     * @return The bytes of the askedTemplateIds at the given index.
+     */
+    public com.google.protobuf.ByteString
+        getAskedTemplateIdsBytes(int index) {
+      return askedTemplateIds_.getByteString(index);
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param index The index to set the value at.
+     * @param value The askedTemplateIds to set.
+     * @return This builder for chaining.
+     */
+    public Builder setAskedTemplateIds(
+        int index, java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      ensureAskedTemplateIdsIsMutable();
+      askedTemplateIds_.set(index, value);
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param value The askedTemplateIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAskedTemplateIds(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      ensureAskedTemplateIdsIsMutable();
+      askedTemplateIds_.add(value);
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param values The askedTemplateIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAllAskedTemplateIds(
+        java.lang.Iterable<java.lang.String> values) {
+      ensureAskedTemplateIdsIsMutable();
+      com.google.protobuf.AbstractMessageLite.Builder.addAll(
+          values, askedTemplateIds_);
+      bitField0_ |= 0x00000008;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearAskedTemplateIds() {
+      askedTemplateIds_ =
+        com.google.protobuf.LazyStringArrayList.emptyList();
+      bitField0_ = (bitField0_ & ~0x00000008);;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Question.template_id of every question already asked in this room, ordered by
+     * when each template was last asked, oldest first (repeats are fine). The quiz
+     * uses unused templates first; when they run out it reuses these, the one asked
+     * longest ago first.
+     * </pre>
+     *
+     * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+     * @param value The bytes of the askedTemplateIds to add.
+     * @return This builder for chaining.
+     */
+    public Builder addAskedTemplateIdsBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      ensureAskedTemplateIdsIsMutable();
+      askedTemplateIds_.add(value);
+      bitField0_ |= 0x00000008;
       onChanged();
       return this;
     }

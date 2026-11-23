@@ -27,7 +27,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
-      - run: cp .env.example .env
+      # Offline match data (FF-210): no HenrikDev key, no rate limit.
+      - run: cp .env.example .env && sed -i "s/^MATCH_SOURCE=.*/MATCH_SOURCE=fixtures/" .env
       - name: Build and start the stack
         run: docker compose up -d --build --wait --wait-timeout 900
       - run: make e2e

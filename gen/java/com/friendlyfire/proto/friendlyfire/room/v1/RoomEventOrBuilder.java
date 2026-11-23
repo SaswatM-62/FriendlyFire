@@ -82,4 +82,55 @@ public interface RoomEventOrBuilder extends
    * <code>.friendlyfire.room.v1.RoomSnapshot snapshot = 4 [json_name = "snapshot"];</code>
    */
   com.friendlyfire.proto.friendlyfire.room.v1.RoomSnapshotOrBuilder getSnapshotOrBuilder();
+
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The message.
+   */
+  java.lang.String getMessage();
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The bytes for message.
+   */
+  com.google.protobuf.ByteString
+      getMessageBytes();
+
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return Whether the chat field is set.
+   */
+  boolean hasChat();
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return The chat.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage getChat();
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder getChatOrBuilder();
 }

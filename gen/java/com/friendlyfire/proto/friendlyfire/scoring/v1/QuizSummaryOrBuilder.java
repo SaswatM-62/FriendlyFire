@@ -98,4 +98,30 @@ public interface QuizSummaryOrBuilder extends
    */
   com.friendlyfire.proto.friendlyfire.scoring.v1.ScoreboardEntryOrBuilder getFinalScoreboardOrBuilder(
       int index);
+
+  /**
+   * <pre>
+   * From StartQuiz.
+   * </pre>
+   *
+   * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+   * @return The hostDisplayName.
+   */
+  java.lang.String getHostDisplayName();
+  /**
+   * <pre>
+   * From StartQuiz.
+   * </pre>
+   *
+   * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+   * @return The bytes for hostDisplayName.
+   */
+  com.google.protobuf.ByteString
+      getHostDisplayNameBytes();
+
+  /**
+   * <code>int32 seconds_per_question = 9 [json_name = "secondsPerQuestion"];</code>
+   * @return The secondsPerQuestion.
+   */
+  int getSecondsPerQuestion();
 }

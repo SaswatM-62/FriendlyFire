@@ -4,9 +4,11 @@
 // Sign-in itself is handled by Auth0: the Gateway checks the Auth0 token and
 // then calls EnsureUser to get our own user_id.
 //
-// Callers: Gateway.
+// Callers: Gateway; RoomService (GetDataStatus).
 // Calls out to: MatchDataService (SyncPlayer after linking or sign-in,
-// DeletePlayerData after unlinking or deleting an account).
+//               GetSyncStatus for GetDataStatus, DeletePlayerData after
+//               unlinking or deleting an account),
+//               ScoringService (AnonymizePlayer after deleting an account).
 syntax = "proto3";
 
 package friendlyfire.account.v1;
@@ -15,8 +17,9 @@ import "google/protobuf/timestamp.proto";
 
 service AccountService {
   // Finds the user for an Auth0 subject, or creates one on their first visit.
-  // If the user has a linked Riot account, this also asks Match Data to
-  // fetch any new matches.
+  // Runs at every sign-in and app load: if the user has a linked Riot account
+  // and their data isn't SYNCED, it also starts a sync. A Match Data failure
+  // never fails the sign-in.
   rpc EnsureUser(EnsureUserRequest) returns (EnsureUserResponse);
 
   // Returns one user. NOT_FOUND if the user doesn't exist.
@@ -43,8 +46,37 @@ service AccountService {
   // Removes the Riot link and deletes all of that player's match data.
   rpc UnlinkRiot(UnlinkRiotRequest) returns (UnlinkRiotResponse);
 
-  // Deletes the user, their Riot link and their match data.
+  // Deletes the user, their Riot link and their match data, and asks
+  // ScoringService to show them as "Deleted player" in past quizzes
+  // (ADR-027). The Gateway takes them out of any room first
+  // (RoomService.RemovePlayer).
   rpc DeleteAccount(DeleteAccountRequest) returns (DeleteAccountResponse);
+
+  // Each user's match data status, for the lobby, the profile and the sync
+  // banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+  // Data's raw sync status into the DataStatus below. Users it doesn't know
+  // come back as DATA_STATUS_NOT_LINKED.
+  rpc GetDataStatus(GetDataStatusRequest) returns (GetDataStatusResponse);
+
+  // Marks the new-player tutorial as done (User.onboarded_at) and returns
+  // the user. Safe to call again: the first time is kept.
+  // NOT_FOUND if the user doesn't exist.
+  rpc FinishOnboarding(FinishOnboardingRequest) returns (FinishOnboardingResponse);
+}
+
+enum DataStatus {
+  DATA_STATUS_UNSPECIFIED = 0;
+  // Synced successfully less than 24 hours ago.
+  DATA_STATUS_SYNCED = 1;
+  // A sync is queued or running (UserDataStatus.estimated_seconds).
+  DATA_STATUS_SYNCING = 2;
+  // Linked, but the last successful sync is more than 24 hours old (or
+  // there never was one) and no sync is running. EnsureUser starts one.
+  DATA_STATUS_NOT_SYNCED = 3;
+  // No Riot account linked.
+  DATA_STATUS_NOT_LINKED = 4;
+  // The last sync failed; error_message says why.
+  DATA_STATUS_FAILED = 5;
 }
 
 message User {
@@ -55,6 +87,10 @@ message User {
   google.protobuf.Timestamp created_at = 4;
   // Not set if the user hasn't linked a Riot account yet.
   RiotLink riot_link = 5;
+  // When they finished (or skipped the end of) the new-player tutorial. Not
+  // set until then. Accounts made before the tutorial existed count as done
+  // (set to created_at).
+  google.protobuf.Timestamp onboarded_at = 6;
 }
 
 // What the app may show about a linked Riot account. The PUUID is
@@ -100,8 +136,9 @@ message UpdateDisplayNameResponse {
 
 message StartRiotLinkRequest {
   string user_id = 1;
-  // Where Riot sends the browser back to, e.g.
-  // "https://app.example.com/api/link/riot/callback".
+  // Where Riot sends the browser back to: the frontend's callback page, e.g.
+  // "https://app.example.com/link/riot/callback", which finishes the link
+  // through the Gateway (ADR-007).
   // Must be one of the redirect URIs registered with Riot (or the mock).
   string redirect_uri = 2;
 }
@@ -133,3 +170,34 @@ message DeleteAccountRequest {
 }
 
 message DeleteAccountResponse {}
+
+message GetDataStatusRequest {
+  repeated string user_ids = 1;
+}
+
+message GetDataStatusResponse {
+  // One per requested user_id.
+  repeated UserDataStatus statuses = 1;
+}
+
+message UserDataStatus {
+  string user_id = 1;
+  DataStatus status = 2;
+  // While SYNCING: about how long until it's done; 0 if unknown.
+  int32 estimated_seconds = 3;
+  // Competitive and Unrated matches stored, all from the 30 days before the
+  // last successful sync. A player needs 5 to be in quiz questions.
+  int32 matches_stored = 4;
+  // Not set if the player's data has never synced.
+  google.protobuf.Timestamp last_synced_at = 5;
+  // Short, safe-to-show reason when FAILED.
+  string error_message = 6;
+}
+
+message FinishOnboardingRequest {
+  string user_id = 1;
+}
+
+message FinishOnboardingResponse {
+  User user = 1;
+}

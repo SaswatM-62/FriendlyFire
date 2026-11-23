@@ -19,10 +19,7 @@ func TestLoadUsesDefaultsWhenNothingIsSet(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Equal(t, 8090, cfg.HTTPPort)
-	assert.Equal(t, []string{
-		"http://localhost:3000/link/riot/callback",
-		"http://localhost:8080/api/link/riot/callback",
-	}, cfg.RedirectURIs)
+	assert.Equal(t, []string{"http://localhost:3000/link/riot/callback"}, cfg.RedirectURIs)
 	assert.Equal(t, "testplayers.example.json", cfg.PlayersFile)
 }
 

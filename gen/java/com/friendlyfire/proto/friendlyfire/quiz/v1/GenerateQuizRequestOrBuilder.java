@@ -50,4 +50,57 @@ public interface GenerateQuizRequestOrBuilder extends
    * @return The seed.
    */
   long getSeed();
+
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @return A list containing the askedTemplateIds.
+   */
+  java.util.List<java.lang.String>
+      getAskedTemplateIdsList();
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @return The count of askedTemplateIds.
+   */
+  int getAskedTemplateIdsCount();
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @param index The index of the element to return.
+   * @return The askedTemplateIds at the given index.
+   */
+  java.lang.String getAskedTemplateIds(int index);
+  /**
+   * <pre>
+   * Question.template_id of every question already asked in this room, ordered by
+   * when each template was last asked, oldest first (repeats are fine). The quiz
+   * uses unused templates first; when they run out it reuses these, the one asked
+   * longest ago first.
+   * </pre>
+   *
+   * <code>repeated string asked_template_ids = 4 [json_name = "askedTemplateIds"];</code>
+   * @param index The index of the value to return.
+   * @return The bytes of the askedTemplateIds at the given index.
+   */
+  com.google.protobuf.ByteString
+      getAskedTemplateIdsBytes(int index);
 }

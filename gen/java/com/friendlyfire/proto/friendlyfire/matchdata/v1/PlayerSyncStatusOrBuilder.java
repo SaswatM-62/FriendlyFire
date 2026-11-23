@@ -34,6 +34,11 @@ public interface PlayerSyncStatusOrBuilder extends
   com.friendlyfire.proto.friendlyfire.matchdata.v1.SyncStatus getStatus();
 
   /**
+   * <pre>
+   * Matches stored for the player, all from the 30 days before their last
+   * successful sync.
+   * </pre>
+   *
    * <code>int32 matches_stored = 3 [json_name = "matchesStored"];</code>
    * @return The matchesStored.
    */
@@ -85,4 +90,26 @@ public interface PlayerSyncStatusOrBuilder extends
    */
   com.google.protobuf.ByteString
       getErrorMessageBytes();
+
+  /**
+   * <pre>
+   * While IN_PROGRESS: about how long until the sync is done, including any
+   * wait in the queue; 0 if unknown.
+   * </pre>
+   *
+   * <code>int32 estimated_seconds = 6 [json_name = "estimatedSeconds"];</code>
+   * @return The estimatedSeconds.
+   */
+  int getEstimatedSeconds();
+
+  /**
+   * <pre>
+   * While IN_PROGRESS: syncs waiting ahead of this one (HenrikDev's rate
+   * limit runs them one at a time); 0 once it's running.
+   * </pre>
+   *
+   * <code>int32 queue_position = 7 [json_name = "queuePosition"];</code>
+   * @return The queuePosition.
+   */
+  int getQueuePosition();
 }

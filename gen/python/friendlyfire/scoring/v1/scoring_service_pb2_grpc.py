@@ -39,6 +39,11 @@ class ScoringServiceStub:
                 request_serializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryResponse.FromString,
                 _registered_method=True)
+        self.AnonymizePlayer = channel.unary_unary(
+                '/friendlyfire.scoring.v1.ScoringService/AnonymizePlayer',
+                request_serializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerResponse.FromString,
+                _registered_method=True)
 
 
 class ScoringServiceServicer:
@@ -86,6 +91,17 @@ class ScoringServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AnonymizePlayer(self, request, context):
+        """Called by AccountService when a user deletes their account (ADR-027).
+        In every past quiz, replaces their display name with "Deleted player"
+        and removes the link to their user_id, keeping their scores so other
+        players' scoreboards don't change. Safe to call again; not an error if
+        they never played.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ScoringServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -113,6 +129,11 @@ def add_ScoringServiceServicer_to_server(servicer, server):
                     servicer.GetPlayerHistory,
                     request_deserializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryRequest.FromString,
                     response_serializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryResponse.SerializeToString,
+            ),
+            'AnonymizePlayer': grpc.unary_unary_rpc_method_handler(
+                    servicer.AnonymizePlayer,
+                    request_deserializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerRequest.FromString,
+                    response_serializer=friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -250,6 +271,33 @@ class ScoringService:
             '/friendlyfire.scoring.v1.ScoringService/GetPlayerHistory',
             friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryRequest.SerializeToString,
             friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.GetPlayerHistoryResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AnonymizePlayer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.scoring.v1.ScoringService/AnonymizePlayer',
+            friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerRequest.SerializeToString,
+            friendlyfire_dot_scoring_dot_v1_dot_scoring__service__pb2.AnonymizePlayerResponse.FromString,
             options,
             channel_credentials,
             insecure,

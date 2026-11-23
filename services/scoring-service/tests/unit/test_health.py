@@ -1,4 +1,4 @@
-"""grpc.health.v1, the stub RPCs and the dependency health checker."""
+"""grpc.health.v1 and the dependency health checker."""
 
 import time
 from collections.abc import AsyncIterator
@@ -12,8 +12,6 @@ from friendlyfire.health.v1.dependency_health_pb2 import (
     COMPONENT_STATUS_UP,
     CheckDependenciesRequest,
 )
-from friendlyfire.scoring.v1 import scoring_service_pb2_grpc
-from friendlyfire.scoring.v1.scoring_service_pb2 import GetQuizResultRequest
 from grpc_health.v1 import health_pb2, health_pb2_grpc
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
@@ -49,16 +47,6 @@ async def test_grpc_health_is_serving(channel: grpc.aio.Channel) -> None:
     response = await health_pb2_grpc.HealthStub(channel).Check(health_pb2.HealthCheckRequest())
 
     assert response.status == health_pb2.HealthCheckResponse.SERVING
-
-
-async def test_rpcs_are_not_implemented_yet(channel: grpc.aio.Channel) -> None:
-    scoring = scoring_service_pb2_grpc.ScoringServiceStub(channel)
-
-    with pytest.raises(grpc.aio.AioRpcError) as error:
-        await scoring.GetQuizResult(GetQuizResultRequest())
-
-    assert error.value.code() == grpc.StatusCode.UNIMPLEMENTED
-    assert error.value.details() == "not implemented yet"
 
 
 async def test_check_dependencies_over_grpc(channel: grpc.aio.Channel) -> None:

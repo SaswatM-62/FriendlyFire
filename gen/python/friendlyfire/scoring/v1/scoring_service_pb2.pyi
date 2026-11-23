@@ -22,18 +22,20 @@ END_REASON_VOTED_TO_END: EndReason
 END_REASON_NOT_ENOUGH_PLAYERS: EndReason
 
 class StartQuizRequest(_message.Message):
-    __slots__ = ("quiz_id", "room_code", "players", "total_rounds", "seconds_per_question")
+    __slots__ = ("quiz_id", "room_code", "players", "total_rounds", "seconds_per_question", "host_display_name")
     QUIZ_ID_FIELD_NUMBER: _ClassVar[int]
     ROOM_CODE_FIELD_NUMBER: _ClassVar[int]
     PLAYERS_FIELD_NUMBER: _ClassVar[int]
     TOTAL_ROUNDS_FIELD_NUMBER: _ClassVar[int]
     SECONDS_PER_QUESTION_FIELD_NUMBER: _ClassVar[int]
+    HOST_DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     quiz_id: str
     room_code: str
     players: _containers.RepeatedCompositeFieldContainer[QuizParticipant]
     total_rounds: int
     seconds_per_question: int
-    def __init__(self, quiz_id: _Optional[str] = ..., room_code: _Optional[str] = ..., players: _Optional[_Iterable[_Union[QuizParticipant, _Mapping]]] = ..., total_rounds: _Optional[int] = ..., seconds_per_question: _Optional[int] = ...) -> None: ...
+    host_display_name: str
+    def __init__(self, quiz_id: _Optional[str] = ..., room_code: _Optional[str] = ..., players: _Optional[_Iterable[_Union[QuizParticipant, _Mapping]]] = ..., total_rounds: _Optional[int] = ..., seconds_per_question: _Optional[int] = ..., host_display_name: _Optional[str] = ...) -> None: ...
 
 class QuizParticipant(_message.Message):
     __slots__ = ("user_id", "display_name")
@@ -116,7 +118,7 @@ class FinalizeQuizResponse(_message.Message):
     def __init__(self, summary: _Optional[_Union[QuizSummary, _Mapping]] = ...) -> None: ...
 
 class QuizSummary(_message.Message):
-    __slots__ = ("quiz_id", "started_at", "finished_at", "total_rounds", "rounds_played", "end_reason", "final_scoreboard")
+    __slots__ = ("quiz_id", "started_at", "finished_at", "total_rounds", "rounds_played", "end_reason", "final_scoreboard", "host_display_name", "seconds_per_question")
     QUIZ_ID_FIELD_NUMBER: _ClassVar[int]
     STARTED_AT_FIELD_NUMBER: _ClassVar[int]
     FINISHED_AT_FIELD_NUMBER: _ClassVar[int]
@@ -124,6 +126,8 @@ class QuizSummary(_message.Message):
     ROUNDS_PLAYED_FIELD_NUMBER: _ClassVar[int]
     END_REASON_FIELD_NUMBER: _ClassVar[int]
     FINAL_SCOREBOARD_FIELD_NUMBER: _ClassVar[int]
+    HOST_DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    SECONDS_PER_QUESTION_FIELD_NUMBER: _ClassVar[int]
     quiz_id: str
     started_at: _timestamp_pb2.Timestamp
     finished_at: _timestamp_pb2.Timestamp
@@ -131,7 +135,9 @@ class QuizSummary(_message.Message):
     rounds_played: int
     end_reason: EndReason
     final_scoreboard: _containers.RepeatedCompositeFieldContainer[ScoreboardEntry]
-    def __init__(self, quiz_id: _Optional[str] = ..., started_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., finished_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., total_rounds: _Optional[int] = ..., rounds_played: _Optional[int] = ..., end_reason: _Optional[_Union[EndReason, str]] = ..., final_scoreboard: _Optional[_Iterable[_Union[ScoreboardEntry, _Mapping]]] = ...) -> None: ...
+    host_display_name: str
+    seconds_per_question: int
+    def __init__(self, quiz_id: _Optional[str] = ..., started_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., finished_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., total_rounds: _Optional[int] = ..., rounds_played: _Optional[int] = ..., end_reason: _Optional[_Union[EndReason, str]] = ..., final_scoreboard: _Optional[_Iterable[_Union[ScoreboardEntry, _Mapping]]] = ..., host_display_name: _Optional[str] = ..., seconds_per_question: _Optional[int] = ...) -> None: ...
 
 class GetQuizResultRequest(_message.Message):
     __slots__ = ("quiz_id",)
@@ -162,3 +168,13 @@ class GetPlayerHistoryResponse(_message.Message):
     quizzes: _containers.RepeatedCompositeFieldContainer[QuizSummary]
     next_page_token: str
     def __init__(self, quizzes: _Optional[_Iterable[_Union[QuizSummary, _Mapping]]] = ..., next_page_token: _Optional[str] = ...) -> None: ...
+
+class AnonymizePlayerRequest(_message.Message):
+    __slots__ = ("user_id",)
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    def __init__(self, user_id: _Optional[str] = ...) -> None: ...
+
+class AnonymizePlayerResponse(_message.Message):
+    __slots__ = ()
+    def __init__(self) -> None: ...

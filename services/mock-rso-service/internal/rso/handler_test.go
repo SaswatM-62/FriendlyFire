@@ -23,8 +23,9 @@ const (
 )
 
 var (
-	sam  = rso.Player{PUUID: "puuid-sam", GameName: "Sam", TagLine: "NA1", Region: "na"}
-	alex = rso.Player{PUUID: "puuid-alex", GameName: "Alex", TagLine: "EUW", Region: "eu"}
+	sam    = rso.Player{PUUID: "puuid-sam", GameName: "Sam", TagLine: "NA1", Region: "na", Email: "sam@example.test"}
+	alex   = rso.Player{PUUID: "puuid-alex", GameName: "Alex", TagLine: "EUW", Region: "eu", Email: "alex@example.test"}
+	nomail = rso.Player{PUUID: "puuid-kim", GameName: "Kim", TagLine: "KR1", Region: "ap"}
 )
 
 // fakeClock only moves when a test calls advance, so tests never sleep.
@@ -63,7 +64,7 @@ type reply struct {
 func newMock(t *testing.T) *mock {
 	t.Helper()
 	clock := &fakeClock{now: time.Date(2026, 11, 6, 12, 0, 0, 0, time.UTC)}
-	server := httptest.NewServer(rso.NewHandler([]rso.Player{sam, alex}, []string{callback, callbackWithQuery}, clock.Now))
+	server := httptest.NewServer(rso.NewHandler([]rso.Player{sam, alex, nomail}, []string{callback, callbackWithQuery}, clock.Now))
 	t.Cleanup(server.Close)
 	client := &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	return &mock{t: t, url: server.URL, client: client, clock: clock}
@@ -106,14 +107,25 @@ func (m *mock) post(path string, form url.Values) reply {
 }
 
 func authorizePath(redirectURI, state string) string {
-	query := url.Values{"client_id": {"friendlyfire"}, "response_type": {"code"}, "redirect_uri": {redirectURI}, "state": {state}}
+	query := url.Values{
+		"client_id": {"friendlyfire"}, "response_type": {"code"}, "redirect_uri": {redirectURI}, "state": {state},
+		"login_hint": {"sam@example.test"},
+	}
 	return "/authorize?" + query.Encode()
 }
 
-// pick presses a player's button on the picker and returns where the browser is sent.
+// signIn types a Riot ID on the sign-in page, as the FriendlyFire account with this email.
+func (m *mock) signIn(riotID, email, redirectURI, state string) reply {
+	m.t.Helper()
+	return m.post("/authorize", url.Values{
+		"redirect_uri": {redirectURI}, "state": {state}, "login_hint": {email}, "riot_id": {riotID}, "allow": {"1"},
+	})
+}
+
+// pick signs in as a test player, with their own email, and returns where the browser is sent.
 func (m *mock) pick(player rso.Player, redirectURI, state string) *url.URL {
 	m.t.Helper()
-	got := m.post("/authorize", url.Values{"redirect_uri": {redirectURI}, "state": {state}, "puuid": {player.PUUID}})
+	got := m.signIn(player.RiotID(), player.Email, redirectURI, state)
 	require.Equal(m.t, http.StatusFound, got.status, got.body)
 	location, err := url.Parse(got.header.Get("Location"))
 	require.NoError(m.t, err)
@@ -154,11 +166,11 @@ func TestHealthzAnswersOK(t *testing.T) {
 func TestTheFullRoundTrip(t *testing.T) {
 	m := newMock(t)
 
-	// The browser opens the picker...
+	// The browser opens the sign-in page...
 	page := m.get(authorizePath(callback, "state-123"))
 	require.Equal(t, http.StatusOK, page.status)
 
-	// ...the player picks Alex and is sent back with a code...
+	// ...the player types Alex's Riot ID, with Alex's email, and is sent back with a code...
 	location := m.pick(alex, callback, "state-123")
 	assert.Equal(t, "state-123", location.Query().Get("state"))
 
@@ -187,7 +199,7 @@ func TestTheFullRoundTrip(t *testing.T) {
 	assert.JSONEq(t, `{"sub": "puuid-alex"}`, userinfo.body)
 }
 
-func TestEachTokenBelongsToThePlayerWhoWasPicked(t *testing.T) {
+func TestEachTokenBelongsToThePlayerWhoSignedIn(t *testing.T) {
 	m := newMock(t)
 	samToken, alexToken := m.accessToken(sam), m.accessToken(alex)
 
@@ -195,18 +207,96 @@ func TestEachTokenBelongsToThePlayerWhoWasPicked(t *testing.T) {
 	assert.Contains(t, m.getWith("/riot/account/v1/accounts/me", "Bearer "+alexToken).body, `"puuid-alex"`)
 }
 
-func TestThePickerListsEveryPlayerAndADenyButton(t *testing.T) {
+func TestTheSignInPageAsksForARiotIDAndSaysItIsAMock(t *testing.T) {
 	got := newMock(t).get(authorizePath(callback, "state-123"))
 
 	assert.Equal(t, http.StatusOK, got.status)
 	assert.Equal(t, "text/html; charset=utf-8", got.header.Get("Content-Type"))
-	assert.Contains(t, got.body, "Sam#NA1 (na)")
-	assert.Contains(t, got.body, "Alex#EUW (eu)")
+	assert.Contains(t, got.body, `name="riot_id"`)
 	assert.Contains(t, got.body, `name="deny"`)
 	assert.Contains(t, got.body, `value="state-123"`)
+	assert.Contains(t, got.body, "This is a mock Riot Sign-On page")
+	assert.Contains(t, got.body, "In the production app, Riot's own sign-in page opens here instead")
+	assert.Contains(t, got.body, "consent screen")
+	assert.Contains(t, got.body, "sam@example.test")
+	// The test players aren't listed: you have to know your Riot ID.
+	assert.NotContains(t, got.body, "Alex#EUW")
+	assert.NotContains(t, got.body, "puuid-")
 }
 
-func TestThePickerEscapesWhatItIsGiven(t *testing.T) {
+func TestARiotIDIsMatchedWithoutCaseOrSpaces(t *testing.T) {
+	got := newMock(t).signIn("  sam # na1 ", "SAM@example.test", callback, "state-123")
+
+	require.Equal(t, http.StatusFound, got.status, got.body)
+	location, err := url.Parse(got.header.Get("Location"))
+	require.NoError(t, err)
+	assert.NotEmpty(t, location.Query().Get("code"))
+}
+
+func TestARiotIDThatIsntATestPlayerIsRefusedOnThePage(t *testing.T) {
+	got := newMock(t).signIn("TheLaw#6391", "sam@example.test", callback, "state-123")
+
+	assert.Equal(t, http.StatusBadRequest, got.status)
+	assert.Empty(t, got.header.Get("Location"))
+	assert.Contains(t, got.body, "There&#39;s no test player with the Riot ID TheLaw#6391")
+	// The form comes back filled in, ready to try again.
+	assert.Contains(t, got.body, `value="TheLaw#6391"`)
+	assert.Contains(t, got.body, `value="state-123"`)
+	assert.Contains(t, got.body, `role="alert"`)
+}
+
+func TestARiotIDAssignedToSomeoneElsesEmailIsRefused(t *testing.T) {
+	got := newMock(t).signIn("Alex#EUW", "sam@example.test", callback, "state-123")
+
+	assert.Equal(t, http.StatusForbidden, got.status)
+	assert.Empty(t, got.header.Get("Location"))
+	assert.Contains(t, got.body, "Alex#EUW is assigned to a different email")
+	assert.NotContains(t, got.body, "alex@example.test")
+}
+
+func TestATestPlayerWithoutAnEmailCantBeLinked(t *testing.T) {
+	got := newMock(t).signIn("Kim#KR1", "kim@example.test", callback, "state-123")
+
+	assert.Equal(t, http.StatusForbidden, got.status)
+	assert.Contains(t, got.body, "has no email assigned")
+}
+
+func TestSigningInNeedsTheEmailFromFriendlyFire(t *testing.T) {
+	got := newMock(t).signIn("Sam#NA1", "", callback, "state-123")
+
+	assert.Equal(t, http.StatusBadRequest, got.status)
+	assert.Contains(t, got.body, "didn&#39;t say which account is linking")
+}
+
+func TestARiotIDNeedsItsTag(t *testing.T) {
+	m := newMock(t)
+	for _, riotID := range []string{"", "Sam", "Sam#", "#NA1"} {
+		got := m.signIn(riotID, "sam@example.test", callback, "state-123")
+
+		assert.Equal(t, http.StatusBadRequest, got.status, riotID)
+		assert.Contains(t, got.body, "Enter your Riot ID with its tag", riotID)
+	}
+}
+
+func TestTheAccountNeverIncludesTheAssignedEmail(t *testing.T) {
+	m := newMock(t)
+
+	account := m.getWith("/riot/account/v1/accounts/me", "Bearer "+m.accessToken(sam))
+
+	assert.NotContains(t, account.body, "email")
+}
+
+func TestTheSignInPageEscapesWhatItIsGiven(t *testing.T) {
+	m := newMock(t)
+	page := m.get(authorizePath(callback, `"><script>alert(1)</script>`))
+	refused := m.signIn(`<script>alert(1)</script>#x`, "sam@example.test", callback, "state")
+
+	for _, got := range []reply{page, refused} {
+		assert.NotContains(t, got.body, "<script>")
+	}
+}
+
+func TestTheErrorPageForABadStateIsEscaped(t *testing.T) {
 	got := newMock(t).get(authorizePath(callback, `"><script>alert(1)</script>`))
 
 	assert.Equal(t, http.StatusOK, got.status)
@@ -227,7 +317,7 @@ func TestABadRedirectURIIsRejected(t *testing.T) {
 			m := newMock(t)
 
 			page := m.get(authorizePath(redirectURI, "state-123"))
-			picked := m.post("/authorize", url.Values{"redirect_uri": {redirectURI}, "puuid": {sam.PUUID}})
+			picked := m.signIn(sam.RiotID(), sam.Email, redirectURI, "")
 			denied := m.post("/authorize", url.Values{"redirect_uri": {redirectURI}, "deny": {"1"}})
 
 			for _, got := range []reply{page, picked, denied} {
@@ -249,7 +339,7 @@ func TestAResponseTypeOtherThanCodeIsRejected(t *testing.T) {
 	}
 }
 
-func TestPickingAPlayerKeepsTheRedirectURIsOwnQuery(t *testing.T) {
+func TestSigningInKeepsTheRedirectURIsOwnQuery(t *testing.T) {
 	location := newMock(t).pick(sam, callbackWithQuery, "state-123")
 
 	assert.Equal(t, "mock", location.Query().Get("from"))
@@ -257,17 +347,10 @@ func TestPickingAPlayerKeepsTheRedirectURIsOwnQuery(t *testing.T) {
 	assert.Equal(t, "state-123", location.Query().Get("state"))
 }
 
-func TestPickingAPlayerWithoutAStateLeavesItOut(t *testing.T) {
+func TestSigningInWithoutAStateLeavesItOut(t *testing.T) {
 	location := newMock(t).pick(sam, callback, "")
 
 	assert.False(t, location.Query().Has("state"))
-}
-
-func TestPickingAnUnknownPlayerIsRejected(t *testing.T) {
-	got := newMock(t).post("/authorize", url.Values{"redirect_uri": {callback}, "puuid": {"puuid-nobody"}})
-
-	assert.Equal(t, http.StatusBadRequest, got.status)
-	assert.Empty(t, got.header.Get("Location"))
 }
 
 func TestDenyingSendsTheBrowserBackWithoutACode(t *testing.T) {

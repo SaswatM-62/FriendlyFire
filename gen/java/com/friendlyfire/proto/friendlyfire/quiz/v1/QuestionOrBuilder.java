@@ -54,24 +54,49 @@ public interface QuestionOrBuilder extends
       getTextBytes();
 
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   java.util.List<com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption> 
       getOptionsList();
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOption getOptions(int index);
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   int getOptionsCount();
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   java.util.List<? extends com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOptionOrBuilder> 
       getOptionsOrBuilderList();
   /**
+   * <pre>
+   * Every player in the room, by user_id, including players the question
+   * didn't compare (so the text says who was compared).
+   * </pre>
+   *
    * <code>repeated .friendlyfire.quiz.v1.AnswerOption options = 4 [json_name = "options"];</code>
    */
   com.friendlyfire.proto.friendlyfire.quiz.v1.AnswerOptionOrBuilder getOptionsOrBuilder(
@@ -128,4 +153,26 @@ public interface QuestionOrBuilder extends
    */
   com.google.protobuf.ByteString
       getSourceMatchIdBytes();
+
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The templateId.
+   */
+  java.lang.String getTemplateId();
+  /**
+   * <pre>
+   * The template the question was made from. RoomService passes it back in
+   * GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+   * </pre>
+   *
+   * <code>string template_id = 8 [json_name = "templateId"];</code>
+   * @return The bytes for templateId.
+   */
+  com.google.protobuf.ByteString
+      getTemplateIdBytes();
 }

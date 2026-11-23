@@ -49,6 +49,16 @@ class AccountServiceStub:
                 request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountResponse.FromString,
                 _registered_method=True)
+        self.GetDataStatus = channel.unary_unary(
+                '/friendlyfire.account.v1.AccountService/GetDataStatus',
+                request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.FromString,
+                _registered_method=True)
+        self.FinishOnboarding = channel.unary_unary(
+                '/friendlyfire.account.v1.AccountService/FinishOnboarding',
+                request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
+                _registered_method=True)
 
 
 class AccountServiceServicer:
@@ -56,8 +66,9 @@ class AccountServiceServicer:
 
     def EnsureUser(self, request, context):
         """Finds the user for an Auth0 subject, or creates one on their first visit.
-        If the user has a linked Riot account, this also asks Match Data to
-        fetch any new matches.
+        Runs at every sign-in and app load: if the user has a linked Riot account
+        and their data isn't SYNCED, it also starts a sync. A Match Data failure
+        never fails the sign-in.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -108,7 +119,29 @@ class AccountServiceServicer:
         raise NotImplementedError('Method not implemented!')
 
     def DeleteAccount(self, request, context):
-        """Deletes the user, their Riot link and their match data.
+        """Deletes the user, their Riot link and their match data, and asks
+        ScoringService to show them as "Deleted player" in past quizzes
+        (ADR-027). The Gateway takes them out of any room first
+        (RoomService.RemovePlayer).
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetDataStatus(self, request, context):
+        """Each user's match data status, for the lobby, the profile and the sync
+        banner. Account owns the 24-hour freshness rule (ADR-010): it turns Match
+        Data's raw sync status into the DataStatus below. Users it doesn't know
+        come back as DATA_STATUS_NOT_LINKED.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def FinishOnboarding(self, request, context):
+        """Marks the new-player tutorial as done (User.onboarded_at) and returns
+        the user. Safe to call again: the first time is kept.
+        NOT_FOUND if the user doesn't exist.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -151,6 +184,16 @@ def add_AccountServiceServicer_to_server(servicer, server):
                     servicer.DeleteAccount,
                     request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountRequest.FromString,
                     response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountResponse.SerializeToString,
+            ),
+            'GetDataStatus': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetDataStatus,
+                    request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.FromString,
+                    response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.SerializeToString,
+            ),
+            'FinishOnboarding': grpc.unary_unary_rpc_method_handler(
+                    servicer.FinishOnboarding,
+                    request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.FromString,
+                    response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -342,6 +385,60 @@ class AccountService:
             '/friendlyfire.account.v1.AccountService/DeleteAccount',
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountRequest.SerializeToString,
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.DeleteAccountResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetDataStatus(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.account.v1.AccountService/GetDataStatus',
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusRequest.SerializeToString,
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.GetDataStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def FinishOnboarding(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.account.v1.AccountService/FinishOnboarding',
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
             options,
             channel_credentials,
             insecure,

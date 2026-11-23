@@ -24,8 +24,9 @@ public interface StartRiotLinkRequestOrBuilder extends
 
   /**
    * <pre>
-   * Where Riot sends the browser back to, e.g.
-   * "https://app.example.com/api/link/riot/callback".
+   * Where Riot sends the browser back to: the frontend's callback page, e.g.
+   * "https://app.example.com/link/riot/callback", which finishes the link
+   * through the Gateway (ADR-007).
    * Must be one of the redirect URIs registered with Riot (or the mock).
    * </pre>
    *
@@ -35,8 +36,9 @@ public interface StartRiotLinkRequestOrBuilder extends
   java.lang.String getRedirectUri();
   /**
    * <pre>
-   * Where Riot sends the browser back to, e.g.
-   * "https://app.example.com/api/link/riot/callback".
+   * Where Riot sends the browser back to: the frontend's callback page, e.g.
+   * "https://app.example.com/link/riot/callback", which finishes the link
+   * through the Gateway (ADR-007).
    * Must be one of the redirect URIs registered with Riot (or the mock).
    * </pre>
    *

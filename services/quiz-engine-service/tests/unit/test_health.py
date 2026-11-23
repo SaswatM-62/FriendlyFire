@@ -1,4 +1,4 @@
-"""grpc.health.v1, the stub RPCs and the dependency health checker."""
+"""grpc.health.v1, the server wiring and the dependency health checker."""
 
 import time
 from collections.abc import AsyncIterator
@@ -46,14 +46,14 @@ async def test_grpc_health_is_serving(channel: grpc.aio.Channel) -> None:
     assert response.status == health_pb2.HealthCheckResponse.SERVING
 
 
-async def test_rpcs_are_not_implemented_yet(channel: grpc.aio.Channel) -> None:
+async def test_generate_quiz_is_served(channel: grpc.aio.Channel) -> None:
     quiz = quiz_service_pb2_grpc.QuizServiceStub(channel)
 
     with pytest.raises(grpc.aio.AioRpcError) as error:
         await quiz.GenerateQuiz(GenerateQuizRequest())
 
-    assert error.value.code() == grpc.StatusCode.UNIMPLEMENTED
-    assert error.value.details() == "not implemented yet"
+    # An empty request reaches the real handler, which rejects it.
+    assert error.value.code() == grpc.StatusCode.INVALID_ARGUMENT
 
 
 async def test_check_dependencies_over_grpc(channel: grpc.aio.Channel) -> None:

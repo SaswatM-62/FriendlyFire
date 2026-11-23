@@ -3,10 +3,11 @@
 FriendlyFire is free, personalized trivia built from your friends' own VALORANT matches:
 link your Riot account, open a room with up to 7 friends, and answer questions based on your recent Valorant stats. 
 
-> **Status: stubs.** Every service starts, reports healthy and answers `UNIMPLEMENTED`
-> for everything else. The health checks already run end to end (browser → Gateway →
-> every service → Postgres). Planned work is tracked on the project board, and each piece
-> is marked in the code with a `TODO(ff)` comment saying what to build there.
+> **Status:** every service is built and the frontend talks to them. Without a HenrikDev
+> key, match data comes from saved, anonymized matches of the mock RSO's example players
+> (link Sam#NA1, Alex#EUW, Kim#KR1, Jordan#TEST or Riley#TEST), so a whole quiz works
+> locally. The health checks run end to end (browser → Gateway → every service → Postgres). Planned work is tracked on the project board, and
+> each piece is marked in the code with a `TODO(ff)` comment saying what to build there.
 
 ## Services
 
@@ -27,9 +28,9 @@ link your Riot account, open a room with up to 7 friends, and answer questions b
 | Service | Depends on |
 |---|---|
 | frontend | gateway-service (HTTP and WebSocket) |
-| gateway-service | account, room, scoring, matchdata (gRPC) |
-| account-service | matchdata (gRPC), postgres (`account` schema), mock-rso-service (HTTP) |
-| room-service | quiz, scoring, matchdata (gRPC) |
+| gateway-service | account, room, scoring (gRPC) |
+| account-service | matchdata, scoring (gRPC), postgres (`account` schema), mock-rso-service (HTTP) |
+| room-service | account, quiz, scoring (gRPC) |
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring` schema) |
 | match-data-service | postgres (`matchdata` schema). Later also HenrikDev / Riot over HTTPS |
@@ -54,9 +55,15 @@ cp .env.example .env && make up
 ```
 
 The first start builds every image and takes a few minutes. When `make ps` shows every
-container as `(healthy)`, open **http://localhost:3000**: the **System status** page
-should say "17 of 17 checks passing" and "Realtime: connected · N ms". `make e2e` checks
-the same thing in a real browser.
+container as `(healthy)`, open **http://localhost:3000/status**: the **Status** page
+should say "15 of 15 checks passing" and, under Realtime ping, "Connected · N ms".
+`make e2e` checks the same thing in a real browser. The app itself is at
+**http://localhost:3000**.
+
+**Building screens before the backend is ready?** Set `NEXT_PUBLIC_FAKE_BACKEND=true` in
+`.env` and restart the frontend (`docker compose up -d --no-deps frontend`): it fakes every
+Gateway call and plays a scripted quiz, with a "Fake backend" panel to jump between screens.
+See [CONTRIBUTING.md](CONTRIBUTING.md#frontend-nextjs).
 
 **Low on memory?** Start only what you need (plus what it depends on):
 
@@ -152,7 +159,7 @@ Dockerfiles, `go.mod` files, `pom.xml` files and CI use the same ones
 | gRPC | Java and Python 1.84.1, Go 1.84.0 |
 | Protobuf | Java 4.36.2, Python 7.36.2, Go 1.36.12 |
 | Buf plugins | `protocolbuffers/java` v36.2, `grpc/java` v1.84.1, `protocolbuffers/python` v36.2, `protocolbuffers/pyi` v36.2, `grpc/python` v1.84.1, `protocolbuffers/go` v1.36.12, `grpc/go` v1.6.2 |
-| Frontend | Next.js 16.4.3, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 4.3.3, @stomp/stompjs 7.5.0 |
+| Frontend | Next.js 16.4.3, React 19.3.1, TypeScript 5.9.3, Tailwind CSS 4.3.3, @stomp/stompjs 7.5.0, Auth0 Next.js SDK 4.33.0 |
 | Java tests | JUnit 6.0.3, Mockito 5.23.0, AssertJ 3.27.7, Testcontainers 2.0.5, Awaitility 4.3.0 (all via Spring Boot), wiremock-spring-boot 4.4.3, JaCoCo 0.8.16 |
 | Python tests and lint | pytest 9.1.1, pytest-asyncio 1.4.1, pytest-timeout 2.4.0, pytest-cov 7.1.0, hypothesis 6.170.11, testcontainers 4.15.0, ruff 0.17.2, mypy 2.4.0 |
 | Go tests | testify 1.12.1, goleak 1.3.0, testcontainers-go 0.44.0 |

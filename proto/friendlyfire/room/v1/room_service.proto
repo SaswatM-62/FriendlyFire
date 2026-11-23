@@ -6,9 +6,9 @@
 // this service ends the rooms in progress.
 //
 // Callers: Gateway, for every player action.
-// Calls out to: QuizService (GenerateQuiz),
-//               ScoringService (StartQuiz, RecordRound, FinalizeQuiz),
-//               MatchDataService (GetSyncStatus, to know who is ready).
+// Calls out to: AccountService (GetDataStatus, to know who is ready; ADR-010),
+//               QuizService (GenerateQuiz),
+//               ScoringService (StartQuiz, RecordRound, FinalizeQuiz).
 //
 // Rules every RPC follows:
 //   - The user_id comes from the Gateway (from the checked Auth0 token),
@@ -19,6 +19,8 @@
 //
 // Room limits: 2–8 players.
 // Settings: 5–20 questions (default 10), 10–45 seconds each (default 20).
+// Questions are only about players with at least 5 Competitive or Unrated
+// matches in the last 30 days (Player.not_enough_matches).
 syntax = "proto3";
 
 package friendlyfire.room.v1;
@@ -31,27 +33,43 @@ service RoomService {
 
   // Adds the user to a room. If they're already in it (after a page
   // refresh or dropped connection), marks them connected again instead.
+  // Someone new who joins while a quiz is preparing or running joins as a
+  // spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+  // A user is in one room at a time: joining another room takes them out of
+  // the one they were in first, like LeaveRoom.
   // Errors:
-  //   RESOURCE_EXHAUSTED   the room already has 8 players
-  //   FAILED_PRECONDITION  the quiz has started and the user wasn't in it
+  //   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
 
   // The user leaves for good. If the host leaves, the player who joined
   // next becomes host. The room closes when the last player leaves.
   rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
 
-  // Host only. Removes another player. Only allowed in the lobby.
+  // Host only. Removes another player. Only allowed in the lobby, or after a
+  // quiz finishes (ROOM_PHASE_FINISHED, before playing again).
   rpc KickPlayer(KickPlayerRequest) returns (KickPlayerResponse);
 
-  // Host only. Only allowed in the lobby.
+  // Host only. Only allowed in the lobby, or after a quiz finishes
+  // (ROOM_PHASE_FINISHED, before playing again).
   // INVALID_ARGUMENT if a value is outside the allowed range.
   rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse);
 
   // Host only. Allowed in the lobby, or after a quiz finishes to play again.
-  // Generates all questions, then starts a short countdown.
-  // FAILED_PRECONDITION (with a message for the host) if there are fewer
-  // than 2 players, someone's matches haven't finished syncing, or there
-  // isn't enough match data for the chosen number of questions.
+  // Checks every player's data status again, then moves the room to
+  // ROOM_PHASE_PREPARING (event QUIZ_PREPARING) and returns. Room then asks
+  // the quiz engine for every question in the background, and moves to
+  // ROOM_PHASE_STARTING when the questions are ready and at least 8 seconds
+  // have passed (so everyone can read the loading screen). If someone is
+  // disconnected at that point, the room votes first (ROOM_PHASE_VOTE).
+  // If generation fails, or takes more than 60 seconds, the room goes back
+  // to ROOM_PHASE_LOBBY with event QUIZ_START_FAILED and RoomEvent.message
+  // saying why (e.g. not enough match data for the chosen number of
+  // questions). The host can't cancel preparing.
+  // FAILED_PRECONDITION (with a message for the host), before preparing, if:
+  //   - there are fewer than 2 players
+  //   - someone's data status isn't SYNCED
+  //   - fewer than 2 players have enough matches, or more than half of the
+  //     room doesn't (Player.not_enough_matches)
   rpc StartQuiz(StartQuizRequest) returns (StartQuizResponse);
 
   // Records a player's answer to the current question, using the time it
@@ -64,8 +82,8 @@ service RoomService {
   rpc SubmitAnswer(SubmitAnswerRequest) returns (SubmitAnswerResponse);
 
   // Called by the Gateway when a player's WebSocket connection drops.
-  // During a quiz, if they don't come back within 15 seconds, the room
-  // pauses and the others vote on what to do.
+  // During a quiz the current question still finishes (ADR-026); after its
+  // reveal, if they're still gone, the others vote on what to do.
   rpc ReportDisconnected(ReportDisconnectedRequest) returns (ReportDisconnectedResponse);
 
   // Called by the Gateway with a player's latest connection quality (from
@@ -75,7 +93,8 @@ service RoomService {
 
   // A connected player's vote while the room is in ROOM_PHASE_VOTE.
   // The vote ends when everyone has voted or its deadline passes.
-  // The option with the most votes wins; a tie means WAIT.
+  // The option with the most votes wins. A tie pauses if pause time is left
+  // in this quiz, and otherwise continues without the player.
   rpc CastVote(CastVoteRequest) returns (CastVoteResponse);
 
   // The current state of the room.
@@ -86,6 +105,22 @@ service RoomService {
   // The Gateway opens one stream per room and forwards each event to the
   // STOMP topic /topic/room/{room_code}.
   rpc StreamRoomEvents(StreamRoomEventsRequest) returns (stream StreamRoomEventsResponse);
+
+  // Called by the Gateway before AccountService.DeleteAccount (ADR-027).
+  // Takes the user out of the room they're in for good, like LeaveRoom
+  // (the host role moves on, an empty room closes). Not an error if they
+  // aren't in a room.
+  rpc RemovePlayer(RemovePlayerRequest) returns (RemovePlayerResponse);
+
+  // A chat message from someone in the room (spectators too), in any phase.
+  // The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+  // otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+  // The room keeps its last 200 messages until it closes.
+  rpc SendChatMessage(SendChatMessageRequest) returns (SendChatMessageResponse);
+
+  // The room's kept messages, oldest first, for a browser that just opened
+  // or rejoined the room.
+  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
 }
 
 // ---------- Enums ----------
@@ -100,10 +135,20 @@ enum RoomPhase {
   ROOM_PHASE_QUESTION = 3;
   // The answer and updated scores are showing for a few seconds.
   ROOM_PHASE_REVEAL = 4;
-  // The quiz is paused while players vote about someone who disconnected.
+  // After a reveal, or after preparing, the others vote about someone who
+  // disconnected.
   ROOM_PHASE_VOTE = 5;
   // The quiz is over and the final standings are showing.
   ROOM_PHASE_FINISHED = 6;
+  // The room voted to wait up to a minute for a disconnected player
+  // (RoomSnapshot.waiting_for_user_id). If they come back, the next question
+  // starts; if not, the room votes again.
+  ROOM_PHASE_PAUSED = 7;
+  // After the host pressed Start: the quiz engine is building the questions
+  // and every browser shows the loading screen. Settings, kicks and a second
+  // Start are refused. Ends in STARTING (or VOTE), or back in LOBBY if
+  // generation fails (event QUIZ_START_FAILED).
+  ROOM_PHASE_PREPARING = 8;
 }
 
 enum PlayerStatus {
@@ -113,6 +158,10 @@ enum PlayerStatus {
   PLAYER_STATUS_DISCONNECTED = 2;
   // The room voted to continue without them. They can still rejoin.
   PLAYER_STATUS_SITTING_OUT = 3;
+  // Joined while a quiz was preparing or running. They see the room and can
+  // chat, but can't answer or vote, aren't an option and have no score. They
+  // become CONNECTED when the quiz finishes, and play from the next one.
+  PLAYER_STATUS_SPECTATING = 4;
 }
 
 enum ConnectionQuality {
@@ -122,10 +171,26 @@ enum ConnectionQuality {
   CONNECTION_QUALITY_POOR = 3;  // over 300 ms or missed pings
 }
 
+// A player's match data, from AccountService.GetDataStatus (same meanings).
+enum PlayerDataStatus {
+  PLAYER_DATA_STATUS_UNSPECIFIED = 0;
+  // Synced successfully less than 24 hours ago.
+  PLAYER_DATA_STATUS_SYNCED = 1;
+  // A sync is queued or running (Player.data_estimated_seconds).
+  PLAYER_DATA_STATUS_SYNCING = 2;
+  // Linked, but the data is more than 24 hours old and no sync is running.
+  PLAYER_DATA_STATUS_NOT_SYNCED = 3;
+  // No Riot account linked.
+  PLAYER_DATA_STATUS_NOT_LINKED = 4;
+  // The last sync failed.
+  PLAYER_DATA_STATUS_FAILED = 5;
+}
+
 enum VoteOption {
   VOTE_OPTION_UNSPECIFIED = 0;
-  // Wait another 30 seconds for the player to come back.
-  VOTE_OPTION_WAIT = 1;
+  // Pause for up to a minute (ROOM_PHASE_PAUSED). Pauses can add up to 3
+  // minutes per quiz; after that only the other two options remain.
+  VOTE_OPTION_PAUSE = 1;
   // Keep playing without them.
   VOTE_OPTION_CONTINUE_WITHOUT_PLAYER = 2;
   // End the quiz now; scores so far are final.
@@ -143,7 +208,8 @@ enum RoomEventType {
   ROOM_EVENT_TYPE_PLAYER_RECONNECTED = 6;
   ROOM_EVENT_TYPE_HOST_CHANGED = 7;
   ROOM_EVENT_TYPE_SETTINGS_CHANGED = 8;
-  // A player's match sync finished, so they're ready to play.
+  // A player's data status or match count changed (e.g. their sync
+  // finished).
   ROOM_EVENT_TYPE_PLAYER_DATA_READY = 9;
   ROOM_EVENT_TYPE_CONNECTION_QUALITY_CHANGED = 10;
   ROOM_EVENT_TYPE_QUIZ_STARTING = 11;
@@ -156,6 +222,30 @@ enum RoomEventType {
   ROOM_EVENT_TYPE_QUIZ_FINISHED = 17;
   // Last message before the stream ends.
   ROOM_EVENT_TYPE_ROOM_CLOSED = 18;
+  // Someone voted, so the counts changed (never what they voted).
+  ROOM_EVENT_TYPE_VOTE_CAST = 19;
+  // The room started a pause (ROOM_PHASE_PAUSED).
+  ROOM_EVENT_TYPE_QUIZ_PAUSED = 20;
+  // The host pressed Start and the questions are being built
+  // (ROOM_PHASE_PREPARING).
+  ROOM_EVENT_TYPE_QUIZ_PREPARING = 21;
+  // Building the questions failed or took too long; the room is back in the
+  // lobby. RoomEvent.message says why.
+  ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;
+  // Someone sent a chat message (RoomEvent.chat).
+  ROOM_EVENT_TYPE_CHAT_MESSAGE = 23;
+}
+
+// Why a quiz ended (RoomSnapshot.end_reason); the same values as
+// ScoringService's EndReason.
+enum EndReason {
+  END_REASON_UNSPECIFIED = 0;
+  // All rounds were played.
+  END_REASON_COMPLETED = 1;
+  // Players voted to end the quiz early.
+  END_REASON_VOTED_TO_END = 2;
+  // Fewer than 2 players were left.
+  END_REASON_NOT_ENOUGH_PLAYERS = 3;
 }
 
 // ---------- Shared messages ----------
@@ -177,12 +267,29 @@ message RoomSnapshot {
   // Set during QUESTION and REVEAL.
   QuestionView current_question = 8;
   // When the current phase ends: the countdown, the question timer, the
-  // reveal, or the vote. Not set in LOBBY and FINISHED.
+  // reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+  // PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+  // phase lasts longer if the questions aren't ready yet.
   google.protobuf.Timestamp phase_deadline = 9;
   // Empty in the lobby.
   repeated ScoreEntry scoreboard = 10;
   // Set during VOTE.
   Vote active_vote = 11;
+  // Set during PAUSED: the disconnected player the room is waiting for.
+  string waiting_for_user_id = 12;
+  // Pause time left in this quiz, in seconds: 180 when a quiz starts.
+  int32 pause_seconds_left = 13;
+  // Set during FINISHED: why the quiz ended.
+  EndReason end_reason = 14;
+  // Set during FINISHED, if anyone answered correctly: the quickest correct
+  // answer of the quiz, for the podium.
+  FastestAnswer fastest_answer = 15;
+}
+
+message FastestAnswer {
+  string user_id = 1;
+  // From the question appearing to the answer arriving at RoomService.
+  int32 response_time_ms = 2;
 }
 
 message RoomSettings {
@@ -191,14 +298,28 @@ message RoomSettings {
 }
 
 message Player {
+  // match_data_ready was replaced by data_status (ADR-010).
+  reserved 4;
+  reserved "match_data_ready";
+
   string user_id = 1;
   string display_name = 2;
   PlayerStatus status = 3;
-  // True once Match Data reports this player's sync as COMPLETE.
-  bool match_data_ready = 4;
   ConnectionQuality connection_quality = 5;
   // True if they've answered the current question. Reset each question.
   bool answered_current_question = 6;
+  // From AccountService.GetDataStatus. The quiz can start only when every
+  // player is SYNCED.
+  PlayerDataStatus data_status = 7;
+  // While SYNCING: about how long until it's done; 0 if unknown.
+  int32 data_estimated_seconds = 8;
+  // True when the player is synced but has fewer than 5 Competitive or
+  // Unrated matches in the last 30 days. They still play, answer and score,
+  // but no question is about them or uses their stats.
+  bool not_enough_matches = 9;
+  // "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
+  // if they haven't linked a Riot account.
+  string riot_tag_line = 10;
 }
 
 // A question as browsers see it. During ROOM_PHASE_QUESTION the `reveal`
@@ -237,17 +358,21 @@ message ScoreEntry {
   // 1 = first place. Equal points share a rank.
   int32 rank = 4;
   int32 points_last_round = 5;
+  int32 correct_answers = 6;
 }
 
 message Vote {
   // The disconnected player the vote is about.
   string about_user_id = 1;
   google.protobuf.Timestamp deadline = 2;
-  int32 wait_votes = 3;
+  int32 pause_votes = 3;
   int32 continue_votes = 4;
   int32 end_votes = 5;
   // Who has voted so far (not what they voted).
   repeated string voted_user_ids = 6;
+  // False once the quiz's 3 minutes of pauses are used up: then only
+  // CONTINUE_WITHOUT_PLAYER and END_QUIZ can be chosen.
+  bool pause_allowed = 7;
 }
 
 message RoomEvent {
@@ -257,6 +382,23 @@ message RoomEvent {
   google.protobuf.Timestamp occurred_at = 3;
   // The room's state right after the event.
   RoomSnapshot snapshot = 4;
+  // A short sentence safe to show every player, when the event needs one
+  // (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+  // Try 10.").
+  string message = 5;
+  // Set on CHAT_MESSAGE.
+  ChatMessage chat = 6;
+}
+
+message ChatMessage {
+  string message_id = 1;
+  string user_id = 2;
+  // As it was when they sent it, so it still shows after they leave;
+  // "Deleted player" once they delete their account.
+  string display_name = 3;
+  // 1–200 characters, trimmed.
+  string text = 4;
+  google.protobuf.Timestamp sent_at = 5;
 }
 
 // ---------- Requests and responses ----------
@@ -264,6 +406,8 @@ message RoomEvent {
 message CreateRoomRequest {
   string host_user_id = 1;
   string host_display_name = 2;
+  // From the host's Riot link (Player.riot_tag_line); empty if not linked.
+  string host_riot_tag_line = 3;
 }
 
 message CreateRoomResponse {
@@ -274,6 +418,8 @@ message JoinRoomRequest {
   string room_code = 1;
   string user_id = 2;
   string display_name = 3;
+  // From the player's Riot link (Player.riot_tag_line); empty if not linked.
+  string riot_tag_line = 4;
 }
 
 message JoinRoomResponse {
@@ -369,4 +515,31 @@ message StreamRoomEventsRequest {
 
 message StreamRoomEventsResponse {
   RoomEvent event = 1;
+}
+
+message RemovePlayerRequest {
+  string user_id = 1;
+}
+
+message RemovePlayerResponse {}
+
+message SendChatMessageRequest {
+  string room_code = 1;
+  string user_id = 2;
+  string text = 3;
+}
+
+message SendChatMessageResponse {
+  ChatMessage message = 1;
+}
+
+message GetChatHistoryRequest {
+  string room_code = 1;
+  // Must be in the room.
+  string user_id = 2;
+}
+
+message GetChatHistoryResponse {
+  // Oldest first, at most 200.
+  repeated ChatMessage messages = 1;
 }

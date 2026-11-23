@@ -21,17 +21,27 @@ func TestTheCommittedExampleFileIsValid(t *testing.T) {
 	players, err := rso.LoadPlayers("../../testplayers.example.json")
 
 	require.NoError(t, err)
-	assert.Len(t, players, 4)
+	assert.Len(t, players, 5, "Sam, Alex, Kim, Jordan and Riley: the 5-stack in match-data-service's fixtures")
 	assert.Equal(t, "Sam", players[0].GameName)
+	assert.Zero(t, rso.WithoutEmail(players), "every example player has an email")
 }
 
 func TestLoadPlayersReadsEveryField(t *testing.T) {
+	path := writePlayers(t, `[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na", "email": "sam@example.test"}]`)
+
+	players, err := rso.LoadPlayers(path)
+
+	require.NoError(t, err)
+	assert.Equal(t, []rso.Player{{PUUID: "p1", GameName: "Sam", TagLine: "NA1", Region: "na", Email: "sam@example.test"}}, players)
+}
+
+func TestAPlayerWithoutAnEmailLoadsButIsCounted(t *testing.T) {
 	path := writePlayers(t, `[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na"}]`)
 
 	players, err := rso.LoadPlayers(path)
 
 	require.NoError(t, err)
-	assert.Equal(t, []rso.Player{{PUUID: "p1", GameName: "Sam", TagLine: "NA1", Region: "na"}}, players)
+	assert.Equal(t, 1, rso.WithoutEmail(players))
 }
 
 func TestLoadPlayersRejectsABadFile(t *testing.T) {
@@ -44,6 +54,8 @@ func TestLoadPlayersRejectsABadFile(t *testing.T) {
 		"duplicate":     {`[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na"}, {"puuid": "p1", "gameName": "Alex", "tagLine": "EUW", "region": "eu"}]`, "player 2 has the same puuid"},
 		"empty name":    {`[{"puuid": "p1", "gameName": "", "tagLine": "NA1", "region": "na"}]`, "player 1 needs"},
 		"second is bad": {`[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na"}, {"puuid": "p2"}]`, "player 2 needs"},
+		"same Riot ID":  {`[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na"}, {"puuid": "p2", "gameName": "sam", "tagLine": "na1", "region": "na"}]`, "player 2 has the same Riot ID"},
+		"bad email":     {`[{"puuid": "p1", "gameName": "Sam", "tagLine": "NA1", "region": "na", "email": "sam"}]`, "player 1 has an email without an @"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

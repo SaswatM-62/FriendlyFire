@@ -54,18 +54,22 @@ class GetSyncStatusResponse(_message.Message):
     def __init__(self, statuses: _Optional[_Iterable[_Union[PlayerSyncStatus, _Mapping]]] = ...) -> None: ...
 
 class PlayerSyncStatus(_message.Message):
-    __slots__ = ("user_id", "status", "matches_stored", "last_synced_at", "error_message")
+    __slots__ = ("user_id", "status", "matches_stored", "last_synced_at", "error_message", "estimated_seconds", "queue_position")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
     MATCHES_STORED_FIELD_NUMBER: _ClassVar[int]
     LAST_SYNCED_AT_FIELD_NUMBER: _ClassVar[int]
     ERROR_MESSAGE_FIELD_NUMBER: _ClassVar[int]
+    ESTIMATED_SECONDS_FIELD_NUMBER: _ClassVar[int]
+    QUEUE_POSITION_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     status: SyncStatus
     matches_stored: int
     last_synced_at: _timestamp_pb2.Timestamp
     error_message: str
-    def __init__(self, user_id: _Optional[str] = ..., status: _Optional[_Union[SyncStatus, str]] = ..., matches_stored: _Optional[int] = ..., last_synced_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., error_message: _Optional[str] = ...) -> None: ...
+    estimated_seconds: int
+    queue_position: int
+    def __init__(self, user_id: _Optional[str] = ..., status: _Optional[_Union[SyncStatus, str]] = ..., matches_stored: _Optional[int] = ..., last_synced_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., error_message: _Optional[str] = ..., estimated_seconds: _Optional[int] = ..., queue_position: _Optional[int] = ...) -> None: ...
 
 class GetPlayerMatchStatsRequest(_message.Message):
     __slots__ = ("user_ids", "since", "max_matches_per_player")

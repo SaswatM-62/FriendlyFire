@@ -136,6 +136,25 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int NOT_ENOUGH_MATCHES_FIELD_NUMBER = 3;
+  private boolean notEnoughMatches_ = false;
+  /**
+   * <pre>
+   * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+   * or Unrated matches. Such a player is never compared, so never the answer,
+   * a pair question's friend or the source of a stat. They are still an option
+   * in every question, and their matches still count when deciding which
+   * matches the room played together.
+   * </pre>
+   *
+   * <code>bool not_enough_matches = 3 [json_name = "notEnoughMatches"];</code>
+   * @return The notEnoughMatches.
+   */
+  @java.lang.Override
+  public boolean getNotEnoughMatches() {
+    return notEnoughMatches_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -156,6 +175,9 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(displayName_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 2, displayName_);
     }
+    if (notEnoughMatches_ != false) {
+      output.writeBool(3, notEnoughMatches_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -165,6 +187,10 @@ private static final long serialVersionUID = 0L;
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(displayName_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(2, displayName_);
+    }
+    if (notEnoughMatches_ != false) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeBoolSize(3, notEnoughMatches_);
     }
     return size;
   }
@@ -194,6 +220,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getUserId())) return false;
     if (!getDisplayName()
         .equals(other.getDisplayName())) return false;
+    if (getNotEnoughMatches()
+        != other.getNotEnoughMatches()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -209,6 +237,9 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getUserId().hashCode();
     hash = (37 * hash) + DISPLAY_NAME_FIELD_NUMBER;
     hash = (53 * hash) + getDisplayName().hashCode();
+    hash = (37 * hash) + NOT_ENOUGH_MATCHES_FIELD_NUMBER;
+    hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+        getNotEnoughMatches());
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -342,6 +373,7 @@ private static final long serialVersionUID = 0L;
       bitField0_ = 0;
       userId_ = "";
       displayName_ = "";
+      notEnoughMatches_ = false;
       return this;
     }
 
@@ -381,6 +413,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000002) != 0)) {
         result.displayName_ = displayName_;
       }
+      if (((from_bitField0_ & 0x00000004) != 0)) {
+        result.notEnoughMatches_ = notEnoughMatches_;
+      }
     }
 
     @java.lang.Override
@@ -404,6 +439,9 @@ private static final long serialVersionUID = 0L;
         displayName_ = other.displayName_;
         bitField0_ |= 0x00000002;
         onChanged();
+      }
+      if (other.getNotEnoughMatches() != false) {
+        setNotEnoughMatches(other.getNotEnoughMatches());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -439,6 +477,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000002;
               break;
             } // case 18
+            case 24: {
+              notEnoughMatches_ = input.readBool();
+              bitField0_ |= 0x00000004;
+              break;
+            } // case 24
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -616,6 +659,62 @@ private static final long serialVersionUID = 0L;
       checkByteStringIsUtf8(value);
       displayName_ = value;
       bitField0_ |= 0x00000002;
+      onChanged();
+      return this;
+    }
+
+    private boolean notEnoughMatches_ ;
+    /**
+     * <pre>
+     * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
+     * matches the room played together.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 3 [json_name = "notEnoughMatches"];</code>
+     * @return The notEnoughMatches.
+     */
+    @java.lang.Override
+    public boolean getNotEnoughMatches() {
+      return notEnoughMatches_;
+    }
+    /**
+     * <pre>
+     * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
+     * matches the room played together.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 3 [json_name = "notEnoughMatches"];</code>
+     * @param value The notEnoughMatches to set.
+     * @return This builder for chaining.
+     */
+    public Builder setNotEnoughMatches(boolean value) {
+
+      notEnoughMatches_ = value;
+      bitField0_ |= 0x00000004;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+     * or Unrated matches. Such a player is never compared, so never the answer,
+     * a pair question's friend or the source of a stat. They are still an option
+     * in every question, and their matches still count when deciding which
+     * matches the room played together.
+     * </pre>
+     *
+     * <code>bool not_enough_matches = 3 [json_name = "notEnoughMatches"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearNotEnoughMatches() {
+      bitField0_ = (bitField0_ & ~0x00000004);
+      notEnoughMatches_ = false;
       onChanged();
       return this;
     }

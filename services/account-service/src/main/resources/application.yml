@@ -32,9 +32,14 @@ spring:
       channel:
         matchdata:
           target: ${MATCHDATA_GRPC_ADDR:localhost:9095}
+        scoring:
+          target: ${SCORING_GRPC_ADDR:localhost:9094}
   devtools:
     livereload:
       enabled: false
 
 friendlyfire:
+  # The mock RSO as this service calls it (inside Docker) ...
   mock-rso-url: ${MOCK_RSO_URL:http://localhost:8090}
+  # ... and as the player's browser reaches it, for the Riot link page.
+  mock-rso-browser-url: ${MOCK_RSO_BROWSER_URL:http://localhost:8090}

@@ -45,9 +45,6 @@ class DeepHealthGrpcTest {
     @TestBean
     private ManagedChannel scoringChannel;
 
-    @TestBean
-    private ManagedChannel matchDataChannel;
-
     @Autowired
     private MockMvc mvc;
 
@@ -63,16 +60,11 @@ class DeepHealthGrpcTest {
         return InProcessChannelBuilder.forName("fake-scoring").build();
     }
 
-    static ManagedChannel matchDataChannel() {
-        return InProcessChannelBuilder.forName("fake-matchdata").build();
-    }
-
     @BeforeAll
     static void startFakeServices() throws IOException {
         fakes = List.of(
                 fake("fake-account", node("account-service", node("postgres"))),
-                fake("fake-room", node("room-service")),
-                fake("fake-matchdata", node("match-data-service", node("postgres"))));
+                fake("fake-room", node("room-service")));
     }
 
     @AfterAll
@@ -86,8 +78,8 @@ class DeepHealthGrpcTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("DEGRADED"))
                 .andExpect(jsonPath("$.dependencies[*].name")
-                        .value(contains("account-service", "room-service", "scoring-service", "match-data-service")))
-                .andExpect(jsonPath("$.dependencies[*].status").value(contains("UP", "UP", "DOWN", "UP")))
+                        .value(contains("account-service", "room-service", "scoring-service")))
+                .andExpect(jsonPath("$.dependencies[*].status").value(contains("UP", "UP", "DOWN")))
                 .andExpect(jsonPath("$.dependencies[0].dependencies[0].name").value("postgres"))
                 .andExpect(jsonPath("$.dependencies[2].error").exists());
     }

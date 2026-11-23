@@ -31,6 +31,7 @@ private static final long serialVersionUID = 0L;
     quizId_ = "";
     endReason_ = 0;
     finalScoreboard_ = java.util.Collections.emptyList();
+    hostDisplayName_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -224,6 +225,64 @@ private static final long serialVersionUID = 0L;
     return finalScoreboard_.get(index);
   }
 
+  public static final int HOST_DISPLAY_NAME_FIELD_NUMBER = 8;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object hostDisplayName_ = "";
+  /**
+   * <pre>
+   * From StartQuiz.
+   * </pre>
+   *
+   * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+   * @return The hostDisplayName.
+   */
+  @java.lang.Override
+  public java.lang.String getHostDisplayName() {
+    java.lang.Object ref = hostDisplayName_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      hostDisplayName_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * From StartQuiz.
+   * </pre>
+   *
+   * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+   * @return The bytes for hostDisplayName.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getHostDisplayNameBytes() {
+    java.lang.Object ref = hostDisplayName_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      hostDisplayName_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int SECONDS_PER_QUESTION_FIELD_NUMBER = 9;
+  private int secondsPerQuestion_ = 0;
+  /**
+   * <code>int32 seconds_per_question = 9 [json_name = "secondsPerQuestion"];</code>
+   * @return The secondsPerQuestion.
+   */
+  @java.lang.Override
+  public int getSecondsPerQuestion() {
+    return secondsPerQuestion_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -258,6 +317,12 @@ private static final long serialVersionUID = 0L;
     }
     for (int i = 0; i < finalScoreboard_.size(); i++) {
       output.writeMessage(7, finalScoreboard_.get(i));
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(hostDisplayName_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 8, hostDisplayName_);
+    }
+    if (secondsPerQuestion_ != 0) {
+      output.writeInt32(9, secondsPerQuestion_);
     }
     getUnknownFields().writeTo(output);
   }
@@ -295,6 +360,13 @@ private static final long serialVersionUID = 0L;
           }
           size += 1 * count;
         }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(hostDisplayName_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(8, hostDisplayName_);
+    }
+    if (secondsPerQuestion_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(9, secondsPerQuestion_);
+    }
     return size;
   }
   @java.lang.Override
@@ -338,6 +410,10 @@ private static final long serialVersionUID = 0L;
     if (endReason_ != other.endReason_) return false;
     if (!getFinalScoreboardList()
         .equals(other.getFinalScoreboardList())) return false;
+    if (!getHostDisplayName()
+        .equals(other.getHostDisplayName())) return false;
+    if (getSecondsPerQuestion()
+        != other.getSecondsPerQuestion()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -369,6 +445,10 @@ private static final long serialVersionUID = 0L;
       hash = (37 * hash) + FINAL_SCOREBOARD_FIELD_NUMBER;
       hash = (53 * hash) + getFinalScoreboardList().hashCode();
     }
+    hash = (37 * hash) + HOST_DISPLAY_NAME_FIELD_NUMBER;
+    hash = (53 * hash) + getHostDisplayName().hashCode();
+    hash = (37 * hash) + SECONDS_PER_QUESTION_FIELD_NUMBER;
+    hash = (53 * hash) + getSecondsPerQuestion();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -529,6 +609,8 @@ private static final long serialVersionUID = 0L;
         finalScoreboardBuilder_.clear();
       }
       bitField0_ = (bitField0_ & ~0x00000040);
+      hostDisplayName_ = "";
+      secondsPerQuestion_ = 0;
       return this;
     }
 
@@ -600,6 +682,12 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000020) != 0)) {
         result.endReason_ = endReason_;
       }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.hostDisplayName_ = hostDisplayName_;
+      }
+      if (((from_bitField0_ & 0x00000100) != 0)) {
+        result.secondsPerQuestion_ = secondsPerQuestion_;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -660,6 +748,14 @@ private static final long serialVersionUID = 0L;
             finalScoreboardBuilder_.addAllMessages(other.finalScoreboard_);
           }
         }
+      }
+      if (!other.getHostDisplayName().isEmpty()) {
+        hostDisplayName_ = other.hostDisplayName_;
+        bitField0_ |= 0x00000080;
+        onChanged();
+      }
+      if (other.getSecondsPerQuestion() != 0) {
+        setSecondsPerQuestion(other.getSecondsPerQuestion());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -732,6 +828,16 @@ private static final long serialVersionUID = 0L;
               }
               break;
             } // case 58
+            case 66: {
+              hostDisplayName_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 66
+            case 72: {
+              secondsPerQuestion_ = input.readInt32();
+              bitField0_ |= 0x00000100;
+              break;
+            } // case 72
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1407,6 +1513,130 @@ private static final long serialVersionUID = 0L;
         finalScoreboard_ = null;
       }
       return finalScoreboardBuilder_;
+    }
+
+    private java.lang.Object hostDisplayName_ = "";
+    /**
+     * <pre>
+     * From StartQuiz.
+     * </pre>
+     *
+     * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+     * @return The hostDisplayName.
+     */
+    public java.lang.String getHostDisplayName() {
+      java.lang.Object ref = hostDisplayName_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        hostDisplayName_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * From StartQuiz.
+     * </pre>
+     *
+     * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+     * @return The bytes for hostDisplayName.
+     */
+    public com.google.protobuf.ByteString
+        getHostDisplayNameBytes() {
+      java.lang.Object ref = hostDisplayName_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        hostDisplayName_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * From StartQuiz.
+     * </pre>
+     *
+     * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+     * @param value The hostDisplayName to set.
+     * @return This builder for chaining.
+     */
+    public Builder setHostDisplayName(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      hostDisplayName_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * From StartQuiz.
+     * </pre>
+     *
+     * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearHostDisplayName() {
+      hostDisplayName_ = getDefaultInstance().getHostDisplayName();
+      bitField0_ = (bitField0_ & ~0x00000080);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * From StartQuiz.
+     * </pre>
+     *
+     * <code>string host_display_name = 8 [json_name = "hostDisplayName"];</code>
+     * @param value The bytes for hostDisplayName to set.
+     * @return This builder for chaining.
+     */
+    public Builder setHostDisplayNameBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      hostDisplayName_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+
+    private int secondsPerQuestion_ ;
+    /**
+     * <code>int32 seconds_per_question = 9 [json_name = "secondsPerQuestion"];</code>
+     * @return The secondsPerQuestion.
+     */
+    @java.lang.Override
+    public int getSecondsPerQuestion() {
+      return secondsPerQuestion_;
+    }
+    /**
+     * <code>int32 seconds_per_question = 9 [json_name = "secondsPerQuestion"];</code>
+     * @param value The secondsPerQuestion to set.
+     * @return This builder for chaining.
+     */
+    public Builder setSecondsPerQuestion(int value) {
+
+      secondsPerQuestion_ = value;
+      bitField0_ |= 0x00000100;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int32 seconds_per_question = 9 [json_name = "secondsPerQuestion"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearSecondsPerQuestion() {
+      bitField0_ = (bitField0_ & ~0x00000100);
+      secondsPerQuestion_ = 0;
+      onChanged();
+      return this;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.scoring.v1.QuizSummary)

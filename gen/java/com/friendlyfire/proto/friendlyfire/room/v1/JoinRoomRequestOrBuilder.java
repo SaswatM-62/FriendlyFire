@@ -45,4 +45,24 @@ public interface JoinRoomRequestOrBuilder extends
    */
   com.google.protobuf.ByteString
       getDisplayNameBytes();
+
+  /**
+   * <pre>
+   * From the player's Riot link (Player.riot_tag_line); empty if not linked.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 4 [json_name = "riotTagLine"];</code>
+   * @return The riotTagLine.
+   */
+  java.lang.String getRiotTagLine();
+  /**
+   * <pre>
+   * From the player's Riot link (Player.riot_tag_line); empty if not linked.
+   * </pre>
+   *
+   * <code>string riot_tag_line = 4 [json_name = "riotTagLine"];</code>
+   * @return The bytes for riotTagLine.
+   */
+  com.google.protobuf.ByteString
+      getRiotTagLineBytes();
 }
