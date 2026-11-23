@@ -2,6 +2,8 @@ package grpcserver_test
 
 import (
 	"context"
+	"io"
+	"log/slog"
 	"net"
 	"testing"
 	"time"
@@ -12,14 +14,13 @@ import (
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/health"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/matchdata"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/testutil"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/testutil/fakes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/goleak"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	grpchealthv1 "google.golang.org/grpc/health/grpc_health_v1"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -32,7 +33,8 @@ func connect(t *testing.T) *grpc.ClientConn {
 	t.Helper()
 	listener := bufconn.Listen(1 << 20)
 	checker := health.NewChecker("match-data-service", []health.Check{testutil.UpCheck("postgres")}, time.Second)
-	server := grpcserver.New(matchdata.NewServer(), checker)
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	server := grpcserver.New(matchdata.NewServer(fakes.NewFakeStore(), fakes.NewFakeSyncer(), logger), checker)
 	go func() { _ = server.Serve(listener) }()
 
 	conn, err := grpc.NewClient("passthrough:///bufnet",
@@ -58,13 +60,14 @@ func TestGRPCHealthIsServing(t *testing.T) {
 	assert.Equal(t, grpchealthv1.HealthCheckResponse_SERVING, response.GetStatus())
 }
 
-func TestRPCsAreNotImplementedYet(t *testing.T) {
+func TestMatchDataServiceIsRegistered(t *testing.T) {
 	conn := connect(t)
 
-	_, err := matchdatav1.NewMatchDataServiceClient(conn).GetSyncStatus(context.Background(), &matchdatav1.GetSyncStatusRequest{})
+	response, err := matchdatav1.NewMatchDataServiceClient(conn).GetSyncStatus(
+		context.Background(), &matchdatav1.GetSyncStatusRequest{UserIds: []string{"nobody"}})
 
-	assert.Equal(t, codes.Unimplemented, status.Code(err))
-	assert.Equal(t, "not implemented yet", status.Convert(err).Message())
+	require.NoError(t, err)
+	assert.Equal(t, matchdatav1.SyncStatus_SYNC_STATUS_NOT_LINKED, response.GetStatuses()[0].GetStatus())
 }
 
 func TestCheckDependenciesOverGRPC(t *testing.T) {
