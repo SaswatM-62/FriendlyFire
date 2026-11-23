@@ -14,7 +14,9 @@ public record QuizSummaryJson(
         int totalRounds,
         int roundsPlayed,
         String endReason,
-        List<ScoreboardEntryJson> finalScoreboard) {
+        List<ScoreboardEntryJson> finalScoreboard,
+        String hostDisplayName,
+        Integer secondsPerQuestion) {
 
     public static QuizSummaryJson from(QuizSummary quiz) {
         return new QuizSummaryJson(
@@ -24,7 +26,9 @@ public record QuizSummaryJson(
                 quiz.getTotalRounds(),
                 quiz.getRoundsPlayed(),
                 ProtoJson.enumName(quiz.getEndReason(), "END_REASON_"),
-                quiz.getFinalScoreboardList().stream().map(ScoreboardEntryJson::from).toList());
+                quiz.getFinalScoreboardList().stream().map(ScoreboardEntryJson::from).toList(),
+                ProtoJson.text(quiz.getHostDisplayName()),
+                quiz.getSecondsPerQuestion() > 0 ? quiz.getSecondsPerQuestion() : null);
     }
 
     public record ScoreboardEntryJson(String userId, String displayName, int totalPoints, int correctAnswers, int rank) {

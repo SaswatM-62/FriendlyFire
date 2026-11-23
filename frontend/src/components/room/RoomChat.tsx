@@ -81,7 +81,7 @@ export function ChatPanel({ lines, onSend, onClose }: { lines: ChatLine[]; onSen
                 <Character look={p.look} size={18} />
               </span>
               <p>
-                <b style={{ color: `var(--player-${colourIndex(p.look.colour)})` }}>{p.name}</b>
+                <b style={{ color: `var(--player-${colourIndex(p.look.colour)})` }}>{p.player ? p.name : (line.name ?? p.name)}</b>
                 <span className="muted">{line.text}</span>
               </p>
             </li>

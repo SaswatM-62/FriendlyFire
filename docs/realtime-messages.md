@@ -32,7 +32,7 @@ shapes are typed for the frontend in
 | `/app/room/{code}/answer` | browser → server | `{"questionId": "…", "optionId": "…"}` |
 | `/app/room/{code}/vote` | browser → server | `{"option": "PAUSE" \| "CONTINUE_WITHOUT_PLAYER" \| "END_QUIZ"}` |
 | `/app/room/{code}/connection-quality` | browser → server | `{"quality": "GOOD" \| "FAIR" \| "POOR"}` |
-| `/app/room/{code}/chat` | browser → server | Proposed, see [Room chat](#room-chat-proposed): `{"text": "gg"}` |
+| `/app/room/{code}/chat` | browser → server | `{"text": "gg"}`, see [Room chat](#room-chat) |
 
 `/app/ping` is answered with the browser's own `t`, so the browser can time the round trip.
 With `serverTime` (the Gateway's `System.currentTimeMillis()` when it answered) the
@@ -84,31 +84,41 @@ host pressed Start; the questions are being built), `QUIZ_START_FAILED` (back to
 see `message`), `QUIZ_STARTING`,
 `QUESTION_STARTED`, `PLAYER_ANSWERED`, `QUESTION_REVEALED`, `VOTE_STARTED`, `VOTE_CAST`
 (the counts changed), `VOTE_RESOLVED`, `QUIZ_PAUSED` (ADR-026),
-`QUIZ_FINISHED`, `ROOM_CLOSED` (the last message), and `CHAT_MESSAGE` (proposed, see
-[Room chat](#room-chat-proposed)).
+`QUIZ_FINISHED`, `ROOM_CLOSED` (the last message), and `CHAT_MESSAGE` (see
+[Room chat](#room-chat)).
 
-**Settings and kicks after a quiz (proposed).** The design's final results screen has
-"Back to lobby": everyone sees the lobby again while the room stays `FINISHED`, and the
-host presses Start (already allowed from `FINISHED`). For the host to change the settings
-or remove someone there, `settings` and `kick` must be accepted in `FINISHED` as well as
-`LOBBY`. The fake backend does this; the room service refuses them today.
+**Settings and kicks after a quiz.** The final results screen has "Back to lobby":
+everyone sees the lobby again while the room stays `FINISHED`, and the host presses Start
+(allowed from `FINISHED`). `settings` and `kick` are accepted in `FINISHED` as well as
+`LOBBY`, so the host can change the settings or remove someone there.
 
-### Room chat (proposed)
+**How a quiz moves along** (Room's timings, all from its clock): `PREPARING` at least
+8 seconds (at most 60), then a 3-second `STARTING` countdown before every question, the
+question for the room's seconds per question (or until every connected player has
+answered), then a 10-second `REVEAL`. After a reveal (or after preparing), if a player has
+dropped, the others get a 15-second `VOTE`; a pause lasts up to 60 seconds, 180 per quiz,
+and unused pause time comes back if they return early. A quiz with fewer than 2 players left
+ends with `NOT_ENOUGH_PLAYERS`. A host who stays disconnected for 30 seconds in the lobby (or
+after a quiz) hands the host role to the next connected player.
 
-The design keeps a room chat open on every room screen. Nothing in the contracts carries it
-yet; this is what the frontend and its fake backend do, for the stories that add it.
+### Room chat
 
-- The browser sends `/app/room/{code}/chat` with `{"text": "…"}`. The server trims it and
-  refuses an empty one or one over 200 characters with `INVALID_ARGUMENT` on
-  `/user/queue/errors`.
-- The server sends everyone in the room a `RoomEvent` with `type` `CHAT_MESSAGE`,
+Chat is open in every phase, spectators included (FF-315).
+
+- The browser sends `/app/room/{code}/chat` with `{"text": "…"}`, at most 5 messages per
+  5 seconds (`RATE_LIMITED` after that). Room trims it and refuses an empty one or one over
+  200 characters with `INVALID_ARGUMENT` on `/user/queue/errors`.
+- Room sends everyone in the room a `RoomEvent` with `type` `CHAT_MESSAGE`,
   `subjectUserId` the sender, the usual `snapshot`, and
-  `"chat": {"messageId": "…", "userId": "…", "text": "gg", "sentAt": "…"}`.
-- Messages aren't in the snapshot and aren't stored: a browser shows the ones it received
-  since it opened the room.
+  `"chat": {"messageId": "…", "userId": "…", "displayName": "Sam", "text": "gg", "sentAt": "…"}`.
+  `displayName` is the name when it was sent, so a message still has a name after its
+  sender leaves; it becomes "Deleted player" when they delete their account.
+- Messages aren't in the snapshot. Room keeps each room's last 200 until the room closes:
+  `GET /api/rooms/{code}/chat` returns `{"messages": [...]}`, oldest first, for a page load
+  or a rejoin (players in the room only: `403 NOT_IN_ROOM` otherwise). The browser skips
+  messages it already shows, by `messageId`.
 - The grey lines in the chat ("Sam joined the room", "Question 3 started", "Time's up",
-  "Maya won the quiz") come from the events the room already sends, so they need nothing
-  from the server.
+  "Maya won the quiz") come from the events the room already sends.
 
 ## RoomSnapshot
 
@@ -148,10 +158,10 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 |---|---|
 | `phase` | `LOBBY`, `PREPARING`, `STARTING`, `QUESTION`, `REVEAL`, `VOTE`, `PAUSED` (ADR-026), `FINISHED` |
 | `phase` = `PREPARING` | After Start, while the quiz engine builds the questions. Every browser shows the loading screen (how a quiz works). It lasts at least 8 seconds (`phaseDeadline`) and at most 60; then `STARTING`, or `VOTE` first if someone dropped meanwhile, or back to `LOBBY` with `QUIZ_START_FAILED`. Settings, kicks and a second Start are refused; the host can't cancel |
-| `phase` = `STARTING` | The 3-second countdown before the first question (`roundNumber` 0). Proposed, needs FF-417 updated: the same 3 seconds before every later question and after a pause, with `roundNumber` still the question just played, so the browser shows "Get ready, question N+1". The design gives the reveal 10 seconds (FF-417 says 5) |
+| `phase` = `STARTING` | The 3-second countdown before every question, and after a vote or a pause. `roundNumber` is still the question just played (0 before the first), so the browser shows "Get ready, question N+1" |
 | `players` | In the order they joined; the frontend gives player N the Nth character and colour |
 | `players[].status` | `CONNECTED`, `DISCONNECTED`, `SITTING_OUT`, `SPECTATING` (joined while a quiz was preparing or running: sees the room and chats, but can't answer or vote, isn't an option and has no score; plays from the next quiz) |
-| `players[].dataStatus` | `SYNCED`, `SYNCING`, `NOT_SYNCED`, `NOT_LINKED`, `FAILED`, from Account (ADR-010; replaces `matchDataReady`). Left out until Room fills it (FF-307) |
+| `players[].dataStatus` | `SYNCED`, `SYNCING`, `NOT_SYNCED`, `NOT_LINKED`, `FAILED`, from Account (ADR-010; replaces `matchDataReady`). Room asks when they join and every 5 seconds in the lobby, and sends `PLAYER_DATA_READY` when it changes (FF-307). Left out if Account couldn't answer yet |
 | `players[].dataEstimatedSeconds` | Only while `SYNCING` with an estimate |
 | `players[].riotTagLine` | Shown as "Sam (NA1)" when two players share a name; left out if not linked |
 | `players[].notEnoughMatches` | Synced, but fewer than 5 Competitive or Unrated matches in the last 30 days: they play, but no question is about them (FF-307). The frontend still reads the older `noRecentMatches` name |
@@ -163,8 +173,8 @@ yet; this is what the frontend and its fake backend do, for the stories that add
 | `activeVote` | During `VOTE`: `{aboutUserId, deadline, pauseVotes, continueVotes, endVotes, votedUserIds, pauseAllowed}`. `votedUserIds` says who voted, never what. `pauseAllowed` is false once the quiz's 3 minutes of pauses are used (ADR-026) |
 | `waitingForUserId` | During `PAUSED`: the disconnected player the room is waiting for (ADR-026) |
 | `pauseSecondsLeft` | Pause time left in this quiz, out of 180; left out until a quiz starts (ADR-026) |
-| `endReason` | Planned: when `FINISHED`, `COMPLETED`, `VOTED_TO_END` or `NOT_ENOUGH_PLAYERS` |
-| `fastestAnswer` | Planned: `{userId, seconds}`, the quickest correct answer, for the podium |
+| `endReason` | When `FINISHED`: `COMPLETED`, `VOTED_TO_END` or `NOT_ENOUGH_PLAYERS` |
+| `fastestAnswer` | When `FINISHED`, if anyone answered correctly: `{userId, seconds}` (one decimal), the quickest correct answer, for the podium |
 
 ## Errors
 

@@ -1,6 +1,7 @@
 package com.friendlyfire.gateway.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
 import com.friendlyfire.proto.friendlyfire.room.v1.QuestionOption;
@@ -31,7 +32,9 @@ public record RoomSnapshotJson(
         List<ScoreEntryJson> scoreboard,
         VoteJson activeVote,
         String waitingForUserId,
-        Integer pauseSecondsLeft) {
+        Integer pauseSecondsLeft,
+        String endReason,
+        FastestAnswerJson fastestAnswer) {
 
     public static RoomSnapshotJson from(RoomSnapshot room) {
         return new RoomSnapshotJson(
@@ -48,7 +51,17 @@ public record RoomSnapshotJson(
                 room.hasActiveVote() ? VoteJson.from(room.getActiveVote()) : null,
                 ProtoJson.text(room.getWaitingForUserId()),
                 // Pause time left in this quiz: only once a quiz has started.
-                room.getQuizId().isEmpty() ? null : room.getPauseSecondsLeft());
+                room.getQuizId().isEmpty() ? null : room.getPauseSecondsLeft(),
+                ProtoJson.enumName(room.getEndReason(), "END_REASON_"),
+                room.hasFastestAnswer() ? FastestAnswerJson.from(room.getFastestAnswer()) : null);
+    }
+
+    /** During FINISHED: the quickest correct answer of the quiz, in seconds to one decimal (the podium). */
+    public record FastestAnswerJson(String userId, double seconds) {
+
+        static FastestAnswerJson from(FastestAnswer fastest) {
+            return new FastestAnswerJson(fastest.getUserId(), Math.round(fastest.getResponseTimeMs() / 100.0) / 10.0);
+        }
     }
 
     public record SettingsJson(int questionCount, int secondsPerQuestion) {
@@ -125,7 +138,8 @@ public record RoomSnapshotJson(
         }
     }
 
-    public record ScoreEntryJson(String userId, String displayName, int totalPoints, int rank, int pointsLastRound) {
+    public record ScoreEntryJson(
+            String userId, String displayName, int totalPoints, int rank, int pointsLastRound, int correctAnswers) {
 
         static ScoreEntryJson from(ScoreEntry entry) {
             return new ScoreEntryJson(
@@ -133,7 +147,8 @@ public record RoomSnapshotJson(
                     entry.getDisplayName(),
                     entry.getTotalPoints(),
                     entry.getRank(),
-                    entry.getPointsLastRound());
+                    entry.getPointsLastRound(),
+                    entry.getCorrectAnswers());
         }
     }
 

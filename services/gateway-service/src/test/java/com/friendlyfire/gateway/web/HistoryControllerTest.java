@@ -30,6 +30,8 @@ class HistoryControllerTest extends GatewayTestBase {
                 .andExpect(jsonPath("$.quizzes[0].endReason").value("COMPLETED"))
                 .andExpect(jsonPath("$.quizzes[0].finalScoreboard[0].displayName").value("Maya"))
                 .andExpect(jsonPath("$.quizzes[0].finalScoreboard[0].correctAnswers").value(6))
+                .andExpect(jsonPath("$.quizzes[0].hostDisplayName").value("Maya"))
+                .andExpect(jsonPath("$.quizzes[0].secondsPerQuestion").value(20))
                 .andExpect(jsonPath("$.nextPageToken").doesNotExist());
 
         GetPlayerHistoryRequest request = SCORING.calls.last(GetPlayerHistoryRequest.class);

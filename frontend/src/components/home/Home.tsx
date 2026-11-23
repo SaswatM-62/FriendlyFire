@@ -25,10 +25,7 @@ const noop = () => () => {};
 /** What to say when joining fails, by the Gateway's error. */
 function joinError(error: ApiError): string {
   if (error.status === 404) return "Room not found. Check the code and try again.";
-  if (error.code === ERROR_CODES.roomFull) return "That room is full (8 players).";
-  if (error.code === ERROR_CODES.quizAlreadyStarted || error.status === 409) {
-    return "That quiz has already started. Ask them to play again after it ends.";
-  }
+  if (error.code === ERROR_CODES.roomFull || error.status === 409) return "That room is full (8 players).";
   return error.message;
 }
 

@@ -35,6 +35,8 @@ service RoomService {
   // refresh or dropped connection), marks them connected again instead.
   // Someone new who joins while a quiz is preparing or running joins as a
   // spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+  // A user is in one room at a time: joining another room takes them out of
+  // the one they were in first, like LeaveRoom.
   // Errors:
   //   RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
   rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
@@ -43,10 +45,12 @@ service RoomService {
   // next becomes host. The room closes when the last player leaves.
   rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
 
-  // Host only. Removes another player. Only allowed in the lobby.
+  // Host only. Removes another player. Only allowed in the lobby, or after a
+  // quiz finishes (ROOM_PHASE_FINISHED, before playing again).
   rpc KickPlayer(KickPlayerRequest) returns (KickPlayerResponse);
 
-  // Host only. Only allowed in the lobby.
+  // Host only. Only allowed in the lobby, or after a quiz finishes
+  // (ROOM_PHASE_FINISHED, before playing again).
   // INVALID_ARGUMENT if a value is outside the allowed range.
   rpc UpdateSettings(UpdateSettingsRequest) returns (UpdateSettingsResponse);
 
@@ -107,6 +111,16 @@ service RoomService {
   // (the host role moves on, an empty room closes). Not an error if they
   // aren't in a room.
   rpc RemovePlayer(RemovePlayerRequest) returns (RemovePlayerResponse);
+
+  // A chat message from someone in the room (spectators too), in any phase.
+  // The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+  // otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+  // The room keeps its last 200 messages until it closes.
+  rpc SendChatMessage(SendChatMessageRequest) returns (SendChatMessageResponse);
+
+  // The room's kept messages, oldest first, for a browser that just opened
+  // or rejoined the room.
+  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
 }
 
 // ---------- Enums ----------
@@ -218,6 +232,20 @@ enum RoomEventType {
   // Building the questions failed or took too long; the room is back in the
   // lobby. RoomEvent.message says why.
   ROOM_EVENT_TYPE_QUIZ_START_FAILED = 22;
+  // Someone sent a chat message (RoomEvent.chat).
+  ROOM_EVENT_TYPE_CHAT_MESSAGE = 23;
+}
+
+// Why a quiz ended (RoomSnapshot.end_reason); the same values as
+// ScoringService's EndReason.
+enum EndReason {
+  END_REASON_UNSPECIFIED = 0;
+  // All rounds were played.
+  END_REASON_COMPLETED = 1;
+  // Players voted to end the quiz early.
+  END_REASON_VOTED_TO_END = 2;
+  // Fewer than 2 players were left.
+  END_REASON_NOT_ENOUGH_PLAYERS = 3;
 }
 
 // ---------- Shared messages ----------
@@ -251,6 +279,17 @@ message RoomSnapshot {
   string waiting_for_user_id = 12;
   // Pause time left in this quiz, in seconds: 180 when a quiz starts.
   int32 pause_seconds_left = 13;
+  // Set during FINISHED: why the quiz ended.
+  EndReason end_reason = 14;
+  // Set during FINISHED, if anyone answered correctly: the quickest correct
+  // answer of the quiz, for the podium.
+  FastestAnswer fastest_answer = 15;
+}
+
+message FastestAnswer {
+  string user_id = 1;
+  // From the question appearing to the answer arriving at RoomService.
+  int32 response_time_ms = 2;
 }
 
 message RoomSettings {
@@ -319,6 +358,7 @@ message ScoreEntry {
   // 1 = first place. Equal points share a rank.
   int32 rank = 4;
   int32 points_last_round = 5;
+  int32 correct_answers = 6;
 }
 
 message Vote {
@@ -346,6 +386,19 @@ message RoomEvent {
   // (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
   // Try 10.").
   string message = 5;
+  // Set on CHAT_MESSAGE.
+  ChatMessage chat = 6;
+}
+
+message ChatMessage {
+  string message_id = 1;
+  string user_id = 2;
+  // As it was when they sent it, so it still shows after they leave;
+  // "Deleted player" once they delete their account.
+  string display_name = 3;
+  // 1–200 characters, trimmed.
+  string text = 4;
+  google.protobuf.Timestamp sent_at = 5;
 }
 
 // ---------- Requests and responses ----------
@@ -469,3 +522,24 @@ message RemovePlayerRequest {
 }
 
 message RemovePlayerResponse {}
+
+message SendChatMessageRequest {
+  string room_code = 1;
+  string user_id = 2;
+  string text = 3;
+}
+
+message SendChatMessageResponse {
+  ChatMessage message = 1;
+}
+
+message GetChatHistoryRequest {
+  string room_code = 1;
+  // Must be in the room.
+  string user_id = 2;
+}
+
+message GetChatHistoryResponse {
+  // Oldest first, at most 200.
+  repeated ChatMessage messages = 1;
+}

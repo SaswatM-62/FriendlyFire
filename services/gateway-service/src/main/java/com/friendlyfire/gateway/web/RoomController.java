@@ -1,10 +1,12 @@
 package com.friendlyfire.gateway.web;
 
+import com.friendlyfire.gateway.json.ChatMessageJson;
 import com.friendlyfire.gateway.json.RoomSnapshotJson;
 import com.friendlyfire.gateway.protection.RateLimit;
 import com.friendlyfire.gateway.protection.RateLimiter;
 import com.friendlyfire.gateway.security.SignedInUser;
 import com.friendlyfire.proto.friendlyfire.room.v1.CreateRoomRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.GetChatHistoryRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.GetRoomSnapshotRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.JoinRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
@@ -30,8 +32,7 @@ public class RoomController {
 
     private static final Map<Status.Code, String> JOIN_ERRORS = Map.of(
             Status.Code.NOT_FOUND, ErrorCodes.ROOM_NOT_FOUND,
-            Status.Code.RESOURCE_EXHAUSTED, ErrorCodes.ROOM_FULL,
-            Status.Code.FAILED_PRECONDITION, ErrorCodes.QUIZ_ALREADY_STARTED);
+            Status.Code.RESOURCE_EXHAUSTED, ErrorCodes.ROOM_FULL);
 
     private static final Map<Status.Code, String> SNAPSHOT_ERRORS = Map.of(
             Status.Code.NOT_FOUND, ErrorCodes.ROOM_NOT_FOUND,
@@ -59,8 +60,9 @@ public class RoomController {
     }
 
     /**
-     * Joins a room, or rejoins it after a refresh or a dropped connection. 404
-     * ROOM_NOT_FOUND, 409 ROOM_FULL (8 players), 409 QUIZ_ALREADY_STARTED.
+     * Joins a room, or rejoins it after a refresh or a dropped connection; someone new
+     * during a quiz watches until it ends (SPECTATING). 404 ROOM_NOT_FOUND, 409 ROOM_FULL
+     * (8 people, spectators included).
      */
     @PostMapping("/{code}/join")
     public RoomSnapshotJson join(@PathVariable String code, SignedInUser me, HttpServletRequest request) {
@@ -75,6 +77,20 @@ public class RoomController {
                         .build()))
                 .getSnapshot();
         return RoomSnapshotJson.from(room);
+    }
+
+    /**
+     * The room's chat so far (FF-315), oldest first, for a page load or a rejoin. Live
+     * messages then come as CHAT_MESSAGE events. 404 ROOM_NOT_FOUND, 403 NOT_IN_ROOM.
+     */
+    @GetMapping("/{code}/chat")
+    public ChatMessageJson.History chat(@PathVariable String code, SignedInUser me) {
+        String roomCode = RoomCodes.require(code);
+        var history = GrpcErrors.renaming(SNAPSHOT_ERRORS, () -> rooms.getChatHistory(GetChatHistoryRequest.newBuilder()
+                .setRoomCode(roomCode)
+                .setUserId(me.userId())
+                .build()));
+        return new ChatMessageJson.History(history.getMessagesList().stream().map(ChatMessageJson::from).toList());
     }
 
     /** The room's current state, for a page load. 404 ROOM_NOT_FOUND, 403 NOT_IN_ROOM. */

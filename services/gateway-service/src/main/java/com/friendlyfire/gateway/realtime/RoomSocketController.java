@@ -10,6 +10,7 @@ import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportConnectionQualityRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomSettings;
+import com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.SubmitAnswerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.UpdateSettingsRequest;
@@ -35,7 +36,7 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class RoomSocketController {
 
-    /** StartQuiz generates the whole quiz before it answers (FF-006). */
+    /** StartQuiz checks everyone's data status before it answers; the questions come later. */
     static final Duration START_QUIZ_DEADLINE = Duration.ofSeconds(15);
 
     private final RoomServiceBlockingStub rooms;
@@ -54,7 +55,7 @@ public class RoomSocketController {
         rooms.leaveRoom(LeaveRoomRequest.newBuilder().setRoomCode(code).setUserId(userId(user)).build());
     }
 
-    /** Host only, in the lobby: removes a player (FF-306). */
+    /** Host only, in the lobby or after a quiz: removes a player (FF-306). */
     @MessageMapping("/room/{code}/kick")
     public void kick(@DestinationVariable String code, @Payload(required = false) Kick body, Principal user) {
         rooms.kickPlayer(KickPlayerRequest.newBuilder()
@@ -64,7 +65,7 @@ public class RoomSocketController {
                 .build());
     }
 
-    /** Host only, in the lobby: question count and time per question (FF-306). */
+    /** Host only, in the lobby or after a quiz: question count and time per question (FF-306). */
     @MessageMapping("/room/{code}/settings")
     public void settings(@DestinationVariable String code, @Payload(required = false) Settings body, Principal user) {
         Settings settings = require(body);
@@ -111,6 +112,20 @@ public class RoomSocketController {
                 .setRoomCode(code)
                 .setUserId(userId(user))
                 .setOption(voteOption(require(body).option()))
+                .build());
+    }
+
+    /** A room chat message (FF-315): Room trims it and sends it to everyone as CHAT_MESSAGE. */
+    @MessageMapping("/room/{code}/chat")
+    public void chat(
+            @DestinationVariable String code, @Payload(required = false) Chat body, Principal user,
+            @Header(SimpMessageHeaderAccessor.SESSION_ID_HEADER) String sessionId) {
+        String userId = userId(user);
+        rateLimiter.check(RateLimit.CHAT, userId, sessions.remoteIp(sessionId));
+        rooms.sendChatMessage(SendChatMessageRequest.newBuilder()
+                .setRoomCode(code)
+                .setUserId(userId)
+                .setText(text(require(body).text()))
                 .build());
     }
 
@@ -184,6 +199,10 @@ public class RoomSocketController {
 
     /** /vote body: "PAUSE", "CONTINUE_WITHOUT_PLAYER" or "END_QUIZ". */
     public record Vote(String option) {
+    }
+
+    /** /chat body: 1–200 characters once trimmed (Room checks). */
+    public record Chat(String text) {
     }
 
     /** /connection-quality body: "GOOD", "FAIR" or "POOR". */

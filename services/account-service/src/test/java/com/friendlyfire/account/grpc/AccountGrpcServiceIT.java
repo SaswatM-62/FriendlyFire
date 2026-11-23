@@ -192,6 +192,8 @@ class AccountGrpcServiceIT {
 
         assertThat(url).startsWith(FakeRsoClient.AUTHORIZE).contains("redirect_uri=" + CALLBACK);
         assertThat(FakeRsoClient.stateIn(url)).isNotBlank();
+        // The account's email goes along, for the mock's check of the Riot ID.
+        assertThat(url).endsWith("login_hint=" + user.getEmail());
     }
 
     @Test

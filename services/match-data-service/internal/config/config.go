@@ -13,7 +13,17 @@ type Config struct {
 	GRPCPort        int
 	Postgres        Postgres
 	HenrikDevAPIKey string
+	// HenrikDevBaseURL is https://api.henrikdev.xyz unless a test points it elsewhere.
+	HenrikDevBaseURL string
+	// MatchSource is "henrikdev" or "fixtures" (the saved, anonymized matches).
+	MatchSource string
 }
+
+// Match sources (MATCH_SOURCE).
+const (
+	SourceHenrikDev = "henrikdev"
+	SourceFixtures  = "fixtures"
+)
 
 // Postgres is where the `matchdata` schema lives.
 type Postgres struct {
@@ -46,6 +56,10 @@ func Load(getenv func(string) string) (Config, error) {
 	if err != nil {
 		return Config{}, err
 	}
+	matchSource, err := matchSourceFrom(getenv)
+	if err != nil {
+		return Config{}, err
+	}
 	return Config{
 		GRPCPort: grpcPort,
 		Postgres: Postgres{
@@ -55,8 +69,26 @@ func Load(getenv func(string) string) (Config, error) {
 			User:     stringOr(getenv, "POSTGRES_USER", "postgres"),
 			Password: getenv("POSTGRES_PASSWORD"),
 		},
-		HenrikDevAPIKey: getenv("HENRIKDEV_API_KEY"),
+		HenrikDevAPIKey:  getenv("HENRIKDEV_API_KEY"),
+		HenrikDevBaseURL: stringOr(getenv, "HENRIKDEV_BASE_URL", "https://api.henrikdev.xyz"),
+		MatchSource:      matchSource,
 	}, nil
+}
+
+// matchSourceFrom reads MATCH_SOURCE. Unset: HenrikDev with an API key, the fixtures
+// without one, so local development works with no key.
+func matchSourceFrom(getenv func(string) string) (string, error) {
+	switch value := getenv("MATCH_SOURCE"); value {
+	case SourceHenrikDev, SourceFixtures:
+		return value, nil
+	case "":
+		if getenv("HENRIKDEV_API_KEY") != "" {
+			return SourceHenrikDev, nil
+		}
+		return SourceFixtures, nil
+	default:
+		return "", fmt.Errorf("MATCH_SOURCE must be %q or %q, got %q", SourceHenrikDev, SourceFixtures, value)
+	}
 }
 
 func stringOr(getenv func(string) string, key, fallback string) string {

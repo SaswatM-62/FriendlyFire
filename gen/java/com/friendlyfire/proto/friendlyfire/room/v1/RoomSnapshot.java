@@ -40,6 +40,7 @@ private static final long serialVersionUID = 0L;
     quizId_ = "";
     scoreboard_ = java.util.Collections.emptyList();
     waitingForUserId_ = "";
+    endReason_ = 0;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -560,6 +561,73 @@ private static final long serialVersionUID = 0L;
     return pauseSecondsLeft_;
   }
 
+  public static final int END_REASON_FIELD_NUMBER = 14;
+  private int endReason_ = 0;
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The enum numeric value on the wire for endReason.
+   */
+  @java.lang.Override public int getEndReasonValue() {
+    return endReason_;
+  }
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The endReason.
+   */
+  @java.lang.Override public com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason() {
+    com.friendlyfire.proto.friendlyfire.room.v1.EndReason result = com.friendlyfire.proto.friendlyfire.room.v1.EndReason.forNumber(endReason_);
+    return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.EndReason.UNRECOGNIZED : result;
+  }
+
+  public static final int FASTEST_ANSWER_FIELD_NUMBER = 15;
+  private com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer fastestAnswer_;
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return Whether the fastestAnswer field is set.
+   */
+  @java.lang.Override
+  public boolean hasFastestAnswer() {
+    return ((bitField0_ & 0x00000010) != 0);
+  }
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return The fastestAnswer.
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer() {
+    return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+  }
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder() {
+    return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -612,6 +680,12 @@ private static final long serialVersionUID = 0L;
     }
     if (pauseSecondsLeft_ != 0) {
       output.writeInt32(13, pauseSecondsLeft_);
+    }
+    if (endReason_ != com.friendlyfire.proto.friendlyfire.room.v1.EndReason.END_REASON_UNSPECIFIED.getNumber()) {
+      output.writeEnum(14, endReason_);
+    }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      output.writeMessage(15, getFastestAnswer());
     }
     getUnknownFields().writeTo(output);
   }
@@ -675,6 +749,14 @@ private static final long serialVersionUID = 0L;
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(13, pauseSecondsLeft_);
     }
+    if (endReason_ != com.friendlyfire.proto.friendlyfire.room.v1.EndReason.END_REASON_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(14, endReason_);
+    }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(15, getFastestAnswer());
+    }
     return size;
   }
   @java.lang.Override
@@ -736,6 +818,12 @@ private static final long serialVersionUID = 0L;
         .equals(other.getWaitingForUserId())) return false;
     if (getPauseSecondsLeft()
         != other.getPauseSecondsLeft()) return false;
+    if (endReason_ != other.endReason_) return false;
+    if (hasFastestAnswer() != other.hasFastestAnswer()) return false;
+    if (hasFastestAnswer()) {
+      if (!getFastestAnswer()
+          .equals(other.getFastestAnswer())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -785,6 +873,12 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getWaitingForUserId().hashCode();
     hash = (37 * hash) + PAUSE_SECONDS_LEFT_FIELD_NUMBER;
     hash = (53 * hash) + getPauseSecondsLeft();
+    hash = (37 * hash) + END_REASON_FIELD_NUMBER;
+    hash = (53 * hash) + endReason_;
+    if (hasFastestAnswer()) {
+      hash = (37 * hash) + FASTEST_ANSWER_FIELD_NUMBER;
+      hash = (53 * hash) + getFastestAnswer().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -926,6 +1020,7 @@ private static final long serialVersionUID = 0L;
         internalGetPhaseDeadlineFieldBuilder();
         internalGetScoreboardFieldBuilder();
         internalGetActiveVoteFieldBuilder();
+        internalGetFastestAnswerFieldBuilder();
       }
     }
     @java.lang.Override
@@ -973,6 +1068,12 @@ private static final long serialVersionUID = 0L;
       }
       waitingForUserId_ = "";
       pauseSecondsLeft_ = 0;
+      endReason_ = 0;
+      fastestAnswer_ = null;
+      if (fastestAnswerBuilder_ != null) {
+        fastestAnswerBuilder_.dispose();
+        fastestAnswerBuilder_ = null;
+      }
       return this;
     }
 
@@ -1073,6 +1174,15 @@ private static final long serialVersionUID = 0L;
       }
       if (((from_bitField0_ & 0x00001000) != 0)) {
         result.pauseSecondsLeft_ = pauseSecondsLeft_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.endReason_ = endReason_;
+      }
+      if (((from_bitField0_ & 0x00004000) != 0)) {
+        result.fastestAnswer_ = fastestAnswerBuilder_ == null
+            ? fastestAnswer_
+            : fastestAnswerBuilder_.build();
+        to_bitField0_ |= 0x00000010;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1181,6 +1291,12 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getPauseSecondsLeft() != 0) {
         setPauseSecondsLeft(other.getPauseSecondsLeft());
+      }
+      if (other.endReason_ != 0) {
+        setEndReasonValue(other.getEndReasonValue());
+      }
+      if (other.hasFastestAnswer()) {
+        mergeFastestAnswer(other.getFastestAnswer());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1295,6 +1411,18 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00001000;
               break;
             } // case 104
+            case 112: {
+              endReason_ = input.readEnum();
+              bitField0_ |= 0x00002000;
+              break;
+            } // case 112
+            case 122: {
+              input.readMessage(
+                  internalGetFastestAnswerFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00004000;
+              break;
+            } // case 122
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -3021,6 +3149,242 @@ private static final long serialVersionUID = 0L;
       pauseSecondsLeft_ = 0;
       onChanged();
       return this;
+    }
+
+    private int endReason_ = 0;
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return The enum numeric value on the wire for endReason.
+     */
+    @java.lang.Override public int getEndReasonValue() {
+      return endReason_;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @param value The enum numeric value on the wire for endReason to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEndReasonValue(int value) {
+      endReason_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return The endReason.
+     */
+    @java.lang.Override
+    public com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason() {
+      com.friendlyfire.proto.friendlyfire.room.v1.EndReason result = com.friendlyfire.proto.friendlyfire.room.v1.EndReason.forNumber(endReason_);
+      return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.EndReason.UNRECOGNIZED : result;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @param value The endReason to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder setEndReason(com.friendlyfire.proto.friendlyfire.room.v1.EndReason value) {
+      java.util.Objects.requireNonNull(value);
+      bitField0_ |= 0x00002000;
+      endReason_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEndReason() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      endReason_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer fastestAnswer_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder> fastestAnswerBuilder_;
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     * @return Whether the fastestAnswer field is set.
+     */
+    public boolean hasFastestAnswer() {
+      return ((bitField0_ & 0x00004000) != 0);
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     * @return The fastestAnswer.
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer() {
+      if (fastestAnswerBuilder_ == null) {
+        return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+      } else {
+        return fastestAnswerBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder setFastestAnswer(com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer value) {
+      if (fastestAnswerBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        fastestAnswer_ = value;
+      } else {
+        fastestAnswerBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder setFastestAnswer(
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder builderForValue) {
+      if (fastestAnswerBuilder_ == null) {
+        fastestAnswer_ = builderForValue.build();
+      } else {
+        fastestAnswerBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder mergeFastestAnswer(com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer value) {
+      if (fastestAnswerBuilder_ == null) {
+        if (((bitField0_ & 0x00004000) != 0) &&
+          fastestAnswer_ != null &&
+          fastestAnswer_ != com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance()) {
+          getFastestAnswerBuilder().mergeFrom(value);
+        } else {
+          fastestAnswer_ = value;
+        }
+      } else {
+        fastestAnswerBuilder_.mergeFrom(value);
+      }
+      if (fastestAnswer_ != null) {
+        bitField0_ |= 0x00004000;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder clearFastestAnswer() {
+      bitField0_ = (bitField0_ & ~0x00004000);
+      fastestAnswer_ = null;
+      if (fastestAnswerBuilder_ != null) {
+        fastestAnswerBuilder_.dispose();
+        fastestAnswerBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder getFastestAnswerBuilder() {
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return internalGetFastestAnswerFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder() {
+      if (fastestAnswerBuilder_ != null) {
+        return fastestAnswerBuilder_.getMessageOrBuilder();
+      } else {
+        return fastestAnswer_ == null ?
+            com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+      }
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder> 
+        internalGetFastestAnswerFieldBuilder() {
+      if (fastestAnswerBuilder_ == null) {
+        fastestAnswerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder>(
+                getFastestAnswer(),
+                getParentForChildren(),
+                isClean());
+        fastestAnswer_ = null;
+      }
+      return fastestAnswerBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.room.v1.RoomSnapshot)

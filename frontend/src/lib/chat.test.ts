@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RoomEvent, RoomSnapshot } from "@/lib/api-types";
-import { chatLinesFor } from "@/lib/chat";
+import { type ChatLine, chatLinesFor, withHistory } from "@/lib/chat";
 import { FAKE_PLAYERS, ME_ID } from "@/mocks/data";
 import { fakePlayer } from "@/mocks/fakeRoom";
 import { lobbySnapshot } from "@/test/room";
@@ -14,10 +14,10 @@ const event = (type: RoomEvent["type"], snapshot: RoomSnapshot, extra: Partial<R
 });
 
 describe("chatLinesFor", () => {
-  it("passes chat messages through", () => {
-    const chat = { messageId: "m1", userId: p.maya.userId, text: "gg", sentAt: new Date().toISOString() };
+  it("passes chat messages through, with the sender's name and the message ID", () => {
+    const chat = { messageId: "m1", userId: p.maya.userId, displayName: "Maya", text: "gg", sentAt: new Date().toISOString() };
     expect(chatLinesFor(event("CHAT_MESSAGE", lobbySnapshot(), { chat }), null, ME_ID)).toEqual([
-      { kind: "msg", userId: p.maya.userId, text: "gg" },
+      { kind: "msg", userId: p.maya.userId, text: "gg", name: "Maya", messageId: "m1" },
     ]);
   });
 
@@ -63,5 +63,24 @@ describe("chatLinesFor", () => {
       { kind: "sys", text: "Vote: continue without Maya" },
     ]);
     expect(chatLinesFor(event("VOTE_RESOLVED", lobbySnapshot({ phase: "PAUSED" })), voting, ME_ID)).toEqual([{ kind: "sys", text: "Vote: wait 1 min" }]);
+  });
+});
+
+describe("withHistory", () => {
+  const message = (n: number) => ({ messageId: `m${n}`, userId: p.maya.userId, displayName: "Maya", text: `hi ${n}`, sentAt: "2026-11-19T18:00:00Z" });
+  let next = 0;
+  const id = () => `h${next++}`;
+  const opened: ChatLine[] = [{ id: "c0", kind: "sys", text: "You joined the room" }];
+
+  it("puts the kept messages before what's already there on the first load", () => {
+    const lines = withHistory(opened, [message(1), message(2)], id, "before");
+    expect(lines.map((l) => l.kind === "msg" ? l.text : l.text)).toEqual(["hi 1", "hi 2", "You joined the room"]);
+  });
+
+  it("skips messages already shown and adds the missed ones at the end after a rejoin", () => {
+    const seen = withHistory(opened, [message(1)], id, "before");
+    const lines = withHistory(seen, [message(1), message(2), message(3)], id, "after");
+    expect(lines.filter((l) => l.kind === "msg").map((l) => (l.kind === "msg" ? l.messageId : ""))).toEqual(["m1", "m2", "m3"]);
+    expect(withHistory(lines, [message(2)], id, "after")).toBe(lines);
   });
 });

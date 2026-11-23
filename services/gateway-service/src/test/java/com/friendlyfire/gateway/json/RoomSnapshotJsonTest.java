@@ -2,7 +2,10 @@ package com.friendlyfire.gateway.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage;
 import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
+import com.friendlyfire.proto.friendlyfire.room.v1.EndReason;
+import com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
@@ -123,7 +126,8 @@ class RoomSnapshotJsonTest {
                 "connectionQuality", "GOOD",
                 "answeredCurrentQuestion", true)));
         assertThat(json.get("scoreboard")).isEqualTo(List.of(Map.of(
-                "userId", "user-sam", "displayName", "Sam", "totalPoints", 740, "rank", 1, "pointsLastRound", 740)));
+                "userId", "user-sam", "displayName", "Sam", "totalPoints", 740, "rank", 1, "pointsLastRound", 740,
+                "correctAnswers", 0)));
     }
 
     @Test
@@ -236,6 +240,40 @@ class RoomSnapshotJsonTest {
         assertThat(json.get("phaseDeadline")).isEqualTo("2025-11-09T14:53:20.120Z");
         assertThat((List<Map<String, Object>>) json.get("players"))
                 .first().satisfies(player -> assertThat(player.get("status")).isEqualTo("SPECTATING"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void aFinishedQuizSaysWhyItEndedAndWhoWasFastest() {
+        Map<String, Object> json = json(RoomSnapshot.newBuilder()
+                .setPhase(RoomPhase.ROOM_PHASE_FINISHED)
+                .setQuizId("quiz-1")
+                .setEndReason(EndReason.END_REASON_VOTED_TO_END)
+                .setFastestAnswer(FastestAnswer.newBuilder().setUserId("user-sam").setResponseTimeMs(4_260))
+                .addScoreboard(ScoreEntry.newBuilder()
+                        .setUserId("user-sam").setDisplayName("Sam").setTotalPoints(3180).setRank(1).setCorrectAnswers(4))
+                .build());
+
+        assertThat(json).containsEntry("endReason", "VOTED_TO_END");
+        assertThat(json.get("fastestAnswer")).isEqualTo(Map.of("userId", "user-sam", "seconds", 4.3));
+        assertThat((List<Map<String, Object>>) json.get("scoreboard"))
+                .first().satisfies(entry -> assertThat(entry.get("correctAnswers")).isEqualTo(4));
+    }
+
+    @Test
+    void aChatEventCarriesTheMessage() {
+        RoomEventJson event = RoomEventJson.from(RoomEvent.newBuilder()
+                .setType(RoomEventType.ROOM_EVENT_TYPE_CHAT_MESSAGE)
+                .setSubjectUserId("user-sam")
+                .setChat(ChatMessage.newBuilder()
+                        .setMessageId("msg-9").setUserId("user-sam").setDisplayName("Sam").setText("gg")
+                        .setSentAt(DEADLINE))
+                .build());
+
+        assertThat(event.type()).isEqualTo("CHAT_MESSAGE");
+        assertThat(event.chat()).isEqualTo(
+                new ChatMessageJson("msg-9", "user-sam", "Sam", "gg", "2025-11-09T14:53:20.120Z"));
+        assertThat(RoomEventJson.from(RoomEvent.getDefaultInstance()).chat()).isNull();
     }
 
     @Test

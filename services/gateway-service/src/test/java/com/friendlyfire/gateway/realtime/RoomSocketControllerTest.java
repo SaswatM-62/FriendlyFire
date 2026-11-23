@@ -14,6 +14,7 @@ import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
 import com.friendlyfire.proto.friendlyfire.room.v1.KickPlayerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.LeaveRoomRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.ReportConnectionQualityRequest;
+import com.friendlyfire.proto.friendlyfire.room.v1.SendChatMessageRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.StartQuizRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.SubmitAnswerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.UpdateSettingsRequest;
@@ -124,6 +125,36 @@ class RoomSocketControllerTest extends GatewayTestBase {
         Map<String, Object> error = next(errors);
         assertThat(error.get("error")).extracting("code").isEqualTo("INVALID_ARGUMENT");
         assertThat(ROOM.calls.received(CastVoteRequest.class)).isEmpty();
+    }
+
+    @Test
+    void chatUsesTheSessionsPlayer() {
+        client.send(action("chat"), Map.of("text", "gg", "userId", "someone-else"));
+
+        var request = awaitCall(SendChatMessageRequest.class);
+        assertThat(request.getRoomCode()).isEqualTo(room);
+        assertThat(request.getUserId()).isEqualTo("user-" + player);
+        assertThat(request.getText()).isEqualTo("gg");
+    }
+
+    @Test
+    void theSixthChatMessageInFiveSecondsIsRateLimited() throws Exception {
+        for (int n = 1; n <= 6; n++) {
+            client.send(action("chat"), Map.of("text", "spam " + n));
+        }
+
+        Map<String, Object> error = next(errors);
+        assertThat(error.get("error")).extracting("code").isEqualTo("RATE_LIMITED");
+        await().atMost(Duration.ofSeconds(5))
+                .until(() -> ROOM.calls.received(SendChatMessageRequest.class).size() == 5);
+    }
+
+    @Test
+    void anEmptyChatBodyIsInvalid() throws Exception {
+        client.send(action("chat"), null);
+
+        Map<String, Object> error = next(errors);
+        assertThat(error.get("error")).extracting("code").isEqualTo("INVALID_ARGUMENT");
     }
 
     @Test

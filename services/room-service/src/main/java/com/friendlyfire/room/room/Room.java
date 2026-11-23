@@ -1,15 +1,13 @@
-
 package com.friendlyfire.room.room;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.friendlyfire.proto.friendlyfire.quiz.v1.Question;
+import com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage;
 import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
+import com.friendlyfire.proto.friendlyfire.room.v1.EndReason;
+import com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
+import com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.QuestionOption;
 import com.friendlyfire.proto.friendlyfire.room.v1.QuestionView;
 import com.friendlyfire.proto.friendlyfire.room.v1.Reveal;
@@ -18,243 +16,291 @@ import com.friendlyfire.proto.friendlyfire.room.v1.RoomSettings;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomSnapshot;
 import com.friendlyfire.proto.friendlyfire.room.v1.ScoreEntry;
 import com.friendlyfire.proto.friendlyfire.room.v1.Vote;
+import com.friendlyfire.proto.friendlyfire.room.v1.VoteOption;
+import com.friendlyfire.room.clients.PlayerData;
+import com.friendlyfire.room.timing.Scheduler.Cancellable;
 import com.google.protobuf.Timestamp;
+import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+/**
+ * One room's state. Not thread-safe by itself: RoomManager and QuizRunner change it only
+ * while holding the room's lock ({@code synchronized (room)}), and publish each event
+ * under the same lock, so every stream sees the events in order.
+ */
 public class Room {
 
+    /** People in a room, spectators included. */
+    public static final int MAX_PEOPLE = 8;
+    public static final int MIN_PLAYERS = 2;
+    /** Chat messages a room keeps (GetChatHistory). */
+    public static final int CHAT_KEEP = 200;
+
+    static final RoomSettings DEFAULT_SETTINGS =
+            RoomSettings.newBuilder().setQuestionCount(10).setSecondsPerQuestion(20).build();
+
     private final String code;
-    private String hostUserId;
-    private RoomPhase phase;
-    private RoomSettings settings;
 
-    private final Map<String, Player> players = new LinkedHashMap<>();
+    String hostUserId;
+    RoomPhase phase = RoomPhase.ROOM_PHASE_LOBBY;
+    RoomSettings settings = DEFAULT_SETTINGS;
+    /** In the order they joined. */
+    final Map<String, Member> members = new LinkedHashMap<>();
 
-    private String quizId;
-    private int roundNumber;
+    /** The current or last quiz; null before the first one, or after a failed start. */
+    Quiz quiz;
+    /** 1-based; during the countdown, still the question just played. */
+    int roundNumber;
+    /** Set during QUESTION and REVEAL. */
+    Question currentQuestion;
+    /** Set during REVEAL. */
+    List<PlayerResult> currentResults = List.of();
+    Instant phaseDeadline;
+    VoteState vote;
+    String waitingForUserId;
+    EndReason endReason;
 
-    private final List<Question> questions = new ArrayList<>();
-    private Question currentQuestion;
+    /** Template IDs of every question asked here, oldest first (GenerateQuiz). */
+    final List<String> askedTemplateIds = new ArrayList<>();
+    final Deque<ChatMessage> chat = new ArrayDeque<>();
 
-    private final List<ScoreEntry> scoreboard = new ArrayList<>();
-    private final List<PlayerResult> currentResults = new ArrayList<>();
+    /** Goes up on every phase change, so a timer set for an earlier phase does nothing. */
+    long generation;
+    Cancellable phaseTimer;
+    Cancellable hostTimer;
+    Instant lastActivity;
+    boolean closed;
 
-    private Vote activeVote;
-    private Timestamp phaseDeadline;
-
-    // Set when the last player leaves; a closed room never reopens.
-    private boolean closed;
-
-    public Room(String code, String hostUserId, String hostDisplayName) {
+    public Room(String code, Instant now) {
         this.code = code;
-        this.hostUserId = hostUserId;
-        this.phase = RoomPhase.ROOM_PHASE_LOBBY;
-
-        this.settings = RoomSettings.newBuilder()
-                .setQuestionCount(10)
-                .setSecondsPerQuestion(20)
-                .build();
-
-        Player host = Player.newBuilder()
-                .setUserId(hostUserId)
-                .setDisplayName(hostDisplayName)
-                .setStatus(com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus.PLAYER_STATUS_CONNECTED)
-                .setConnectionQuality(ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED)
-                .setAnsweredCurrentQuestion(false)
-                .build();
-
-        players.put(hostUserId, host);
-        roundNumber = 0;
+        this.lastActivity = now;
     }
 
     public String getCode() {
         return code;
     }
 
-    public synchronized String getHostUserId() {
-        return hostUserId;
-    }
-
-    public synchronized void setHostUserId(String hostUserId) {
-        this.hostUserId = hostUserId;
-    }
-
-    public synchronized RoomPhase getPhase() {
-        return phase;
-    }
-
-    public synchronized RoomSettings getSettings() {
-        return settings;
-    }
-
-    public synchronized void setSettings(RoomSettings settings) {
-        if (settings.getQuestionCount() < 5 || settings.getQuestionCount() > 20) {
-            throw new IllegalArgumentException("Question count must be between 5 and 20.");
-        }
-
-        if (settings.getSecondsPerQuestion() < 10 || settings.getSecondsPerQuestion() > 45) {
-            throw new IllegalArgumentException("Seconds per question must be between 10 and 45.");
-        }
-
-        this.settings = settings;
-    }
-
-    public synchronized Map<String, Player> getPlayers() {
-        return new LinkedHashMap<>(players);
-    }
-
-    /**
-     * Adds a player in join order. Returns false if the room is closed, full (8 players)
-     * or already has this player; check {@link #isClosed()} to tell a closed room apart.
-     */
-    public synchronized boolean addPlayer(Player player) {
-        if (closed || players.size() >= 8 || players.containsKey(player.getUserId())) {
-            return false;
-        }
-
-        players.put(player.getUserId(), player);
-        return true;
-    }
-
-    /**
-     * Removes a player. If the host leaves, the player who joined next becomes host.
-     * When the last player leaves, the room closes: delete it from the repository.
-     */
-    public synchronized boolean removePlayer(String userId) {
-        if (players.remove(userId) == null) {
-            return false;
-        }
-
-        if (players.isEmpty()) {
-            hostUserId = null;
-            closed = true;
-        } else if (userId.equals(hostUserId)) {
-            hostUserId = players.keySet().iterator().next();
-        }
-
-        return true;
-    }
-
-    public synchronized boolean isClosed() {
-        return closed;
-    }
-
-    public synchronized String getQuizId() {
-        return quizId;
-    }
-
-    public synchronized void setQuizId(String quizId) {
-        this.quizId = quizId;
-    }
-
-    public synchronized int getRoundNumber() {
-        return roundNumber;
-    }
-
-    public synchronized void setRoundNumber(int roundNumber) {
-        this.roundNumber = roundNumber;
-    }
-
-    public synchronized List<Question> getQuestions() {
-        return new ArrayList<>(questions);
-    }
-
-    public synchronized void setQuestions(List<Question> questions) {
-        this.questions.clear();
-        this.questions.addAll(questions);
-    }
-
-    public synchronized Question getCurrentQuestion() {
-        return currentQuestion;
-    }
-
-    public synchronized void startQuestion(Question question, Timestamp deadline) {
-        this.currentQuestion = question;
-        this.phaseDeadline = deadline;
-        this.currentResults.clear();
-        this.phase = RoomPhase.ROOM_PHASE_QUESTION;
-    }
-
-    public synchronized void reveal(List<PlayerResult> results, Timestamp deadline) {
-        this.currentResults.clear();
-        this.currentResults.addAll(results);
-        this.phaseDeadline = deadline;
-        this.phase = RoomPhase.ROOM_PHASE_REVEAL;
-    }
-
-    public synchronized List<ScoreEntry> getScoreboard() {
-        return new ArrayList<>(scoreboard);
-    }
-
-    public synchronized void setScoreboard(List<ScoreEntry> scoreboard) {
-        this.scoreboard.clear();
-        this.scoreboard.addAll(scoreboard);
-    }
-
-    public synchronized List<PlayerResult> getCurrentResults() {
-        return new ArrayList<>(currentResults);
-    }
-
-    public synchronized Vote getActiveVote() {
-        return activeVote;
-    }
-
-    public synchronized void setActiveVote(Vote activeVote) {
-        this.activeVote = activeVote;
-    }
-
-    public synchronized Timestamp getPhaseDeadline() {
-        return phaseDeadline;
-    }
-
-    public synchronized void setPhaseDeadline(Timestamp phaseDeadline) {
-        this.phaseDeadline = phaseDeadline;
-    }
-
-    public synchronized RoomSnapshot buildSnapshot() {
+    /** The snapshot browsers see. The answer is only in it during REVEAL. */
+    public RoomSnapshot snapshot() {
         RoomSnapshot.Builder snapshot = RoomSnapshot.newBuilder()
                 .setRoomCode(code)
                 .setHostUserId(hostUserId == null ? "" : hostUserId)
                 .setPhase(phase)
                 .setSettings(settings)
-                .setQuizId(quizId == null ? "" : quizId)
-                .setRoundNumber(roundNumber)
-                .addAllPlayers(players.values())
-                .addAllScoreboard(scoreboard);
-
+                .setRoundNumber(roundNumber);
+        members.values().forEach(m -> snapshot.addPlayers(m.toPlayer()));
         if (phaseDeadline != null) {
-            snapshot.setPhaseDeadline(phaseDeadline);
+            snapshot.setPhaseDeadline(timestamp(phaseDeadline));
         }
-
-        if (activeVote != null) {
-            snapshot.setActiveVote(activeVote);
+        if (quiz != null) {
+            snapshot.setQuizId(quiz.id).setPauseSecondsLeft(quiz.pauseSecondsLeft);
+            quiz.scoreboard().forEach(snapshot::addScoreboard);
         }
-
-        if (currentQuestion != null) {
-            QuestionView.Builder questionView = QuestionView.newBuilder()
+        boolean showQuestion = phase == RoomPhase.ROOM_PHASE_QUESTION || phase == RoomPhase.ROOM_PHASE_REVEAL;
+        if (showQuestion && currentQuestion != null) {
+            QuestionView.Builder view = QuestionView.newBuilder()
                     .setQuestionId(currentQuestion.getQuestionId())
                     .setText(currentQuestion.getText());
-
-            for (var option : currentQuestion.getOptionsList()) {
-                questionView.addOptions(
-                        QuestionOption.newBuilder()
-                                .setOptionId(option.getOptionId())
-                                .setLabel(option.getLabel())
-                                .build()
-                );
-            }
-
+            currentQuestion.getOptionsList().forEach(o -> view.addOptions(
+                    QuestionOption.newBuilder().setOptionId(o.getOptionId()).setLabel(o.getLabel())));
             if (phase == RoomPhase.ROOM_PHASE_REVEAL) {
-                Reveal.Builder reveal = Reveal.newBuilder()
+                view.setReveal(Reveal.newBuilder()
                         .setCorrectOptionId(currentQuestion.getCorrectOptionId())
                         .setExplanation(currentQuestion.getExplanation())
-                        .addAllResults(currentResults);
-
-                questionView.setReveal(reveal);
+                        .addAllResults(currentResults));
             }
+            snapshot.setCurrentQuestion(view);
+        }
+        if (vote != null && phase == RoomPhase.ROOM_PHASE_VOTE) {
+            snapshot.setActiveVote(vote.toProto());
+        }
+        if (waitingForUserId != null && phase == RoomPhase.ROOM_PHASE_PAUSED) {
+            snapshot.setWaitingForUserId(waitingForUserId);
+        }
+        if (phase == RoomPhase.ROOM_PHASE_FINISHED) {
+            if (endReason != null) {
+                snapshot.setEndReason(endReason);
+            }
+            if (quiz != null && quiz.fastestUserId != null) {
+                snapshot.setFastestAnswer(FastestAnswer.newBuilder()
+                        .setUserId(quiz.fastestUserId)
+                        .setResponseTimeMs(quiz.fastestMs));
+            }
+        }
+        return snapshot.build();
+    }
 
-            snapshot.setCurrentQuestion(questionView);
+    Optional<Member> member(String userId) {
+        return Optional.ofNullable(members.get(userId));
+    }
+
+    boolean isPlaying(String userId) {
+        return quiz != null && quiz.playerIds.contains(userId) && members.containsKey(userId);
+    }
+
+    /** Quiz players still in the room, in join order. */
+    List<Member> quizMembers() {
+        if (quiz == null) {
+            return List.of();
+        }
+        return members.values().stream().filter(m -> quiz.playerIds.contains(m.userId)).toList();
+    }
+
+    boolean quizRunning() {
+        return switch (phase) {
+            case ROOM_PHASE_PREPARING, ROOM_PHASE_STARTING, ROOM_PHASE_QUESTION, ROOM_PHASE_REVEAL,
+                    ROOM_PHASE_VOTE, ROOM_PHASE_PAUSED -> true;
+            default -> false;
+        };
+    }
+
+    static Timestamp timestamp(Instant instant) {
+        return Timestamp.newBuilder().setSeconds(instant.getEpochSecond()).setNanos(instant.getNano()).build();
+    }
+
+    /** Someone in the room: a player, or a spectator during a quiz. */
+    static final class Member {
+        final String userId;
+        String displayName;
+        String riotTagLine;
+        PlayerStatus status = PlayerStatus.PLAYER_STATUS_CONNECTED;
+        ConnectionQuality quality = ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED;
+        boolean answered;
+        PlayerData data = PlayerData.UNKNOWN;
+        /** Set while DISCONNECTED or SITTING_OUT. */
+        Instant disconnectedAt;
+
+        Member(String userId, String displayName, String riotTagLine) {
+            this.userId = userId;
+            this.displayName = displayName;
+            this.riotTagLine = riotTagLine;
         }
 
-        return snapshot.build();
+        boolean connected() {
+            return status == PlayerStatus.PLAYER_STATUS_CONNECTED || status == PlayerStatus.PLAYER_STATUS_SPECTATING;
+        }
+
+        Player toPlayer() {
+            return Player.newBuilder()
+                    .setUserId(userId)
+                    .setDisplayName(displayName)
+                    .setStatus(status)
+                    .setConnectionQuality(quality)
+                    .setAnsweredCurrentQuestion(answered)
+                    .setDataStatus(data.status())
+                    .setDataEstimatedSeconds(data.estimatedSeconds())
+                    .setNotEnoughMatches(data.notEnoughMatches())
+                    .setRiotTagLine(riotTagLine)
+                    .build();
+        }
+    }
+
+    /** A quiz from Start to its final standings. */
+    static final class Quiz {
+        final String id;
+        /** Everyone playing, in join order when it started (spectators aren't). */
+        final List<String> playerIds;
+        final Instant preparingStartedAt;
+        final Instant preparingMinimumEnds;
+        List<Question> questions = List.of();
+        boolean ready;
+        int roundsPlayed;
+        int pauseSecondsLeft;
+        /** Each player's answer to the open question. */
+        final Map<String, Answer> answers = new LinkedHashMap<>();
+        Instant questionStartedAt;
+        /** True from the moment a question is being graded until the next question. */
+        boolean answersClosed;
+        /** Points per player, in Start order. */
+        final Map<String, Score> scores = new LinkedHashMap<>();
+        String fastestUserId;
+        int fastestMs;
+        Instant pauseStartedAt;
+        int pauseGrantedSeconds;
+
+        Quiz(String id, List<String> playerIds, Instant now, Instant minimumEnds, int pauseSeconds) {
+            this.id = id;
+            this.playerIds = List.copyOf(playerIds);
+            this.preparingStartedAt = now;
+            this.preparingMinimumEnds = minimumEnds;
+            this.pauseSecondsLeft = pauseSeconds;
+        }
+
+        int totalRounds() {
+            return questions.size();
+        }
+
+        List<ScoreEntry> scoreboard() {
+            return scores.values().stream()
+                    .sorted(Comparator.comparingInt((Score s) -> s.rank)
+                            .thenComparingInt(s -> playerIds.indexOf(s.userId)))
+                    .map(Score::toProto)
+                    .toList();
+        }
+    }
+
+    record Answer(String optionId, int responseTimeMs) {
+    }
+
+    static final class Score {
+        final String userId;
+        final String displayName;
+        int total;
+        int correct;
+        int rank = 1;
+        int lastRound;
+
+        Score(String userId, String displayName) {
+            this.userId = userId;
+            this.displayName = displayName;
+        }
+
+        ScoreEntry toProto() {
+            return ScoreEntry.newBuilder()
+                    .setUserId(userId)
+                    .setDisplayName(displayName)
+                    .setTotalPoints(total)
+                    .setRank(rank)
+                    .setPointsLastRound(lastRound)
+                    .setCorrectAnswers(correct)
+                    .build();
+        }
+    }
+
+    /** A vote about a disconnected player. */
+    static final class VoteState {
+        final String aboutUserId;
+        final Instant deadline;
+        final boolean pauseAllowed;
+        final Map<String, VoteOption> votes = new LinkedHashMap<>();
+
+        VoteState(String aboutUserId, Instant deadline, boolean pauseAllowed) {
+            this.aboutUserId = aboutUserId;
+            this.deadline = deadline;
+            this.pauseAllowed = pauseAllowed;
+        }
+
+        long count(VoteOption option) {
+            return votes.values().stream().filter(option::equals).count();
+        }
+
+        Vote toProto() {
+            return Vote.newBuilder()
+                    .setAboutUserId(aboutUserId)
+                    .setDeadline(timestamp(deadline))
+                    .setPauseVotes((int) count(VoteOption.VOTE_OPTION_PAUSE))
+                    .setContinueVotes((int) count(VoteOption.VOTE_OPTION_CONTINUE_WITHOUT_PLAYER))
+                    .setEndVotes((int) count(VoteOption.VOTE_OPTION_END_QUIZ))
+                    .addAllVotedUserIds(votes.keySet())
+                    .setPauseAllowed(pauseAllowed)
+                    .build();
+        }
     }
 }

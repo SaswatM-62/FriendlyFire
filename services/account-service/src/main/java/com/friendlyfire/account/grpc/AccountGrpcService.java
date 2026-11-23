@@ -122,9 +122,10 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
     @Override
     public void startRiotLink(StartRiotLinkRequest request, StreamObserver<StartRiotLinkResponse> responseObserver) {
         respond(responseObserver, () -> {
-            UUID userId = existingUserId(request.getUserId());
+            AccountUser user = userId(request.getUserId()).flatMap(users::findById)
+                    .orElseThrow(AccountGrpcService::notFound);
             return StartRiotLinkResponse.newBuilder()
-                    .setAuthorizeUrl(riotLinking.start(userId, request.getRedirectUri()))
+                    .setAuthorizeUrl(riotLinking.start(user.userId(), user.email(), request.getRedirectUri()))
                     .build();
         });
     }
@@ -198,10 +199,6 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
     private User existingUser(String userId) {
         AccountUser user = userId(userId).flatMap(users::findById).orElseThrow(AccountGrpcService::notFound);
         return toProto(user, riotLinks.findByUserId(user.userId()));
-    }
-
-    private UUID existingUserId(String userId) {
-        return userId(userId).filter(id -> users.findById(id).isPresent()).orElseThrow(AccountGrpcService::notFound);
     }
 
     // An ID that isn't a UUID can't belong to anyone, so callers treat it like an unknown user.
