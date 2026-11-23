@@ -21,7 +21,7 @@ func TestTheCommittedExampleFileIsValid(t *testing.T) {
 	players, err := rso.LoadPlayers("../../testplayers.example.json")
 
 	require.NoError(t, err)
-	assert.Len(t, players, 4)
+	assert.Len(t, players, 5, "Sam, Alex, Kim, Jordan and Riley: the 5-stack in match-data-service's fixtures")
 	assert.Equal(t, "Sam", players[0].GameName)
 	assert.Zero(t, rso.WithoutEmail(players), "every example player has an email")
 }

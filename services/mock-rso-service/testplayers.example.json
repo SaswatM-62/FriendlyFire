@@ -26,5 +26,12 @@
     "tagLine": "TEST",
     "region": "na",
     "email": "jordan@example.com"
+  },
+  {
+    "puuid": "00000000-0000-4000-8000-000000000005",
+    "gameName": "Riley",
+    "tagLine": "TEST",
+    "region": "na",
+    "email": "riley@example.com"
   }
 ]
