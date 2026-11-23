@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import random
+import re
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
@@ -44,6 +45,8 @@ _PLACEHOLDERS = (
     "friend",
     "last_n",
 )
+# {singular|plural}: the first form when {value} shows as 1, else the second.
+_PLURAL = re.compile(r"\{([^{}|]*)\|([^{}|]*)\}")
 # Decimals shown for values that aren't whole: {value}, {numerator} and
 # {denominator} (e.g. 1.28 kills per death), and {percent} (e.g. 29.7%).
 VALUE_PLACES = 2
@@ -217,6 +220,22 @@ def _filtered(
     return [row for row, value in zip(window, values, strict=True) if value == parameter]
 
 
+def _too_few(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> bool:
+    """Less denominator than min_denominator (e.g. too few clutch attempts) to compare.
+
+    Missing data isn't too few: _measure then makes the value unknown."""
+    if not template.min_denominator:
+        return False
+    total = Fraction(0)
+    for row in rows:
+        for name in template.denominator:
+            part = _stat(row, name)
+            if part is None:
+                return False
+            total += part
+    return total < template.min_denominator
+
+
 def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value | None:
     """One player's value for a template over these matches."""
     if template.rule == "pooled_ratio":
@@ -283,6 +302,11 @@ def _percent(value: Fraction) -> str:
     return _display(value * 100, PERCENT_PLACES)
 
 
+def _plural(text: str, value: str) -> str:
+    """Picks each {singular|plural} form for the displayed {value}."""
+    return _PLURAL.sub(lambda m: m[1] if value == "1" else m[2], text)
+
+
 def _check(template: QuestionTemplate) -> None:
     """Rejects a template the generator can't evaluate or render."""
     problem = ""
@@ -299,6 +323,11 @@ def _check(template: QuestionTemplate) -> None:
         problem = "pair needs a numbers.<key> stat and no parameter_label"
     if template.display_label and template.rule != "max_in_match":
         problem = "display_label only works with max_in_match"
+    if template.min_denominator < 0 or (
+        template.min_denominator
+        and (template.rule != "pooled_ratio" or not template.contenders_only)
+    ):
+        problem = "min_denominator needs a pooled_ratio with contenders_only"
     if template.skip_missing and template.rule != "max_in_match":
         problem = "skip_missing only works with max_in_match"
     if template.last_n is not None and template.last_n < 1:
@@ -309,6 +338,7 @@ def _check(template: QuestionTemplate) -> None:
         problem = 'stats must be "kills", "deaths", "assists", "won", "matches" or "numbers.<key>"'
     allowed = {*_PLACEHOLDERS, f"{template.display_label}_name"}
     for text in (template.question, template.explanation):
+        text = _PLURAL.sub(r"\2", text)
         unknown = {name for _, name, _, _ in Formatter().parse(text) if name} - allowed
         if unknown and not problem:
             problem = f"unknown placeholder {{{sorted(unknown)[0]}}}"
@@ -453,7 +483,7 @@ class QuestionGenerator:
                 if matches is None:
                     values = {}
                     break
-                if template.contenders_only and not matches:
+                if template.contenders_only and (not matches or _too_few(template, matches)):
                     continue
                 measured = _measure(template, matches)
                 if measured is None:
@@ -520,7 +550,8 @@ class QuestionGenerator:
             "last_n": template.last_n,
             f"{template.display_label}_name": value.label,
         }
-        text = template.question.format(**context)
+        shown_value = _display(value.score)
+        text = _plural(template.question, shown_value).format(**context)
         question = Question(
             # Follows the template and the visible question and answer, so it stays
             # the same after a match sync.
@@ -528,7 +559,7 @@ class QuestionGenerator:
             template_id=template.id,
             type=QUESTION_TYPE_PICK_THE_PLAYER,
             text=text,
-            explanation=template.explanation.format(**context),
+            explanation=_plural(template.explanation, shown_value).format(**context),
             correct_option_id=winner,
             # For aggregates this is representative evidence, not the sole
             # source. fact_key fingerprints the full comparison evidence.
