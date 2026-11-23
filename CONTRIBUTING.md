@@ -334,8 +334,7 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
     sync that can't start is logged, and the next sign-in tries again). Anything that
     deletes data (unlinking, deleting an account, swapping Riot accounts) answers
     UNAVAILABLE and changes nothing, so no personal data is left behind; the other services
-    always go first, then Account's own rows. While Match Data is still a stub, unlinking,
-    and deleting an account that has a Riot link, answer 503.
+    always go first, then Account's own rows.
   - **The mock RSO's email check:** `StartRiotLink` adds the account's email to the mock's
     URL (`login_hint`), and the mock only accepts a Riot ID for the email it's assigned to.
     The real Riot Sign-On client will never send it.
@@ -447,8 +446,12 @@ services/match-data-service/
 ├── cmd/match-data-service/main.go   reads config, wires everything, stops on SIGTERM
 └── internal/
     ├── config/  grpcserver/  health/  matchdata/ (the gRPC service)
-    ├── source/  store/  sync/  ratelimit/
-    └── testutil/                    fakes for tests
+    ├── source/    HenrikDev, or the saved fixtures (MATCH_SOURCE)
+    ├── henrik/    the HenrikDev v4 match format
+    ├── stats/     a match → one record per linked player (docs/stats-catalogue.md)
+    ├── lookup/    agent and weapon tables (go run ./cmd/refresh-lookups each patch)
+    ├── store/  sync/  ratelimit/
+    └── testutil/                    clock and health fakes; testutil/fakes: store, sync, source
 ```
 
 - The standard library first: `log/slog`, `net/http`, `context`.
@@ -469,8 +472,27 @@ services/match-data-service/
   matching `.down.sql` (next number, plain SQL). The files are embedded in the binary
   (`go:embed`), so restart the service (`docker compose restart match-data-service`) to
   rebuild and apply it. The history table is `matchdata.schema_migrations`.
-- HenrikDev: tests never call the real API. Save real responses (without the API key) in
-  `internal/source/testdata/henrikdev/` and serve them with `httptest`. Stay under 30
+- **How a sync works:** Account calls `SyncPlayer` at sign-in and after a link. The worker
+  runs one sync at a time (the rate limit is shared), fetches the player's Competitive and
+  Unrated matches from the last 30 days, turns each into records with `stats.Records`, and
+  replaces everything stored for the player in one transaction (a failed sync keeps the
+  old data and records a safe message). Only linked players are stored; comparisons with the
+  whole scoreboard are worked out during the sync. A sync also refreshes friends' pair keys
+  (`assists_for:<user_id>`...) on matches they share; deleting a player removes them.
+  `GetSyncStatus` adds the queue position and an estimate from the rate limiter.
+- **Where matches come from (`MATCH_SOURCE`):** `henrikdev`, or `fixtures`: 20 real
+  matches, anonymized, whose 5-stack is the mock RSO's example players (Sam, Alex, Kim,
+  Jordan, Riley), moved in time so they're always recent. Unset means HenrikDev when
+  `HENRIKDEV_API_KEY` is set, fixtures otherwise, so linking a test player syncs in a moment
+  without a key. The e2e tests use fixtures.
+- **A new stat** is a key in `docs/stats-catalogue.md` and a line in `internal/stats`
+  (tests in `stats_test.go`, including the consistency checks on the fixtures); quiz
+  templates can use it after the next sync. No contract change.
+- HenrikDev: tests never call the real API: they serve the fixtures in
+  `internal/source/fixtures/henrikdev/` with `httptest`. Never commit a raw HenrikDev
+  response (real players' names and IDs): anonymize it first (see that folder's README).
+  The health tree's `henrikdev` node reports the last real request instead of calling the
+  API, so health checks never use up the limit. Stay under 30
   requests per minute with the one shared `ratelimit.Limiter`: call `Wait(ctx)` before
   every request, and on a 429 call `PauseFor(d)` (`ratelimit.RetryAfter` reads the
   `Retry-After` header). `Estimate(n)` says how long n requests will take. Give tests a
@@ -486,6 +508,11 @@ services/match-data-service/
   the list or belongs to another email. A player without an email can't be linked (the
   service logs how many there are). The page says it's a mock; in production Riot's own
   sign-in and consent screen opens instead.
+  **Playing a quiz on the fixtures:** the example players' `@example.com` emails can't sign
+  in, so copy `testplayers.example.json` to `testplayers.json` and put each tester's sign-in
+  email on one of the five players (keep the PUUIDs: they're who the fixture matches
+  belong to). Each tester links "their" player, the sync takes a moment, and the room can
+  start.
   **Callback URLs:** `/authorize` only sends the browser back to the exact URLs in
   `MOCK_RSO_REDIRECT_URIS`; anything else gets a 400.
   **Try it with curl:**

@@ -3,10 +3,10 @@
 FriendlyFire is free, personalized trivia built from your friends' own VALORANT matches:
 link your Riot account, open a room with up to 7 friends, and answer questions based on your recent Valorant stats. 
 
-> **Status:** the Gateway, Account, Room, Scoring and the quiz engine are built, and the
-> frontend talks to them. match-data-service is still a stub (it answers `UNIMPLEMENTED`),
-> so a quiz can't get real match data yet. The health checks run end to end (browser →
-> Gateway → every service → Postgres). Planned work is tracked on the project board, and
+> **Status:** every service is built and the frontend talks to them. Without a HenrikDev
+> key, match data comes from saved, anonymized matches of the mock RSO's example players
+> (link Sam#NA1, Alex#EUW, Kim#KR1, Jordan#TEST or Riley#TEST), so a whole quiz works
+> locally. The health checks run end to end (browser → Gateway → every service → Postgres). Planned work is tracked on the project board, and
 > each piece is marked in the code with a `TODO(ff)` comment saying what to build there.
 
 ## Services
