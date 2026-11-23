@@ -2,13 +2,13 @@
 
 import { Client } from "@stomp/stompjs";
 import { useEffect, useState } from "react";
+import { NetBars } from "@/components/ui/NetBars";
 import { config } from "@/lib/config";
-
-const PING_EVERY_MS = 3_000;
+import { PING_EVERY_MS, QUALITY_LABEL, qualityFromRtt } from "@/lib/net";
 
 /**
  * Pings the Gateway over STOMP (/app/ping -> /user/queue/pong) every 3 seconds and
- * shows the round trip. The same pings will drive the in-game network bar.
+ * shows the round trip and its quality, like the in-game network bar (Status board).
  */
 export function RealtimeStatus() {
   const [connected, setConnected] = useState(false);
@@ -41,16 +41,33 @@ export function RealtimeStatus() {
     };
   }, []);
 
+  const quality = connected && roundTripMs !== null ? qualityFromRtt(roundTripMs, 0) : null;
+
   return (
-    <p className="text-lg">
-      Realtime:{" "}
+    <section className="card ping" aria-labelledby="h-ping">
+      <h2 id="h-ping" className="label">
+        Realtime ping
+      </h2>
       {connected ? (
-        <span className="text-green-700 dark:text-green-300">
-          connected{roundTripMs !== null && ` · ${roundTripMs} ms`}
-        </span>
+        <>
+          <p className="num" style={{ fontSize: 64, lineHeight: 1 }} role="status">
+            {roundTripMs ?? "–"}
+            <span className="muted" style={{ fontSize: 24 }}>
+              {" "}
+              ms
+            </span>
+          </p>
+          <span className="chip">
+            <NetBars quality={quality} />
+            {quality ? QUALITY_LABEL[quality] : "Measuring"}
+          </span>
+        </>
       ) : (
-        <span className="text-red-700 dark:text-red-300">disconnected</span>
+        <p className="h2" role="status" style={{ color: "var(--red-text)" }}>
+          Disconnected
+        </p>
       )}
-    </p>
+      <p className="small faint">Round trip over the room WebSocket.</p>
+    </section>
   );
 }

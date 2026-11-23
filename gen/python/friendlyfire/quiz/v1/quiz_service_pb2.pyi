@@ -15,22 +15,26 @@ QUESTION_TYPE_UNSPECIFIED: QuestionType
 QUESTION_TYPE_PICK_THE_PLAYER: QuestionType
 
 class GenerateQuizRequest(_message.Message):
-    __slots__ = ("players", "question_count", "seed")
+    __slots__ = ("players", "question_count", "seed", "asked_template_ids")
     PLAYERS_FIELD_NUMBER: _ClassVar[int]
     QUESTION_COUNT_FIELD_NUMBER: _ClassVar[int]
     SEED_FIELD_NUMBER: _ClassVar[int]
+    ASKED_TEMPLATE_IDS_FIELD_NUMBER: _ClassVar[int]
     players: _containers.RepeatedCompositeFieldContainer[QuizPlayer]
     question_count: int
     seed: int
-    def __init__(self, players: _Optional[_Iterable[_Union[QuizPlayer, _Mapping]]] = ..., question_count: _Optional[int] = ..., seed: _Optional[int] = ...) -> None: ...
+    asked_template_ids: _containers.RepeatedScalarFieldContainer[str]
+    def __init__(self, players: _Optional[_Iterable[_Union[QuizPlayer, _Mapping]]] = ..., question_count: _Optional[int] = ..., seed: _Optional[int] = ..., asked_template_ids: _Optional[_Iterable[str]] = ...) -> None: ...
 
 class QuizPlayer(_message.Message):
-    __slots__ = ("user_id", "display_name")
+    __slots__ = ("user_id", "display_name", "not_enough_matches")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
+    NOT_ENOUGH_MATCHES_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     display_name: str
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ...) -> None: ...
+    not_enough_matches: bool
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., not_enough_matches: _Optional[bool] = ...) -> None: ...
 
 class GenerateQuizResponse(_message.Message):
     __slots__ = ("questions",)
@@ -39,7 +43,7 @@ class GenerateQuizResponse(_message.Message):
     def __init__(self, questions: _Optional[_Iterable[_Union[Question, _Mapping]]] = ...) -> None: ...
 
 class Question(_message.Message):
-    __slots__ = ("question_id", "type", "text", "options", "correct_option_id", "explanation", "source_match_id")
+    __slots__ = ("question_id", "type", "text", "options", "correct_option_id", "explanation", "source_match_id", "template_id")
     QUESTION_ID_FIELD_NUMBER: _ClassVar[int]
     TYPE_FIELD_NUMBER: _ClassVar[int]
     TEXT_FIELD_NUMBER: _ClassVar[int]
@@ -47,6 +51,7 @@ class Question(_message.Message):
     CORRECT_OPTION_ID_FIELD_NUMBER: _ClassVar[int]
     EXPLANATION_FIELD_NUMBER: _ClassVar[int]
     SOURCE_MATCH_ID_FIELD_NUMBER: _ClassVar[int]
+    TEMPLATE_ID_FIELD_NUMBER: _ClassVar[int]
     question_id: str
     type: QuestionType
     text: str
@@ -54,7 +59,8 @@ class Question(_message.Message):
     correct_option_id: str
     explanation: str
     source_match_id: str
-    def __init__(self, question_id: _Optional[str] = ..., type: _Optional[_Union[QuestionType, str]] = ..., text: _Optional[str] = ..., options: _Optional[_Iterable[_Union[AnswerOption, _Mapping]]] = ..., correct_option_id: _Optional[str] = ..., explanation: _Optional[str] = ..., source_match_id: _Optional[str] = ...) -> None: ...
+    template_id: str
+    def __init__(self, question_id: _Optional[str] = ..., type: _Optional[_Union[QuestionType, str]] = ..., text: _Optional[str] = ..., options: _Optional[_Iterable[_Union[AnswerOption, _Mapping]]] = ..., correct_option_id: _Optional[str] = ..., explanation: _Optional[str] = ..., source_match_id: _Optional[str] = ..., template_id: _Optional[str] = ...) -> None: ...
 
 class AnswerOption(_message.Message):
     __slots__ = ("option_id", "label")

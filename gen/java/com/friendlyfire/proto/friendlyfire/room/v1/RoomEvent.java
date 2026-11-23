@@ -30,6 +30,7 @@ private static final long serialVersionUID = 0L;
   private RoomEvent() {
     type_ = 0;
     subjectUserId_ = "";
+    message_ = "";
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -180,6 +181,95 @@ private static final long serialVersionUID = 0L;
     return snapshot_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.RoomSnapshot.getDefaultInstance() : snapshot_;
   }
 
+  public static final int MESSAGE_FIELD_NUMBER = 5;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object message_ = "";
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The message.
+   */
+  @java.lang.Override
+  public java.lang.String getMessage() {
+    java.lang.Object ref = message_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      message_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * A short sentence safe to show every player, when the event needs one
+   * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+   * Try 10.").
+   * </pre>
+   *
+   * <code>string message = 5 [json_name = "message"];</code>
+   * @return The bytes for message.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getMessageBytes() {
+    java.lang.Object ref = message_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      message_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int CHAT_FIELD_NUMBER = 6;
+  private com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage chat_;
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return Whether the chat field is set.
+   */
+  @java.lang.Override
+  public boolean hasChat() {
+    return ((bitField0_ & 0x00000004) != 0);
+  }
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return The chat.
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage getChat() {
+    return chat_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.getDefaultInstance() : chat_;
+  }
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder getChatOrBuilder() {
+    return chat_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.getDefaultInstance() : chat_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -206,6 +296,12 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       output.writeMessage(4, getSnapshot());
     }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(message_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 5, message_);
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      output.writeMessage(6, getChat());
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -224,6 +320,13 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000002) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(4, getSnapshot());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(message_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(5, message_);
+    }
+    if (((bitField0_ & 0x00000004) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(6, getChat());
     }
     return size;
   }
@@ -262,6 +365,13 @@ private static final long serialVersionUID = 0L;
       if (!getSnapshot()
           .equals(other.getSnapshot())) return false;
     }
+    if (!getMessage()
+        .equals(other.getMessage())) return false;
+    if (hasChat() != other.hasChat()) return false;
+    if (hasChat()) {
+      if (!getChat()
+          .equals(other.getChat())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -284,6 +394,12 @@ private static final long serialVersionUID = 0L;
     if (hasSnapshot()) {
       hash = (37 * hash) + SNAPSHOT_FIELD_NUMBER;
       hash = (53 * hash) + getSnapshot().hashCode();
+    }
+    hash = (37 * hash) + MESSAGE_FIELD_NUMBER;
+    hash = (53 * hash) + getMessage().hashCode();
+    if (hasChat()) {
+      hash = (37 * hash) + CHAT_FIELD_NUMBER;
+      hash = (53 * hash) + getChat().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -417,6 +533,7 @@ private static final long serialVersionUID = 0L;
               .alwaysUseFieldBuilders) {
         internalGetOccurredAtFieldBuilder();
         internalGetSnapshotFieldBuilder();
+        internalGetChatFieldBuilder();
       }
     }
     @java.lang.Override
@@ -434,6 +551,12 @@ private static final long serialVersionUID = 0L;
       if (snapshotBuilder_ != null) {
         snapshotBuilder_.dispose();
         snapshotBuilder_ = null;
+      }
+      message_ = "";
+      chat_ = null;
+      if (chatBuilder_ != null) {
+        chatBuilder_.dispose();
+        chatBuilder_ = null;
       }
       return this;
     }
@@ -487,6 +610,15 @@ private static final long serialVersionUID = 0L;
             : snapshotBuilder_.build();
         to_bitField0_ |= 0x00000002;
       }
+      if (((from_bitField0_ & 0x00000010) != 0)) {
+        result.message_ = message_;
+      }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.chat_ = chatBuilder_ == null
+            ? chat_
+            : chatBuilder_.build();
+        to_bitField0_ |= 0x00000004;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -515,6 +647,14 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasSnapshot()) {
         mergeSnapshot(other.getSnapshot());
+      }
+      if (!other.getMessage().isEmpty()) {
+        message_ = other.message_;
+        bitField0_ |= 0x00000010;
+        onChanged();
+      }
+      if (other.hasChat()) {
+        mergeChat(other.getChat());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -564,6 +704,18 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000008;
               break;
             } // case 34
+            case 42: {
+              message_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000010;
+              break;
+            } // case 42
+            case 50: {
+              input.readMessage(
+                  internalGetChatFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 50
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -997,6 +1149,263 @@ private static final long serialVersionUID = 0L;
         snapshot_ = null;
       }
       return snapshotBuilder_;
+    }
+
+    private java.lang.Object message_ = "";
+    /**
+     * <pre>
+     * A short sentence safe to show every player, when the event needs one
+     * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+     * Try 10.").
+     * </pre>
+     *
+     * <code>string message = 5 [json_name = "message"];</code>
+     * @return The message.
+     */
+    public java.lang.String getMessage() {
+      java.lang.Object ref = message_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        message_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A short sentence safe to show every player, when the event needs one
+     * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+     * Try 10.").
+     * </pre>
+     *
+     * <code>string message = 5 [json_name = "message"];</code>
+     * @return The bytes for message.
+     */
+    public com.google.protobuf.ByteString
+        getMessageBytes() {
+      java.lang.Object ref = message_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        message_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * A short sentence safe to show every player, when the event needs one
+     * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+     * Try 10.").
+     * </pre>
+     *
+     * <code>string message = 5 [json_name = "message"];</code>
+     * @param value The message to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMessage(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      message_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A short sentence safe to show every player, when the event needs one
+     * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+     * Try 10.").
+     * </pre>
+     *
+     * <code>string message = 5 [json_name = "message"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearMessage() {
+      message_ = getDefaultInstance().getMessage();
+      bitField0_ = (bitField0_ & ~0x00000010);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * A short sentence safe to show every player, when the event needs one
+     * (set on QUIZ_START_FAILED, e.g. "Not enough matches for 15 questions.
+     * Try 10.").
+     * </pre>
+     *
+     * <code>string message = 5 [json_name = "message"];</code>
+     * @param value The bytes for message to set.
+     * @return This builder for chaining.
+     */
+    public Builder setMessageBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      message_ = value;
+      bitField0_ |= 0x00000010;
+      onChanged();
+      return this;
+    }
+
+    private com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage chat_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.Builder, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder> chatBuilder_;
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     * @return Whether the chat field is set.
+     */
+    public boolean hasChat() {
+      return ((bitField0_ & 0x00000020) != 0);
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     * @return The chat.
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage getChat() {
+      if (chatBuilder_ == null) {
+        return chat_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.getDefaultInstance() : chat_;
+      } else {
+        return chatBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public Builder setChat(com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage value) {
+      if (chatBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        chat_ = value;
+      } else {
+        chatBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public Builder setChat(
+        com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.Builder builderForValue) {
+      if (chatBuilder_ == null) {
+        chat_ = builderForValue.build();
+      } else {
+        chatBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public Builder mergeChat(com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage value) {
+      if (chatBuilder_ == null) {
+        if (((bitField0_ & 0x00000020) != 0) &&
+          chat_ != null &&
+          chat_ != com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.getDefaultInstance()) {
+          getChatBuilder().mergeFrom(value);
+        } else {
+          chat_ = value;
+        }
+      } else {
+        chatBuilder_.mergeFrom(value);
+      }
+      if (chat_ != null) {
+        bitField0_ |= 0x00000020;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public Builder clearChat() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      chat_ = null;
+      if (chatBuilder_ != null) {
+        chatBuilder_.dispose();
+        chatBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.Builder getChatBuilder() {
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return internalGetChatFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder getChatOrBuilder() {
+      if (chatBuilder_ != null) {
+        return chatBuilder_.getMessageOrBuilder();
+      } else {
+        return chat_ == null ?
+            com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.getDefaultInstance() : chat_;
+      }
+    }
+    /**
+     * <pre>
+     * Set on CHAT_MESSAGE.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.Builder, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder> 
+        internalGetChatFieldBuilder() {
+      if (chatBuilder_ == null) {
+        chatBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage.Builder, com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder>(
+                getChat(),
+                getParentForChildren(),
+                isClean());
+        chat_ = null;
+      }
+      return chatBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.room.v1.RoomEvent)

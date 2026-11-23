@@ -167,6 +167,37 @@ public final class ScoringServiceGrpc {
     return getGetPlayerHistoryMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest,
+      com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> getAnonymizePlayerMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "AnonymizePlayer",
+      requestType = com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest,
+      com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> getAnonymizePlayerMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest, com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> getAnonymizePlayerMethod;
+    if ((getAnonymizePlayerMethod = ScoringServiceGrpc.getAnonymizePlayerMethod) == null) {
+      synchronized (ScoringServiceGrpc.class) {
+        if ((getAnonymizePlayerMethod = ScoringServiceGrpc.getAnonymizePlayerMethod) == null) {
+          ScoringServiceGrpc.getAnonymizePlayerMethod = getAnonymizePlayerMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest, com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "AnonymizePlayer"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new ScoringServiceMethodDescriptorSupplier("AnonymizePlayer"))
+              .build();
+        }
+      }
+    }
+    return getAnonymizePlayerMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -285,6 +316,20 @@ public final class ScoringServiceGrpc {
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getGetPlayerHistoryMethod(), responseObserver);
     }
+
+    /**
+     * <pre>
+     * Called by AccountService when a user deletes their account (ADR-027).
+     * In every past quiz, replaces their display name with "Deleted player"
+     * and removes the link to their user_id, keeping their scores so other
+     * players' scoreboards don't change. Safe to call again; not an error if
+     * they never played.
+     * </pre>
+     */
+    default void anonymizePlayer(com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getAnonymizePlayerMethod(), responseObserver);
+    }
   }
 
   /**
@@ -374,6 +419,21 @@ public final class ScoringServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getGetPlayerHistoryMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     * <pre>
+     * Called by AccountService when a user deletes their account (ADR-027).
+     * In every past quiz, replaces their display name with "Deleted player"
+     * and removes the link to their user_id, keeping their scores so other
+     * players' scoreboards don't change. Safe to call again; not an error if
+     * they never played.
+     * </pre>
+     */
+    public void anonymizePlayer(com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getAnonymizePlayerMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -447,6 +507,20 @@ public final class ScoringServiceGrpc {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getGetPlayerHistoryMethod(), getCallOptions(), request);
     }
+
+    /**
+     * <pre>
+     * Called by AccountService when a user deletes their account (ADR-027).
+     * In every past quiz, replaces their display name with "Deleted player"
+     * and removes the link to their user_id, keeping their scores so other
+     * players' scoreboards don't change. Safe to call again; not an error if
+     * they never played.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse anonymizePlayer(com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getAnonymizePlayerMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -519,6 +593,20 @@ public final class ScoringServiceGrpc {
     public com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryResponse getPlayerHistory(com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getGetPlayerHistoryMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Called by AccountService when a user deletes their account (ADR-027).
+     * In every past quiz, replaces their display name with "Deleted player"
+     * and removes the link to their user_id, keeping their scores so other
+     * players' scoreboards don't change. Safe to call again; not an error if
+     * they never played.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse anonymizePlayer(com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getAnonymizePlayerMethod(), getCallOptions(), request);
     }
   }
 
@@ -598,6 +686,21 @@ public final class ScoringServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getGetPlayerHistoryMethod(), getCallOptions()), request);
     }
+
+    /**
+     * <pre>
+     * Called by AccountService when a user deletes their account (ADR-027).
+     * In every past quiz, replaces their display name with "Deleted player"
+     * and removes the link to their user_id, keeping their scores so other
+     * players' scoreboards don't change. Safe to call again; not an error if
+     * they never played.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse> anonymizePlayer(
+        com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getAnonymizePlayerMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_START_QUIZ = 0;
@@ -605,6 +708,7 @@ public final class ScoringServiceGrpc {
   private static final int METHODID_FINALIZE_QUIZ = 2;
   private static final int METHODID_GET_QUIZ_RESULT = 3;
   private static final int METHODID_GET_PLAYER_HISTORY = 4;
+  private static final int METHODID_ANONYMIZE_PLAYER = 5;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -642,6 +746,10 @@ public final class ScoringServiceGrpc {
         case METHODID_GET_PLAYER_HISTORY:
           serviceImpl.getPlayerHistory((com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryRequest) request,
               (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryResponse>) responseObserver);
+          break;
+        case METHODID_ANONYMIZE_PLAYER:
+          serviceImpl.anonymizePlayer((com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -696,6 +804,13 @@ public final class ScoringServiceGrpc {
               com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryRequest,
               com.friendlyfire.proto.friendlyfire.scoring.v1.GetPlayerHistoryResponse>(
                 service, METHODID_GET_PLAYER_HISTORY)))
+        .addMethod(
+          getAnonymizePlayerMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerRequest,
+              com.friendlyfire.proto.friendlyfire.scoring.v1.AnonymizePlayerResponse>(
+                service, METHODID_ANONYMIZE_PLAYER)))
         .build();
   }
 
@@ -749,6 +864,7 @@ public final class ScoringServiceGrpc {
               .addMethod(getFinalizeQuizMethod())
               .addMethod(getGetQuizResultMethod())
               .addMethod(getGetPlayerHistoryMethod())
+              .addMethod(getAnonymizePlayerMethod())
               .build();
         }
       }

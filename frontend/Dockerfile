@@ -5,9 +5,12 @@
 # ---------- dev: Next.js dev server, source mounted by compose.yaml ----------
 FROM node:24.22.1-slim AS dev
 # node_modules is a Docker volume (frontend_node_modules) that starts from this image.
+# npm's cache lives in /tmp: one written to $HOME by the root `npm ci` below would be
+# root-owned, and `npm install`/`npm ci` as your user (node-dev.sh) would fail with EACCES.
 ENV NEXT_TELEMETRY_DISABLED=1 \
     WATCHPACK_POLLING=true \
     HOME=/home/node \
+    npm_config_cache=/tmp/npm-cache \
     DEV_WRITABLE_DIRS=/workspace/frontend/node_modules
 WORKDIR /workspace/frontend
 COPY frontend/package.json frontend/package-lock.json ./

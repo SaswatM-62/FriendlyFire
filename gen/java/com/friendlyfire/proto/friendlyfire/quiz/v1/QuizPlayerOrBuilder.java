@@ -41,4 +41,18 @@ public interface QuizPlayerOrBuilder extends
    */
   com.google.protobuf.ByteString
       getDisplayNameBytes();
+
+  /**
+   * <pre>
+   * From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+   * or Unrated matches. Such a player is never compared, so never the answer,
+   * a pair question's friend or the source of a stat. They are still an option
+   * in every question, and their matches still count when deciding which
+   * matches the room played together.
+   * </pre>
+   *
+   * <code>bool not_enough_matches = 3 [json_name = "notEnoughMatches"];</code>
+   * @return The notEnoughMatches.
+   */
+  boolean getNotEnoughMatches();
 }

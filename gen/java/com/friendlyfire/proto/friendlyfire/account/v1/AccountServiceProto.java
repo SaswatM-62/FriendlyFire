@@ -106,6 +106,31 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_account_v1_DeleteAccountResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_GetDataStatusRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_GetDataStatusResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_UserDataStatus_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_UserDataStatus_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_FinishOnboardingRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_FinishOnboardingRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_account_v1_FinishOnboardingResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_account_v1_FinishOnboardingResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -117,69 +142,94 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
     java.lang.String[] descriptorData = {
       "\n-friendlyfire/account/v1/account_servic" +
       "e.proto\022\027friendlyfire.account.v1\032\037google" +
-      "/protobuf/timestamp.proto\"\323\001\n\004User\022\027\n\007us" +
+      "/protobuf/timestamp.proto\"\222\002\n\004User\022\027\n\007us" +
       "er_id\030\001 \001(\tR\006userId\022!\n\014display_name\030\002 \001(" +
       "\tR\013displayName\022\024\n\005email\030\003 \001(\tR\005email\0229\n\n" +
       "created_at\030\004 \001(\0132\032.google.protobuf.Times" +
       "tampR\tcreatedAt\022>\n\triot_link\030\005 \001(\0132!.fri" +
-      "endlyfire.account.v1.RiotLinkR\010riotLink\"" +
-      "\223\001\n\010RiotLink\022\033\n\tgame_name\030\001 \001(\tR\010gameNam" +
-      "e\022\031\n\010tag_line\030\002 \001(\tR\007tagLine\022\026\n\006region\030\003" +
-      " \001(\tR\006region\0227\n\tlinked_at\030\004 \001(\0132\032.google" +
-      ".protobuf.TimestampR\010linkedAt\"\202\001\n\021Ensure" +
-      "UserRequest\022!\n\014auth_subject\030\001 \001(\tR\013authS" +
-      "ubject\022\024\n\005email\030\002 \001(\tR\005email\0224\n\026suggeste" +
-      "d_display_name\030\003 \001(\tR\024suggestedDisplayNa" +
-      "me\"a\n\022EnsureUserResponse\0221\n\004user\030\001 \001(\0132\035" +
-      ".friendlyfire.account.v1.UserR\004user\022\030\n\007c" +
-      "reated\030\002 \001(\010R\007created\")\n\016GetUserRequest\022" +
-      "\027\n\007user_id\030\001 \001(\tR\006userId\"D\n\017GetUserRespo" +
-      "nse\0221\n\004user\030\001 \001(\0132\035.friendlyfire.account" +
-      ".v1.UserR\004user\"V\n\030UpdateDisplayNameReque" +
-      "st\022\027\n\007user_id\030\001 \001(\tR\006userId\022!\n\014display_n" +
-      "ame\030\002 \001(\tR\013displayName\"N\n\031UpdateDisplayN" +
-      "ameResponse\0221\n\004user\030\001 \001(\0132\035.friendlyfire" +
-      ".account.v1.UserR\004user\"R\n\024StartRiotLinkR" +
-      "equest\022\027\n\007user_id\030\001 \001(\tR\006userId\022!\n\014redir" +
-      "ect_uri\030\002 \001(\tR\013redirectUri\"<\n\025StartRiotL" +
-      "inkResponse\022#\n\rauthorize_url\030\001 \001(\tR\014auth" +
-      "orizeUrl\"\177\n\027CompleteRiotLinkRequest\022\027\n\007u" +
-      "ser_id\030\001 \001(\tR\006userId\022\022\n\004code\030\002 \001(\tR\004code" +
-      "\022\024\n\005state\030\003 \001(\tR\005state\022!\n\014redirect_uri\030\004" +
-      " \001(\tR\013redirectUri\"Z\n\030CompleteRiotLinkRes" +
-      "ponse\022>\n\triot_link\030\001 \001(\0132!.friendlyfire." +
-      "account.v1.RiotLinkR\010riotLink\",\n\021UnlinkR" +
-      "iotRequest\022\027\n\007user_id\030\001 \001(\tR\006userId\"\024\n\022U" +
-      "nlinkRiotResponse\"/\n\024DeleteAccountReques" +
-      "t\022\027\n\007user_id\030\001 \001(\tR\006userId\"\027\n\025DeleteAcco" +
-      "untResponse2\221\006\n\016AccountService\022e\n\nEnsure" +
-      "User\022*.friendlyfire.account.v1.EnsureUse" +
-      "rRequest\032+.friendlyfire.account.v1.Ensur" +
-      "eUserResponse\022\\\n\007GetUser\022\'.friendlyfire." +
-      "account.v1.GetUserRequest\032(.friendlyfire" +
-      ".account.v1.GetUserResponse\022z\n\021UpdateDis" +
-      "playName\0221.friendlyfire.account.v1.Updat" +
-      "eDisplayNameRequest\0322.friendlyfire.accou" +
-      "nt.v1.UpdateDisplayNameResponse\022n\n\rStart" +
-      "RiotLink\022-.friendlyfire.account.v1.Start" +
-      "RiotLinkRequest\032..friendlyfire.account.v" +
-      "1.StartRiotLinkResponse\022w\n\020CompleteRiotL" +
-      "ink\0220.friendlyfire.account.v1.CompleteRi" +
-      "otLinkRequest\0321.friendlyfire.account.v1." +
-      "CompleteRiotLinkResponse\022e\n\nUnlinkRiot\022*" +
-      ".friendlyfire.account.v1.UnlinkRiotReque" +
-      "st\032+.friendlyfire.account.v1.UnlinkRiotR" +
-      "esponse\022n\n\rDeleteAccount\022-.friendlyfire." +
-      "account.v1.DeleteAccountRequest\032..friend" +
-      "lyfire.account.v1.DeleteAccountResponseB" +
-      "\220\002\n.com.friendlyfire.proto.friendlyfire." +
-      "account.v1B\023AccountServiceProtoP\001ZKgithu" +
-      "b.com/SaswatM-62/FriendlyFire/gen/go/fri" +
-      "endlyfire/account/v1;accountv1\242\002\003FAX\252\002\027F" +
-      "riendlyfire.Account.V1\312\002\027Friendlyfire\\Ac" +
-      "count\\V1\342\002#Friendlyfire\\Account\\V1\\GPBMe" +
-      "tadata\352\002\031Friendlyfire::Account::V1b\006prot" +
-      "o3"
+      "endlyfire.account.v1.RiotLinkR\010riotLink\022" +
+      "=\n\014onboarded_at\030\006 \001(\0132\032.google.protobuf." +
+      "TimestampR\013onboardedAt\"\223\001\n\010RiotLink\022\033\n\tg" +
+      "ame_name\030\001 \001(\tR\010gameName\022\031\n\010tag_line\030\002 \001" +
+      "(\tR\007tagLine\022\026\n\006region\030\003 \001(\tR\006region\0227\n\tl" +
+      "inked_at\030\004 \001(\0132\032.google.protobuf.Timesta" +
+      "mpR\010linkedAt\"\202\001\n\021EnsureUserRequest\022!\n\014au" +
+      "th_subject\030\001 \001(\tR\013authSubject\022\024\n\005email\030\002" +
+      " \001(\tR\005email\0224\n\026suggested_display_name\030\003 " +
+      "\001(\tR\024suggestedDisplayName\"a\n\022EnsureUserR" +
+      "esponse\0221\n\004user\030\001 \001(\0132\035.friendlyfire.acc" +
+      "ount.v1.UserR\004user\022\030\n\007created\030\002 \001(\010R\007cre" +
+      "ated\")\n\016GetUserRequest\022\027\n\007user_id\030\001 \001(\tR" +
+      "\006userId\"D\n\017GetUserResponse\0221\n\004user\030\001 \001(\013" +
+      "2\035.friendlyfire.account.v1.UserR\004user\"V\n" +
+      "\030UpdateDisplayNameRequest\022\027\n\007user_id\030\001 \001" +
+      "(\tR\006userId\022!\n\014display_name\030\002 \001(\tR\013displa" +
+      "yName\"N\n\031UpdateDisplayNameResponse\0221\n\004us" +
+      "er\030\001 \001(\0132\035.friendlyfire.account.v1.UserR" +
+      "\004user\"R\n\024StartRiotLinkRequest\022\027\n\007user_id" +
+      "\030\001 \001(\tR\006userId\022!\n\014redirect_uri\030\002 \001(\tR\013re" +
+      "directUri\"<\n\025StartRiotLinkResponse\022#\n\rau" +
+      "thorize_url\030\001 \001(\tR\014authorizeUrl\"\177\n\027Compl" +
+      "eteRiotLinkRequest\022\027\n\007user_id\030\001 \001(\tR\006use" +
+      "rId\022\022\n\004code\030\002 \001(\tR\004code\022\024\n\005state\030\003 \001(\tR\005" +
+      "state\022!\n\014redirect_uri\030\004 \001(\tR\013redirectUri" +
+      "\"Z\n\030CompleteRiotLinkResponse\022>\n\triot_lin" +
+      "k\030\001 \001(\0132!.friendlyfire.account.v1.RiotLi" +
+      "nkR\010riotLink\",\n\021UnlinkRiotRequest\022\027\n\007use" +
+      "r_id\030\001 \001(\tR\006userId\"\024\n\022UnlinkRiotResponse" +
+      "\"/\n\024DeleteAccountRequest\022\027\n\007user_id\030\001 \001(" +
+      "\tR\006userId\"\027\n\025DeleteAccountResponse\"1\n\024Ge" +
+      "tDataStatusRequest\022\031\n\010user_ids\030\001 \003(\tR\007us" +
+      "erIds\"\\\n\025GetDataStatusResponse\022C\n\010status" +
+      "es\030\001 \003(\0132\'.friendlyfire.account.v1.UserD" +
+      "ataStatusR\010statuses\"\241\002\n\016UserDataStatus\022\027" +
+      "\n\007user_id\030\001 \001(\tR\006userId\022;\n\006status\030\002 \001(\0162" +
+      "#.friendlyfire.account.v1.DataStatusR\006st" +
+      "atus\022+\n\021estimated_seconds\030\003 \001(\005R\020estimat" +
+      "edSeconds\022%\n\016matches_stored\030\004 \001(\005R\rmatch" +
+      "esStored\022@\n\016last_synced_at\030\005 \001(\0132\032.googl" +
+      "e.protobuf.TimestampR\014lastSyncedAt\022#\n\rer" +
+      "ror_message\030\006 \001(\tR\014errorMessage\"2\n\027Finis" +
+      "hOnboardingRequest\022\027\n\007user_id\030\001 \001(\tR\006use" +
+      "rId\"M\n\030FinishOnboardingResponse\0221\n\004user\030" +
+      "\001 \001(\0132\035.friendlyfire.account.v1.UserR\004us" +
+      "er*\252\001\n\nDataStatus\022\033\n\027DATA_STATUS_UNSPECI" +
+      "FIED\020\000\022\026\n\022DATA_STATUS_SYNCED\020\001\022\027\n\023DATA_S" +
+      "TATUS_SYNCING\020\002\022\032\n\026DATA_STATUS_NOT_SYNCE" +
+      "D\020\003\022\032\n\026DATA_STATUS_NOT_LINKED\020\004\022\026\n\022DATA_" +
+      "STATUS_FAILED\020\0052\372\007\n\016AccountService\022e\n\nEn" +
+      "sureUser\022*.friendlyfire.account.v1.Ensur" +
+      "eUserRequest\032+.friendlyfire.account.v1.E" +
+      "nsureUserResponse\022\\\n\007GetUser\022\'.friendlyf" +
+      "ire.account.v1.GetUserRequest\032(.friendly" +
+      "fire.account.v1.GetUserResponse\022z\n\021Updat" +
+      "eDisplayName\0221.friendlyfire.account.v1.U" +
+      "pdateDisplayNameRequest\0322.friendlyfire.a" +
+      "ccount.v1.UpdateDisplayNameResponse\022n\n\rS" +
+      "tartRiotLink\022-.friendlyfire.account.v1.S" +
+      "tartRiotLinkRequest\032..friendlyfire.accou" +
+      "nt.v1.StartRiotLinkResponse\022w\n\020CompleteR" +
+      "iotLink\0220.friendlyfire.account.v1.Comple" +
+      "teRiotLinkRequest\0321.friendlyfire.account" +
+      ".v1.CompleteRiotLinkResponse\022e\n\nUnlinkRi" +
+      "ot\022*.friendlyfire.account.v1.UnlinkRiotR" +
+      "equest\032+.friendlyfire.account.v1.UnlinkR" +
+      "iotResponse\022n\n\rDeleteAccount\022-.friendlyf" +
+      "ire.account.v1.DeleteAccountRequest\032..fr" +
+      "iendlyfire.account.v1.DeleteAccountRespo" +
+      "nse\022n\n\rGetDataStatus\022-.friendlyfire.acco" +
+      "unt.v1.GetDataStatusRequest\032..friendlyfi" +
+      "re.account.v1.GetDataStatusResponse\022w\n\020F" +
+      "inishOnboarding\0220.friendlyfire.account.v" +
+      "1.FinishOnboardingRequest\0321.friendlyfire" +
+      ".account.v1.FinishOnboardingResponseB\220\002\n" +
+      ".com.friendlyfire.proto.friendlyfire.acc" +
+      "ount.v1B\023AccountServiceProtoP\001ZKgithub.c" +
+      "om/SaswatM-62/FriendlyFire/gen/go/friend" +
+      "lyfire/account/v1;accountv1\242\002\003FAX\252\002\027Frie" +
+      "ndlyfire.Account.V1\312\002\027Friendlyfire\\Accou" +
+      "nt\\V1\342\002#Friendlyfire\\Account\\V1\\GPBMetad" +
+      "ata\352\002\031Friendlyfire::Account::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -191,7 +241,7 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
     internal_static_friendlyfire_account_v1_User_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_account_v1_User_descriptor,
-        new java.lang.String[] { "UserId", "DisplayName", "Email", "CreatedAt", "RiotLink", });
+        new java.lang.String[] { "UserId", "DisplayName", "Email", "CreatedAt", "RiotLink", "OnboardedAt", });
     internal_static_friendlyfire_account_v1_RiotLink_descriptor =
       getDescriptor().getMessageType(1);
     internal_static_friendlyfire_account_v1_RiotLink_fieldAccessorTable = new
@@ -282,6 +332,36 @@ public final class AccountServiceProto extends com.google.protobuf.GeneratedFile
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_account_v1_DeleteAccountResponse_descriptor,
         new java.lang.String[] { });
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor =
+      getDescriptor().getMessageType(16);
+    internal_static_friendlyfire_account_v1_GetDataStatusRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_GetDataStatusRequest_descriptor,
+        new java.lang.String[] { "UserIds", });
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor =
+      getDescriptor().getMessageType(17);
+    internal_static_friendlyfire_account_v1_GetDataStatusResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_GetDataStatusResponse_descriptor,
+        new java.lang.String[] { "Statuses", });
+    internal_static_friendlyfire_account_v1_UserDataStatus_descriptor =
+      getDescriptor().getMessageType(18);
+    internal_static_friendlyfire_account_v1_UserDataStatus_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_UserDataStatus_descriptor,
+        new java.lang.String[] { "UserId", "Status", "EstimatedSeconds", "MatchesStored", "LastSyncedAt", "ErrorMessage", });
+    internal_static_friendlyfire_account_v1_FinishOnboardingRequest_descriptor =
+      getDescriptor().getMessageType(19);
+    internal_static_friendlyfire_account_v1_FinishOnboardingRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_FinishOnboardingRequest_descriptor,
+        new java.lang.String[] { "UserId", });
+    internal_static_friendlyfire_account_v1_FinishOnboardingResponse_descriptor =
+      getDescriptor().getMessageType(20);
+    internal_static_friendlyfire_account_v1_FinishOnboardingResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_account_v1_FinishOnboardingResponse_descriptor,
+        new java.lang.String[] { "User", });
     descriptor.resolveAllFeaturesImmutable();
     com.google.protobuf.TimestampProto.getDescriptor();
   }

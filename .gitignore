@@ -42,5 +42,7 @@ Thumbs.db
 .env
 **/.env
 .env*.local
+# The mock RSO's real test players. testplayers.example.json is the committed example.
+services/mock-rso-service/testplayers.json
 
 # gen/ is NOT ignored: generated code is committed on purpose.

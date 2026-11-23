@@ -1,164 +1,124 @@
-"""Value-first question templates; evaluator integration awaits FF-402."""
+"""Data-only question templates; question_generator.py evaluates them.
+
+Catalogue: docs/stats-catalogue.md. A new question is one more entry here; only a
+new kind of calculation needs code in question_generator.py. Templates carry no
+difficulty: each generated question is rated easy, medium or hard from how far its
+winner leads (question_generator.difficulty).
+
+How a template is evaluated, for every room player who is compared (see below):
+
+1. Rows: the player's matches in the template's game and queues, and in the scope
+   (all matches, "shared" ones with 2+ room players, or "solo" ones).
+2. Window: the player's newest last_n matches by played_at (fewer than last_n, a
+   missing timestamp, or a tie across the boundary skips the question), or every
+   stored match when last_n is None. The window is chosen before any filter.
+3. Filter: with a parameter_label, one question per value of that label (e.g. per
+   agent), keeping only the window's matches with that value. A match missing the
+   label skips the question rather than silently dropping out.
+4. Value, by rule:
+   - max_in_match: the player's best single match for stat (highest, or lowest
+     when direction is "lowest"); display_label names a label from that match,
+     shown as {<display_label>_name}.
+   - count: the sum of stat over the matches ("matches" counts them, "won" counts
+     wins). No matches after a filter is a known zero.
+   - average: stat averaged per match.
+   - pooled_ratio: the sum of the numerator stats over the sum of the denominator
+     stats. A zero total denominator is unknown; one zero match still counts.
+   - pair: friend-pair counts. One question per room player (the {friend}); each
+     other player's value is the sum of the "<stat>:<friend's user ID>" number over
+     matches where they were on the friend's team.
+5. Compare: the unique highest (or lowest) value wins; a tie skips the question,
+   and so does a {value} or {percent} in the question that rounds to the same text
+   as the runner-up's (it wouldn't single out the winner). Any player with a
+   missing value skips it too, except that with contenders_only players without
+   enough matches sit the question out (2+ must remain). "Enough" means at least
+   one match in the scope (and at least last_n of them), plus one after the filter.
+   Use it for agent or map questions, and for the solo scope: players who mostly
+   squad up still have the odd solo game, so pair a solo template with
+   contenders_only and a small or no last_n. Pair questions always compare only the
+   players who played with the friend.
+
+Every room player is an option in every question, including players who sat it out,
+so a question says who it compared ("of anyone here who has played Ascent"). Players
+with QuizPlayer.not_enough_matches are never compared: never the answer, a pair
+question's friend or the source of a stat. Their matches still count when deciding
+whether a match was shared.
+
+Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
+"matches", or "numbers.<key>" from the catalogue.
+
+Placeholders: {name} (winner), {value}, {numerator}, {denominator}, {percent}
+(value x 100), {scope}, {last_n}, {parameter}, {friend} and {<display_label>_name}.
+Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
+for {percent} (29.7).
+"""
 
 from dataclasses import dataclass
 from typing import Literal
 
-# TODO(ff): the question and explanation templates
-#   - e.g. "Who had {kills} kills on {map}?" and "{name} went {kills}/{deaths}/{assists}
-#     as {agent}."
-#   - only use labels/numbers that every game provides, or check the game first
-#   - keep it data (a list of templates), so adding a question type is one entry
+Scope = Literal["all", "shared", "solo"]
+Rule = Literal["max_in_match", "count", "average", "pooled_ratio", "pair"]
+Direction = Literal["highest", "lowest"]
+ParameterLabel = Literal["", "agent", "map", "role"]
 
-Rule = Literal["pooled_ratio", "max_in_match", "count"]
+ALL_SCOPES: tuple[Scope, ...] = ("all", "shared", "solo")
 
 
 @dataclass(frozen=True)
 class QuestionTemplate:
-    """One entry per question, with reusable calculation and comparison metadata.
-
-    Select last_n games in queues before applying parameter_label filters.
-    Pooled ratios sum raw numerators and denominators across that window; a zero
-    total denominator skips the comparison (including zero total deaths for K/D).
-    Individual deathless games still contribute if the pooled denominator is positive.
-    The synthetic `matches` stat counts games; `won` requires a known result label
-    consistent with the scalar. Unknown inputs or tied leaders skip the question.
-    Rank displays use display_label from the match attaining the maximum stat.
-    These are evaluator requirements, not behavior implemented by this module.
-    """
-
     id: str
     question: str
     explanation: str
+    # Every catalogue key the template reads, for reviewers.
     stats: tuple[str, ...]
     rule: Rule
     stat: str = ""
     numerator: tuple[str, ...] = ()
     denominator: tuple[str, ...] = ()
-    direction: Literal["highest", "lowest"] = "highest"
-    scopes: tuple[Literal["all"], ...] = ("all",)
+    direction: Direction = "highest"
+    scopes: tuple[Scope, ...] = ("all",)
     game: str = "valorant"
     queues: tuple[str, ...] = ("competitive", "unrated")
-    last_n: int = 10
-    parameter_label: Literal["", "agent", "map"] = ""
+    last_n: int | None = 10
+    parameter_label: ParameterLabel = ""
     display_label: str = ""
-    zero_denominator: Literal["skip"] = "skip"
+    contenders_only: bool = False
 
 
-TEMPLATES: tuple[QuestionTemplate, ...] = (
+TEMPLATES = (
     QuestionTemplate(
-        id="highest-recent-rank-v1",
-        question="This player hit {rank_name} in their last {last_n} Competitive games, "
-        "the highest rank in the group. Who is it?",
-        explanation="{name} reached {rank_name}, the highest rank recorded in their last "
-        "{last_n} Competitive games. This is a match-time rank, "
-        "not their current or lifetime peak.",
-        stats=("numbers.rank_tier", "labels.rank", "labels.queue_id"),
+        id="most-kills-v1",
+        question="This player once racked up {value} kills in a single match {scope}, the most "
+        "in this group. Who might this player be?",
+        explanation="{name}, with {value} kills in one match.",
+        stats=("kills", "labels.queue_id"),
         rule="max_in_match",
-        stat="numbers.rank_tier",
-        display_label="rank",
-        queues=("competitive",),
+        stat="kills",
+        scopes=ALL_SCOPES,
+        last_n=None,
     ),
     QuestionTemplate(
-        id="highest-recent-kd-v1",
-        question="This player got {value} kills per death over their last {last_n} games, "
-        "the best in the group. Who is it?",
-        explanation="{name} had {numerator} kills / {denominator} deaths: {value} kills per death. "
-        "Totals are combined across their last {last_n} games; "
-        "zero total deaths skips the question.",
-        stats=("kills", "deaths"),
+        id="highest-acs-v1",
+        question="This player averages {value} combat score per round {scope}, the highest "
+        "in this group. Who is this player?",
+        explanation="{name}: {numerator} combat score over {denominator} rounds.",
+        stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
-        numerator=("kills",),
-        denominator=("deaths",),
+        numerator=("numbers.combat_score",),
+        denominator=("numbers.rounds_played",),
+        scopes=ALL_SCOPES,
+        last_n=None,
     ),
     QuestionTemplate(
-        id="highest-recent-headshot-percentage-v1",
-        question="This player hit headshots on {percent}% of their hits in their last "
-        "{last_n} games, the best in the group. Who is it?",
-        explanation="{name} landed {numerator} head hits / {denominator} total hits ({percent}%). "
-        "These are hits, not kills; misses are not included. Totals are combined across games.",
-        stats=("numbers.headshots", "numbers.bodyshots", "numbers.legshots"),
-        rule="pooled_ratio",
-        numerator=("numbers.headshots",),
-        denominator=("numbers.headshots", "numbers.bodyshots", "numbers.legshots"),
-    ),
-    QuestionTemplate(
-        id="most-recent-headshots-v1",
-        question="This player landed {value} headshots in a single game, out of their last "
-        "{last_n}, the most in the group. Who is it?",
-        explanation="{name} recorded {value} head hits in one of their last {last_n} games. "
-        "Headshots count hits, not headshot kills.",
-        stats=("numbers.headshots",),
-        rule="max_in_match",
-        stat="numbers.headshots",
-    ),
-    QuestionTemplate(
-        id="most-recent-agent-games-v1",
-        question="This player picked {parameter} in {value} of their last {last_n} games, "
-        "more than anyone else. Who is it?",
-        explanation="{name} played {parameter} in {value} of their last {last_n} games. "
-        "Every game must have a known agent; a known zero uses counts as zero.",
-        stats=("labels.agent",),
+        id="recent-wins-v1",
+        question="This player won {value} of their last {last_n} Competitive matches, more "
+        "than anyone else in this group. Who keeps winning?",
+        explanation="{name}, with {value} wins in {last_n} Competitive matches "
+        "(a draw isn't a win).",
+        stats=("played_at", "labels.queue_id", "labels.result", "won"),
         rule="count",
-        stat="matches",
-        parameter_label="agent",
-    ),
-    QuestionTemplate(
-        id="highest-recent-map-win-rate-v1",
-        question="This player won {percent}% of their games on {parameter} among their last "
-        "{last_n} games, the best in the group. Who is it?",
-        explanation="{name} won {numerator} of {denominator} matches on {parameter} "
-        "({percent}%). Draws count as losses for this rate. Select the last {last_n} games "
-        "before filtering by map; no games on the map skips the question.",
-        stats=("labels.map", "labels.result", "won"),
-        rule="pooled_ratio",
-        numerator=("won",),
-        denominator=("matches",),
-        parameter_label="map",
-    ),
-    QuestionTemplate(
-        id="highest-recent-agent-kd-v1",
-        question="This player got {value} kills per death as {parameter} across their last "
-        "{last_n} games, the best in the group. Who is it?",
-        explanation="{name} had {numerator} kills / {denominator} deaths as {parameter}: "
-        "{value} kills per death. Select the last {last_n} games before filtering by agent; "
-        "no games on the agent or zero total deaths skips the question.",
-        stats=("labels.agent", "kills", "deaths"),
-        rule="pooled_ratio",
-        numerator=("kills",),
-        denominator=("deaths",),
-        parameter_label="agent",
-    ),
-    QuestionTemplate(
-        id="lowest-recent-adr-v1",
-        question="This player dealt {value} damage per round over their last {last_n} games, "
-        "the lowest in the group. Who is it?",
-        explanation="{name} dealt {numerator} damage / {denominator} rounds: {value} damage "
-        "per round. Combine totals across games rather than averaging match averages.",
-        stats=("numbers.damage_dealt", "numbers.rounds_played"),
-        rule="pooled_ratio",
-        numerator=("numbers.damage_dealt",),
-        denominator=("numbers.rounds_played",),
-        direction="lowest",
-    ),
-    QuestionTemplate(
-        id="highest-recent-adr-v1",
-        question="This player dealt {value} damage per round over their last {last_n} games, "
-        "the highest in the group. Who is it?",
-        explanation="{name} dealt {numerator} damage / {denominator} rounds: {value} damage "
-        "per round. Combine totals across games rather than averaging match averages.",
-        stats=("numbers.damage_dealt", "numbers.rounds_played"),
-        rule="pooled_ratio",
-        numerator=("numbers.damage_dealt",),
-        denominator=("numbers.rounds_played",),
-    ),
-    QuestionTemplate(
-        id="highest-recent-round-damage-v1",
-        question="This player dealt {value} damage in a single round, out of their last "
-        "{last_n} games, the most in the group. Who is it?",
-        explanation="{name}'s highest damage in one round was {value} across their last "
-        "{last_n} games. This is a single-round maximum, not total match damage.",
-        stats=("numbers.max_round_damage",),
-        rule="max_in_match",
-        stat="numbers.max_round_damage",
+        stat="won",
+        queues=("competitive",),
+        last_n=10,
     ),
 )

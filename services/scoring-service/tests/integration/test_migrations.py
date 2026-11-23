@@ -57,12 +57,12 @@ def _create_schema(postgres: PostgresContainer) -> None:
         connection.execute("CREATE SCHEMA scoring")
 
 
-def test_applies_first_migration_to_scoring_schema(postgres: PostgresContainer) -> None:
+def test_applies_every_migration_to_scoring_schema(postgres: PostgresContainer) -> None:
     _create_schema(postgres)
 
     upgrade_to_head(_settings(postgres))
 
-    assert _applied_versions(postgres) == ["0001"]
+    assert _applied_versions(postgres) == ["0002"]
 
 
 def test_running_again_changes_nothing(postgres: PostgresContainer) -> None:
@@ -71,4 +71,4 @@ def test_running_again_changes_nothing(postgres: PostgresContainer) -> None:
 
     upgrade_to_head(_settings(postgres))
 
-    assert _applied_versions(postgres) == ["0001"]
+    assert _applied_versions(postgres) == ["0002"]

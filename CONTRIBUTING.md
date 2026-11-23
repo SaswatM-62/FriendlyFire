@@ -87,9 +87,9 @@ dependencies, so it takes a few minutes. Later starts take about a minute.
 ### Is everything working?
 
 1. `make ps`: all 9 containers say `(healthy)`. The Java services are the last ones.
-2. Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`: the Gateway only
-   accepts requests from `FRONTEND_ORIGIN`). The **System status** page should say
-   **"17 of 17 checks passing"** and **"Realtime: connected · N ms"**.
+2. Open **http://localhost:3000/status** (use `localhost`, not `127.0.0.1`: the Gateway only
+   accepts requests from `FRONTEND_ORIGIN`). The **Status** page should say
+   **"15 of 15 checks passing"** and, under Realtime ping, **"Connected · N ms"**.
 3. From a terminal:
    ```bash
    curl localhost:8080/api/health                                  # {"status":"UP"}
@@ -116,7 +116,7 @@ If something is red, see [Troubleshooting](#6-troubleshooting).
 |---|---|
 | Java code or `application.yml` | Recompiles, then the app restarts (a few seconds) |
 | Python code | `watchfiles` restarts the server |
-| Go code | `air` rebuilds and restarts |
+| Go code, or the mock RSO's test players | `air` rebuilds and restarts |
 | Frontend code | Next.js hot-reloads the page |
 | A `.proto` file | Nothing yet: run `make proto`, then the services reload |
 | `pom.xml`, `pyproject.toml`, `go.mod`, `package.json` | Nothing: `docker compose restart <service>` (it installs the new dependencies when it starts) |
@@ -241,7 +241,8 @@ lists the Dockerfiles, `go.mod` and `pom.xml` files that still need the same cha
 ### Every service
 
 - **Config comes from environment variables only.** No hard-coded hosts, ports or
-  secrets, and never commit `.env`.
+  secrets, and never commit `.env`. The one config file is the mock RSO's real test players
+  (`services/mock-rso-service/testplayers.json`, gitignored): never commit those either.
 - **Inject dependencies through constructors.** Objects are wired in one place per
   service: `config/` in Java, `bootstrap.py` in Python, `cmd/<service>/main.go` in Go.
   No globals, no field injection.
@@ -284,7 +285,8 @@ services/account-service/src/main/java/com/friendlyfire/account/
 ├── config/      wiring: GrpcClientsConfig (gRPC clients), HealthConfig, ...
 ├── grpc/        the gRPC service (AccountGrpcService)
 ├── health/      dependency health checks
-└── user/, riotlink/, rso/   features
+├── user/, riotlink/, rso/, datastatus/   features
+└── matchdata/, scoring/   clients for the services Account calls (interfaces, so tests use fakes)
 ```
 The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `grpc/`.
 
@@ -302,6 +304,11 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
 - **Gateway STOMP:** `@MessageMapping` methods in `realtime/`. Browsers send to
   `/app/...`; room updates go to `/topic/room/{code}`; messages for one player go to
   `/user/queue/...`.
+- **The signed-in player in the Gateway:** a REST controller declares a `SignedInUser`
+  parameter (filled in from the checked Auth0 token, cached for a few minutes); a STOMP
+  handler takes the session's `Principal`, whose name is the `user_id`. When the frontend
+  reacts to an error by code (`ROOM_FULL`...), rename the gRPC error with
+  `GrpcErrors.renaming(...)`; the codes are listed in `web/ErrorCodes.java`.
 - **Postgres** (account-service only, so far): Spring JDBC (`JdbcClient`) on the `account`
   schema. Flyway creates and updates the tables when the service starts.
   **To add a migration:** create `src/main/resources/db/migration/V<n>__<what>.sql`
@@ -311,14 +318,57 @@ The Gateway has `web/` (REST under `/api`) and `realtime/` (STOMP) instead of `g
   table is `account.flyway_schema_history`. Tests that load the whole app without a database set
   `spring.flyway.enabled=false`; `FlywayMigrationIT` covers the migrations on a real
   Postgres.
-- **Time:** room-service injects a `java.time.Clock`; never call `Instant.now()` directly
-  in game logic.
+- **Time:** room-service and account-service inject a `java.time.Clock`; never call
+  `Instant.now()` directly in game logic.
+- **Account's rules:**
+  - **Linking a Riot account** (ADR-007): `StartRiotLink` keeps a one-time `state` for 10
+    minutes (`LinkStateStore`, in memory) and returns the mock RSO's page at
+    `MOCK_RSO_BROWSER_URL`; Account itself calls the mock at `MOCK_RSO_URL`.
+    `CompleteRiotLink` checks and uses up the state, swaps the code for the player's Riot
+    account, saves the link and starts a sync. The PUUID never leaves Account and Match
+    Data.
+  - **Data status** (ADR-010): `GetDataStatus` turns Match Data's raw sync status into
+    SYNCED (under 24 hours old), SYNCING, NOT_SYNCED, NOT_LINKED or FAILED. `EnsureUser`
+    starts a sync when a linked player's data isn't SYNCED.
+  - **When Match Data or Scoring can't be reached:** sign-in and linking still work (a
+    sync that can't start is logged, and the next sign-in tries again). Anything that
+    deletes data (unlinking, deleting an account, swapping Riot accounts) answers
+    UNAVAILABLE and changes nothing, so no personal data is left behind; the other services
+    always go first, then Account's own rows.
+  - **The mock RSO's email check:** `StartRiotLink` adds the account's email to the mock's
+    URL (`login_hint`), and the mock only accepts a Riot ID for the email it's assigned to.
+    The real Riot Sign-On client will never send it.
+- **Room's rules** (room-service):
+  - `RoomManager` does every action from the contract; `QuizRunner` runs a quiz from Start
+    to the final standings. Each `Room` is changed only while holding its lock
+    (`synchronized (room)`), and every event is published under the same lock, so streams
+    see events in order. Calls to Account, the quiz engine and Scoring happen outside the
+    lock.
+  - Timers go through the injected `Scheduler` and `Clock` (`RoomTimings` has every
+    length): 8 s minimum and 60 s maximum to prepare, a 3 s countdown before every
+    question, a 10 s reveal, a 15 s vote, pauses of up to 60 s (180 s per quiz). Each phase
+    change bumps the room's `generation`, so a timer set for an earlier phase does nothing.
+  - Scoring owns the points: Room registers the quiz (`StartQuiz`, or the start fails),
+    records every round (`RecordRound`, retried once; if Scoring stays down, Room scores
+    that round itself with the same formula) and finalizes it in the background.
+  - Rooms live in memory (`InMemoryRoomRepository`): a restart ends them. A user is in one
+    room at a time. Scheduled jobs (`RoomJobs`) refresh lobby players' data status every
+    5 s and close rooms everyone left 5 minutes ago, or where nothing happened for 2 hours.
+  - Tests: `testsupport/RoomFixture` wires everything with fakes and a manual clock;
+    `fixture.advance(...)` runs the timers, so a whole quiz takes milliseconds.
 - 4-space indents. No Java formatter or linter is set up yet, so follow the surrounding code.
 
 **Tests**
 - In `src/test/java`, same package as the class. `*Test` = unit test (`make test`),
   `*IT` = integration test (`make test-integration`).
 - JUnit 5 and AssertJ. MockMvc (`@WebMvcTest`) for REST, `WebSocketStompClient` for STOMP.
+- **Account tests:** `testsupport/FakesConfig` swaps the clock, Riot Sign-On, Match Data and
+  Scoring for fakes in a Spring test; `AccountGrpcServiceIT` uses it with a real Postgres.
+- **Gateway tests** extend `testsupport/GatewayTestBase`: the whole Gateway with
+  account-, room- and scoring-service as in-process fakes (`FakeServices`) and Auth0 as
+  `FakeTokens` (`FakeTokens.token("maya")` signs in as `user-maya`). `StompTestClient` is a
+  browser's WebSocket. These tests share one Spring context, so use `TestNames` for fresh
+  players and room codes.
 - To call the service over gRPC: `@SpringBootTest` + `@AutoConfigureTestGrpcTransport`,
   then `GrpcChannelFactory.createChannel("any")` reaches it in-process. Careful: this also
   routes the service's own clients back to itself, so don't call `CheckDependencies`
@@ -356,8 +406,17 @@ services/scoring-service/
   and `ruff format` (line length 100); `uv run ruff format` fixes formatting for you.
 - quiz-engine-service: the same seed and data must give the same questions. Use
   `random.Random(seed)`, never the module-level `random` functions.
+  **To add a question:** add one `QuestionTemplate` to `src/quiz_engine/templates.py`,
+  using the stat keys in `docs/stats-catalogue.md`. The module's docstring explains the
+  rules (`max_in_match`, `count`, `average`, `pooled_ratio`, `pair`), windows,
+  agent/map parameters and placeholders. The generator rejects a template it can't
+  evaluate or render as soon as it loads, and rates each question's difficulty itself.
 - scoring-service: Postgres through the injected psycopg `AsyncConnectionPool`, on the
-  `scoring` schema. Alembic creates and updates the tables, running
+  `scoring` schema, behind the `Quizzes` protocol (`QuizRepository`; `tests/fakes.py` has
+  an in-memory `FakeQuizzes` for servicer tests). A quiz's players are numbered by seat,
+  so their answers stay linked after `AnonymizePlayer` clears the user ID. `RecordRound`
+  replaces a round sent again; `FinalizeQuiz` keeps the first call's result; history pages
+  are keyed on (finished_at, quiz_id). Alembic creates and updates the tables, running
   `scoring.migrate.upgrade_to_head` before the gRPC server starts.
   **To add a migration:** copy `src/scoring/migrations/versions/0001_init.py` to
   `000N_<what>.py`, set `revision` to the new id and `down_revision` to the previous one,
@@ -387,8 +446,12 @@ services/match-data-service/
 ├── cmd/match-data-service/main.go   reads config, wires everything, stops on SIGTERM
 └── internal/
     ├── config/  grpcserver/  health/  matchdata/ (the gRPC service)
-    ├── source/  store/  sync/  ratelimit/
-    └── testutil/                    fakes for tests
+    ├── source/    HenrikDev, or the saved fixtures (MATCH_SOURCE)
+    ├── henrik/    the HenrikDev v4 match format
+    ├── stats/     a match → one record per linked player (docs/stats-catalogue.md)
+    ├── lookup/    agent and weapon tables (go run ./cmd/refresh-lookups each patch)
+    ├── store/  sync/  ratelimit/
+    └── testutil/                    clock and health fakes; testutil/fakes: store, sync, source
 ```
 
 - The standard library first: `log/slog`, `net/http`, `context`.
@@ -409,12 +472,63 @@ services/match-data-service/
   matching `.down.sql` (next number, plain SQL). The files are embedded in the binary
   (`go:embed`), so restart the service (`docker compose restart match-data-service`) to
   rebuild and apply it. The history table is `matchdata.schema_migrations`.
-- HenrikDev: tests never call the real API. Save real responses (without the API key) in
-  `internal/source/testdata/henrikdev/` and serve them with `httptest`. Stay under 30
+- **How a sync works:** Account calls `SyncPlayer` at sign-in and after a link. The worker
+  runs one sync at a time (the rate limit is shared), fetches the player's Competitive and
+  Unrated matches from the last 30 days, turns each into records with `stats.Records`, and
+  replaces everything stored for the player in one transaction (a failed sync keeps the
+  old data and records a safe message). Only linked players are stored; comparisons with the
+  whole scoreboard are worked out during the sync. A sync also refreshes friends' pair keys
+  (`assists_for:<user_id>`...) on matches they share; deleting a player removes them.
+  `GetSyncStatus` adds the queue position and an estimate from the rate limiter.
+- **Where matches come from (`MATCH_SOURCE`):** `henrikdev`, or `fixtures`: 20 real
+  matches, anonymized, whose 5-stack is the mock RSO's example players (Sam, Alex, Kim,
+  Jordan, Riley), moved in time so they're always recent. Unset means HenrikDev when
+  `HENRIKDEV_API_KEY` is set, fixtures otherwise, so linking a test player syncs in a moment
+  without a key. The e2e tests use fixtures.
+- **A new stat** is a key in `docs/stats-catalogue.md` and a line in `internal/stats`
+  (tests in `stats_test.go`, including the consistency checks on the fixtures); quiz
+  templates can use it after the next sync. No contract change.
+- HenrikDev: tests never call the real API: they serve the fixtures in
+  `internal/source/fixtures/henrikdev/` with `httptest`. Never commit a raw HenrikDev
+  response (real players' names and IDs): anonymize it first (see that folder's README).
+  The health tree's `henrikdev` node reports the last real request instead of calling the
+  API, so health checks never use up the limit. Stay under 30
   requests per minute with the one shared `ratelimit.Limiter`: call `Wait(ctx)` before
   every request, and on a 429 call `PauseFor(d)` (`ratelimit.RetryAfter` reads the
   `Retry-After` header). `Estimate(n)` says how long n requests will take. Give tests a
   `testutil.FakeClock` so they never sleep.
+- mock-rso-service: a fake Riot Sign-On at http://localhost:8090. Codes and tokens live in
+  memory, so a restart only means linking again.
+  **Test players:** by default, the made-up players in `testplayers.example.json`. For real
+  ones, save the list from the team password manager as
+  `services/mock-rso-service/testplayers.json` (same format, gitignored: never commit it);
+  the service picks it up by itself. `MOCK_RSO_PLAYERS_FILE` points at any other file.
+  Each player has an `email`: the FriendlyFire account allowed to link them. The sign-in
+  page asks for a Riot ID (e.g. `Sam#NA1`, not case-sensitive) and refuses one that isn't in
+  the list or belongs to another email. A player without an email can't be linked (the
+  service logs how many there are). The page says it's a mock; in production Riot's own
+  sign-in and consent screen opens instead.
+  **Playing a quiz on the fixtures:** the example players' `@example.com` emails can't sign
+  in, so copy `testplayers.example.json` to `testplayers.json` and put each tester's sign-in
+  email on one of the five players (keep the PUUIDs: they're who the fixture matches
+  belong to). Each tester links "their" player, the sync takes a moment, and the room can
+  start.
+  **Callback URLs:** `/authorize` only sends the browser back to the exact URLs in
+  `MOCK_RSO_REDIRECT_URIS`; anything else gets a 400.
+  **Try it with curl:**
+  ```bash
+  CALLBACK=http://localhost:3000/link/riot/callback
+  # The page a browser would show (login_hint is the FriendlyFire account's email)
+  curl "http://localhost:8090/authorize?response_type=code&redirect_uri=$CALLBACK&state=abc&login_hint=sam@example.com"
+  # Sign in as a test player: the Location header has the code. deny=1 instead refuses.
+  curl -i http://localhost:8090/authorize -d "redirect_uri=$CALLBACK" -d state=abc \
+    -d login_hint=sam@example.com --data-urlencode "riot_id=Sam#NA1"
+  # Swap the code for a token (a code works once)
+  curl http://localhost:8090/token -d grant_type=authorization_code -d "redirect_uri=$CALLBACK" \
+    -d code=PASTE_THE_CODE
+  # Who is it? /userinfo answers too.
+  curl http://localhost:8090/riot/account/v1/accounts/me -H "Authorization: Bearer PASTE_THE_TOKEN"
+  ```
 - `gofmt`, `go vet` and `golangci-lint` must be clean. Check every error, even in tests:
   `defer func() { _ = resp.Body.Close() }()`.
 
@@ -432,31 +546,64 @@ services/match-data-service/
 
 ```
 frontend/src/
-├── app/          routes (App Router): one page.tsx per route
-├── components/   React components, each with its *.test.tsx next to it
-├── lib/          config.ts (NEXT_PUBLIC_* values) and Gateway API helpers
-└── test/         Vitest setup, the fake Gateway (MSW) and test data
+├── app/          routes (App Router): (site)/ pages with the top bar, (bare)/login,
+│                 room/[roomCode], plus icons, manifest and the link-preview image
+├── components/   React components by area (home, profile, room, history, chrome, ui),
+│                 each tested in a *.test.tsx next to it
+├── lib/          config.ts (NEXT_PUBLIC_* values), api.ts (the Gateway client),
+│                 api-types.ts (every REST and STOMP body), useRoomSocket.ts, helpers
+├── mocks/        the fake backend: MSW handlers for every endpoint and a scripted room
+├── styles/       the design: tokens.css, design.css (every board's classes), app.css
+└── test/         Vitest setup and render helpers (renderWithApp, renderRoom)
 ```
 
-- TypeScript in strict mode; avoid `any` and type every Gateway response (see
-  `lib/health.ts`).
+- TypeScript in strict mode; avoid `any`. Every Gateway body is typed in `lib/api-types.ts`
+  (the STOMP ones are also described in `docs/realtime-messages.md`, FF-005).
 - Server components by default. Add `"use client"` only for state, effects or browser APIs.
-- The frontend only talks to the Gateway: REST through helpers in `src/lib` (using
-  `config.gatewayUrl`), realtime over STOMP (`@stomp/stompjs`, `config.wsUrl`).
+  A server component can't pass a function (like a render prop) to a client one.
+- The frontend only talks to the Gateway: REST through `useApi()` (`lib/api.ts`, which adds
+  the access token and shows errors as toasts unless the call is `quiet`), realtime through
+  `useRoomSocket` (`@stomp/stompjs`). Pages never decide what the server decides: who is
+  host, whether time is up, who was right.
 - `NEXT_PUBLIC_*` values are read only in `src/lib/config.ts`.
-- Style with Tailwind classes.
-- The React lint rules don't allow calling `setState` directly in an effect. Set state
-  in callbacks instead (a promise's `.then`, an event handler, a subscription), as
-  `SystemStatus.tsx` does.
-- `cacheComponents` is on: when a page reads request data (route params, cookies,
-  uncached fetches), wrap that part in `<Suspense>`.
+- Style with the design's classes (`src/styles/design.css`, copied from the "Calmer revamp"
+  boards: `card`, `btn`, `tag`, `tile`, `room`...) and Tailwind utilities for small layout
+  fixes. The design CSS sits in Tailwind's components layer, so a utility can override it;
+  a design class that's also a Tailwind utility name loses, which is why the boards' `ring`
+  and `block` are `cring` and `pblock` here. Colours come from the tokens
+  (`var(--mint-text)`, `text-muted`), never hex values. Every screen works at 375 px and
+  with `prefers-reduced-motion`.
+- The React lint rules don't allow calling `setState` directly in an effect or calling
+  `Date.now()` while rendering. Set state in callbacks (a promise's `.then`, an event
+  handler, a subscription), and read the time with `useNow()`.
+- `cacheComponents` is on: when a component reads request data (route params, search
+  params, `usePathname`), wrap it in `<Suspense>`.
+- Sign-in uses the Auth0 Next.js SDK (`src/proxy.ts`, `src/lib/auth0.ts`) with the
+  `AUTH0_*` settings in `.env`. Without them every page still renders, signed out. The
+  Gateway also needs the tenant's post-login Action from `infra/auth0/post-login-action.js`
+  (it adds the email, verified flag, name and roles to access tokens); without it every
+  player gets "verify your email". The project managers are admins through their
+  `app_metadata` (`{"roles": ["admin"]}`, set in the Auth0 dashboard): the free plan has no
+  role management.
+
+**The fake backend (FF-513).** With `NEXT_PUBLIC_FAKE_BACKEND=true` in `.env` (then
+`docker compose up -d --no-deps frontend`), the frontend answers every Gateway call itself
+and replaces the WebSocket with a scripted room: players join, a sync finishes, then the
+countdown, questions, reveals, a disconnect and vote, and the podium. A **Fake backend**
+button (bottom right) signs you in or out, links or unlinks Riot, changes the sync status,
+and jumps the room to any screen. `K7QM2X` is a room you join as a guest; `PACKED` is full,
+`BUSY22` has started, any other code is "Room not found". It only works in `next dev`:
+`npm run check:no-fake-backend` (in CI) fails if a production build contains it.
 
 **Tests**
 - Vitest and React Testing Library. Query the page like a user would (`getByRole`,
   `getByText`), interact with `user-event`, and assert with jest-dom matchers.
 - Fake the Gateway with MSW inside the test:
-  `server.use(http.get(url, () => HttpResponse.json(...)))`. A request without a handler
-  fails the test.
+  `server.use(http.get(url, () => HttpResponse.json(...)))`, or render with
+  `renderWithApp(<Page />)`, which uses the fake backend's handlers. Room screens render
+  with `renderRoom(<Lobby />, snapshot)`. A request without a handler fails the test.
+- `next/navigation` is mocked in `src/test/setup.ts`; assert on `router` from
+  `@/test/navigation`.
 - End-to-end: Playwright specs in `e2e/tests/`, run with `make e2e` while `make up` runs.
 - Run: `make test s=frontend` and `make lint`, or with mise in `frontend/`: `npm test`,
   `npm run test:watch`, `npm run lint`, `npm run typecheck`.
@@ -468,7 +615,10 @@ frontend/src/
 - The comments are the spec: say what each RPC does and which errors it returns. They
   become the `TODO(ff)` checklists.
 - Never change, reuse or remove field numbers, fields or RPCs in `v1`; add new ones
-  instead (CI runs `buf breaking`). A real breaking change means a new `v2` package.
+  instead (CI runs `buf breaking`). Until the first release, a project manager can
+  approve a deliberate break by adding the `breaking-change` label to the pull request,
+  which skips `buf breaking`; reserve a removed field's number and name. After the first
+  release, a breaking change means a new `v2` package.
 - Run `make proto` and commit `proto/` and `gen/` together; a project manager approves.
 
 ## 6. Troubleshooting
@@ -480,7 +630,7 @@ make ps                   # which container isn't healthy?
 make logs s=<service>     # why?
 ```
 
-Then the status page (http://localhost:3000) shows which connection fails, and why.
+Then the status page (http://localhost:3000/status) shows which connection fails, and why.
 
 | Problem | Fix |
 |---|---|
@@ -488,7 +638,7 @@ Then the status page (http://localhost:3000) shows which connection fails, and w
 | `make: command not found` | macOS: `xcode-select --install`. WSL: `sudo apt install make`. |
 | `make up` stops with "dependency failed to start: container ... is unhealthy" | `make logs s=<that service>`. On the very first start, a Java service can be slow while it downloads dependencies: run `make up` again. |
 | "port is already allocated" | Another program uses that port. For Postgres, set `POSTGRES_HOST_PORT=5433` in `.env`. For 3000, 8080, 8090 or 9091–9095, find it with `lsof -i :3000` (macOS) or `ss -ltnp \| grep 3000` (Linux/WSL), often an old stack from another clone (`docker ps`). |
-| Status page says "Can't reach the Gateway" or "Realtime: disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
+| Status page says "Can't reach the Gateway" or Realtime ping says "Disconnected" | gateway-service isn't healthy (`make logs s=gateway-service`), or you opened `127.0.0.1:3000` instead of `localhost:3000`. |
 | A node is DOWN with "connection refused" or "unknown host" | That service (or Postgres) isn't running: `make up`. |
 | A node is DOWN with "deadline exceeded" | It answered too slowly, usually because it or something below it is still starting. Wait a few seconds. |
 | A service with migrations stays DOWN after Postgres was stopped and started again | Services wait about a minute for Postgres at startup, then exit. In `make up` the hot-reload watcher (`watchfiles`, `air`) can restart the process at any time (Docker Desktop reports file changes in shared folders such as `gen/python`), and a failed start leaves the container running. If Postgres was down for more than a minute at that moment, start Postgres, then `docker compose restart <service>`. |

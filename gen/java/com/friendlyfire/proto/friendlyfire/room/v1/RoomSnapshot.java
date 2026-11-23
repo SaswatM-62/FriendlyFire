@@ -39,6 +39,8 @@ private static final long serialVersionUID = 0L;
     players_ = java.util.Collections.emptyList();
     quizId_ = "";
     scoreboard_ = java.util.Collections.emptyList();
+    waitingForUserId_ = "";
+    endReason_ = 0;
   }
 
   public static final com.google.protobuf.Descriptors.Descriptor
@@ -356,7 +358,9 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -369,7 +373,9 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -382,7 +388,9 @@ private static final long serialVersionUID = 0L;
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -491,6 +499,135 @@ private static final long serialVersionUID = 0L;
     return activeVote_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.Vote.getDefaultInstance() : activeVote_;
   }
 
+  public static final int WAITING_FOR_USER_ID_FIELD_NUMBER = 12;
+  @SuppressWarnings("serial")
+  private volatile java.lang.Object waitingForUserId_ = "";
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The waitingForUserId.
+   */
+  @java.lang.Override
+  public java.lang.String getWaitingForUserId() {
+    java.lang.Object ref = waitingForUserId_;
+    if (ref instanceof java.lang.String) {
+      return (java.lang.String) ref;
+    } else {
+      com.google.protobuf.ByteString bs = 
+          (com.google.protobuf.ByteString) ref;
+      java.lang.String s = bs.toStringUtf8();
+      waitingForUserId_ = s;
+      return s;
+    }
+  }
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The bytes for waitingForUserId.
+   */
+  @java.lang.Override
+  public com.google.protobuf.ByteString
+      getWaitingForUserIdBytes() {
+    java.lang.Object ref = waitingForUserId_;
+    if (ref instanceof java.lang.String) {
+      com.google.protobuf.ByteString b = 
+          com.google.protobuf.ByteString.copyFromUtf8(
+              (java.lang.String) ref);
+      waitingForUserId_ = b;
+      return b;
+    } else {
+      return (com.google.protobuf.ByteString) ref;
+    }
+  }
+
+  public static final int PAUSE_SECONDS_LEFT_FIELD_NUMBER = 13;
+  private int pauseSecondsLeft_ = 0;
+  /**
+   * <pre>
+   * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+   * </pre>
+   *
+   * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+   * @return The pauseSecondsLeft.
+   */
+  @java.lang.Override
+  public int getPauseSecondsLeft() {
+    return pauseSecondsLeft_;
+  }
+
+  public static final int END_REASON_FIELD_NUMBER = 14;
+  private int endReason_ = 0;
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The enum numeric value on the wire for endReason.
+   */
+  @java.lang.Override public int getEndReasonValue() {
+    return endReason_;
+  }
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The endReason.
+   */
+  @java.lang.Override public com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason() {
+    com.friendlyfire.proto.friendlyfire.room.v1.EndReason result = com.friendlyfire.proto.friendlyfire.room.v1.EndReason.forNumber(endReason_);
+    return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.EndReason.UNRECOGNIZED : result;
+  }
+
+  public static final int FASTEST_ANSWER_FIELD_NUMBER = 15;
+  private com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer fastestAnswer_;
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return Whether the fastestAnswer field is set.
+   */
+  @java.lang.Override
+  public boolean hasFastestAnswer() {
+    return ((bitField0_ & 0x00000010) != 0);
+  }
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return The fastestAnswer.
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer() {
+    return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+  }
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder() {
+    return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -537,6 +674,18 @@ private static final long serialVersionUID = 0L;
     }
     if (((bitField0_ & 0x00000008) != 0)) {
       output.writeMessage(11, getActiveVote());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(waitingForUserId_)) {
+      com.google.protobuf.GeneratedMessage.writeString(output, 12, waitingForUserId_);
+    }
+    if (pauseSecondsLeft_ != 0) {
+      output.writeInt32(13, pauseSecondsLeft_);
+    }
+    if (endReason_ != com.friendlyfire.proto.friendlyfire.room.v1.EndReason.END_REASON_UNSPECIFIED.getNumber()) {
+      output.writeEnum(14, endReason_);
+    }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      output.writeMessage(15, getFastestAnswer());
     }
     getUnknownFields().writeTo(output);
   }
@@ -592,6 +741,21 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000008) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(11, getActiveVote());
+    }
+    if (!com.google.protobuf.GeneratedMessage.isStringEmpty(waitingForUserId_)) {
+      size += com.google.protobuf.GeneratedMessage.computeStringSize(12, waitingForUserId_);
+    }
+    if (pauseSecondsLeft_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(13, pauseSecondsLeft_);
+    }
+    if (endReason_ != com.friendlyfire.proto.friendlyfire.room.v1.EndReason.END_REASON_UNSPECIFIED.getNumber()) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeEnumSize(14, endReason_);
+    }
+    if (((bitField0_ & 0x00000010) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(15, getFastestAnswer());
     }
     return size;
   }
@@ -650,6 +814,16 @@ private static final long serialVersionUID = 0L;
       if (!getActiveVote()
           .equals(other.getActiveVote())) return false;
     }
+    if (!getWaitingForUserId()
+        .equals(other.getWaitingForUserId())) return false;
+    if (getPauseSecondsLeft()
+        != other.getPauseSecondsLeft()) return false;
+    if (endReason_ != other.endReason_) return false;
+    if (hasFastestAnswer() != other.hasFastestAnswer()) return false;
+    if (hasFastestAnswer()) {
+      if (!getFastestAnswer()
+          .equals(other.getFastestAnswer())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -694,6 +868,16 @@ private static final long serialVersionUID = 0L;
     if (hasActiveVote()) {
       hash = (37 * hash) + ACTIVE_VOTE_FIELD_NUMBER;
       hash = (53 * hash) + getActiveVote().hashCode();
+    }
+    hash = (37 * hash) + WAITING_FOR_USER_ID_FIELD_NUMBER;
+    hash = (53 * hash) + getWaitingForUserId().hashCode();
+    hash = (37 * hash) + PAUSE_SECONDS_LEFT_FIELD_NUMBER;
+    hash = (53 * hash) + getPauseSecondsLeft();
+    hash = (37 * hash) + END_REASON_FIELD_NUMBER;
+    hash = (53 * hash) + endReason_;
+    if (hasFastestAnswer()) {
+      hash = (37 * hash) + FASTEST_ANSWER_FIELD_NUMBER;
+      hash = (53 * hash) + getFastestAnswer().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -836,6 +1020,7 @@ private static final long serialVersionUID = 0L;
         internalGetPhaseDeadlineFieldBuilder();
         internalGetScoreboardFieldBuilder();
         internalGetActiveVoteFieldBuilder();
+        internalGetFastestAnswerFieldBuilder();
       }
     }
     @java.lang.Override
@@ -880,6 +1065,14 @@ private static final long serialVersionUID = 0L;
       if (activeVoteBuilder_ != null) {
         activeVoteBuilder_.dispose();
         activeVoteBuilder_ = null;
+      }
+      waitingForUserId_ = "";
+      pauseSecondsLeft_ = 0;
+      endReason_ = 0;
+      fastestAnswer_ = null;
+      if (fastestAnswerBuilder_ != null) {
+        fastestAnswerBuilder_.dispose();
+        fastestAnswerBuilder_ = null;
       }
       return this;
     }
@@ -975,6 +1168,21 @@ private static final long serialVersionUID = 0L;
             ? activeVote_
             : activeVoteBuilder_.build();
         to_bitField0_ |= 0x00000008;
+      }
+      if (((from_bitField0_ & 0x00000800) != 0)) {
+        result.waitingForUserId_ = waitingForUserId_;
+      }
+      if (((from_bitField0_ & 0x00001000) != 0)) {
+        result.pauseSecondsLeft_ = pauseSecondsLeft_;
+      }
+      if (((from_bitField0_ & 0x00002000) != 0)) {
+        result.endReason_ = endReason_;
+      }
+      if (((from_bitField0_ & 0x00004000) != 0)) {
+        result.fastestAnswer_ = fastestAnswerBuilder_ == null
+            ? fastestAnswer_
+            : fastestAnswerBuilder_.build();
+        to_bitField0_ |= 0x00000010;
       }
       result.bitField0_ |= to_bitField0_;
     }
@@ -1075,6 +1283,20 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasActiveVote()) {
         mergeActiveVote(other.getActiveVote());
+      }
+      if (!other.getWaitingForUserId().isEmpty()) {
+        waitingForUserId_ = other.waitingForUserId_;
+        bitField0_ |= 0x00000800;
+        onChanged();
+      }
+      if (other.getPauseSecondsLeft() != 0) {
+        setPauseSecondsLeft(other.getPauseSecondsLeft());
+      }
+      if (other.endReason_ != 0) {
+        setEndReasonValue(other.getEndReasonValue());
+      }
+      if (other.hasFastestAnswer()) {
+        mergeFastestAnswer(other.getFastestAnswer());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -1179,6 +1401,28 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000400;
               break;
             } // case 90
+            case 98: {
+              waitingForUserId_ = input.readStringRequireUtf8();
+              bitField0_ |= 0x00000800;
+              break;
+            } // case 98
+            case 104: {
+              pauseSecondsLeft_ = input.readInt32();
+              bitField0_ |= 0x00001000;
+              break;
+            } // case 104
+            case 112: {
+              endReason_ = input.readEnum();
+              bitField0_ |= 0x00002000;
+              break;
+            } // case 112
+            case 122: {
+              input.readMessage(
+                  internalGetFastestAnswerFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00004000;
+              break;
+            } // case 122
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -2134,7 +2378,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2146,7 +2392,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2162,7 +2410,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2181,7 +2431,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2200,7 +2452,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2226,7 +2480,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2244,7 +2500,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2257,7 +2515,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2273,7 +2533,9 @@ private static final long serialVersionUID = 0L;
     /**
      * <pre>
      * When the current phase ends: the countdown, the question timer, the
-     * reveal, or the vote. Not set in LOBBY and FINISHED.
+     * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+     * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+     * phase lasts longer if the questions aren't ready yet.
      * </pre>
      *
      * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -2751,6 +3013,378 @@ private static final long serialVersionUID = 0L;
         activeVote_ = null;
       }
       return activeVoteBuilder_;
+    }
+
+    private java.lang.Object waitingForUserId_ = "";
+    /**
+     * <pre>
+     * Set during PAUSED: the disconnected player the room is waiting for.
+     * </pre>
+     *
+     * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+     * @return The waitingForUserId.
+     */
+    public java.lang.String getWaitingForUserId() {
+      java.lang.Object ref = waitingForUserId_;
+      if (!(ref instanceof java.lang.String)) {
+        com.google.protobuf.ByteString bs =
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        waitingForUserId_ = s;
+        return s;
+      } else {
+        return (java.lang.String) ref;
+      }
+    }
+    /**
+     * <pre>
+     * Set during PAUSED: the disconnected player the room is waiting for.
+     * </pre>
+     *
+     * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+     * @return The bytes for waitingForUserId.
+     */
+    public com.google.protobuf.ByteString
+        getWaitingForUserIdBytes() {
+      java.lang.Object ref = waitingForUserId_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        waitingForUserId_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    /**
+     * <pre>
+     * Set during PAUSED: the disconnected player the room is waiting for.
+     * </pre>
+     *
+     * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+     * @param value The waitingForUserId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setWaitingForUserId(
+        java.lang.String value) {
+      java.util.Objects.requireNonNull(value);
+      waitingForUserId_ = value;
+      bitField0_ |= 0x00000800;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during PAUSED: the disconnected player the room is waiting for.
+     * </pre>
+     *
+     * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearWaitingForUserId() {
+      waitingForUserId_ = getDefaultInstance().getWaitingForUserId();
+      bitField0_ = (bitField0_ & ~0x00000800);
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during PAUSED: the disconnected player the room is waiting for.
+     * </pre>
+     *
+     * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+     * @param value The bytes for waitingForUserId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setWaitingForUserIdBytes(
+        com.google.protobuf.ByteString value) {
+      java.util.Objects.requireNonNull(value);
+      checkByteStringIsUtf8(value);
+      waitingForUserId_ = value;
+      bitField0_ |= 0x00000800;
+      onChanged();
+      return this;
+    }
+
+    private int pauseSecondsLeft_ ;
+    /**
+     * <pre>
+     * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+     * </pre>
+     *
+     * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+     * @return The pauseSecondsLeft.
+     */
+    @java.lang.Override
+    public int getPauseSecondsLeft() {
+      return pauseSecondsLeft_;
+    }
+    /**
+     * <pre>
+     * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+     * </pre>
+     *
+     * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+     * @param value The pauseSecondsLeft to set.
+     * @return This builder for chaining.
+     */
+    public Builder setPauseSecondsLeft(int value) {
+
+      pauseSecondsLeft_ = value;
+      bitField0_ |= 0x00001000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+     * </pre>
+     *
+     * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearPauseSecondsLeft() {
+      bitField0_ = (bitField0_ & ~0x00001000);
+      pauseSecondsLeft_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int endReason_ = 0;
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return The enum numeric value on the wire for endReason.
+     */
+    @java.lang.Override public int getEndReasonValue() {
+      return endReason_;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @param value The enum numeric value on the wire for endReason to set.
+     * @return This builder for chaining.
+     */
+    public Builder setEndReasonValue(int value) {
+      endReason_ = value;
+      bitField0_ |= 0x00002000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return The endReason.
+     */
+    @java.lang.Override
+    public com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason() {
+      com.friendlyfire.proto.friendlyfire.room.v1.EndReason result = com.friendlyfire.proto.friendlyfire.room.v1.EndReason.forNumber(endReason_);
+      return result == null ? com.friendlyfire.proto.friendlyfire.room.v1.EndReason.UNRECOGNIZED : result;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @param value The endReason to set.
+     * @throws IllegalArgumentException if UNRECOGNIZED is provided.
+     * @return This builder for chaining.
+     */
+    public Builder setEndReason(com.friendlyfire.proto.friendlyfire.room.v1.EndReason value) {
+      java.util.Objects.requireNonNull(value);
+      bitField0_ |= 0x00002000;
+      endReason_ = value.getNumber();
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED: why the quiz ended.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearEndReason() {
+      bitField0_ = (bitField0_ & ~0x00002000);
+      endReason_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer fastestAnswer_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder> fastestAnswerBuilder_;
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     * @return Whether the fastestAnswer field is set.
+     */
+    public boolean hasFastestAnswer() {
+      return ((bitField0_ & 0x00004000) != 0);
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     * @return The fastestAnswer.
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer() {
+      if (fastestAnswerBuilder_ == null) {
+        return fastestAnswer_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+      } else {
+        return fastestAnswerBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder setFastestAnswer(com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer value) {
+      if (fastestAnswerBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        fastestAnswer_ = value;
+      } else {
+        fastestAnswerBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder setFastestAnswer(
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder builderForValue) {
+      if (fastestAnswerBuilder_ == null) {
+        fastestAnswer_ = builderForValue.build();
+      } else {
+        fastestAnswerBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder mergeFastestAnswer(com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer value) {
+      if (fastestAnswerBuilder_ == null) {
+        if (((bitField0_ & 0x00004000) != 0) &&
+          fastestAnswer_ != null &&
+          fastestAnswer_ != com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance()) {
+          getFastestAnswerBuilder().mergeFrom(value);
+        } else {
+          fastestAnswer_ = value;
+        }
+      } else {
+        fastestAnswerBuilder_.mergeFrom(value);
+      }
+      if (fastestAnswer_ != null) {
+        bitField0_ |= 0x00004000;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public Builder clearFastestAnswer() {
+      bitField0_ = (bitField0_ & ~0x00004000);
+      fastestAnswer_ = null;
+      if (fastestAnswerBuilder_ != null) {
+        fastestAnswerBuilder_.dispose();
+        fastestAnswerBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder getFastestAnswerBuilder() {
+      bitField0_ |= 0x00004000;
+      onChanged();
+      return internalGetFastestAnswerFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder() {
+      if (fastestAnswerBuilder_ != null) {
+        return fastestAnswerBuilder_.getMessageOrBuilder();
+      } else {
+        return fastestAnswer_ == null ?
+            com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.getDefaultInstance() : fastestAnswer_;
+      }
+    }
+    /**
+     * <pre>
+     * Set during FINISHED, if anyone answered correctly: the quickest correct
+     * answer of the quiz, for the podium.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder> 
+        internalGetFastestAnswerFieldBuilder() {
+      if (fastestAnswerBuilder_ == null) {
+        fastestAnswerBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer.Builder, com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder>(
+                getFastestAnswer(),
+                getParentForChildren(),
+                isClean());
+        fastestAnswer_ = null;
+      }
+      return fastestAnswerBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.room.v1.RoomSnapshot)

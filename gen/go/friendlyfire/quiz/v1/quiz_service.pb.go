@@ -83,9 +83,14 @@ type GenerateQuizRequest struct {
 	QuestionCount int32                  `protobuf:"varint,2,opt,name=question_count,json=questionCount,proto3" json:"question_count,omitempty"`
 	// Same seed + same data = same questions. Handy for tests.
 	// 0 means pick a random seed.
-	Seed          int64 `protobuf:"varint,3,opt,name=seed,proto3" json:"seed,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Seed int64 `protobuf:"varint,3,opt,name=seed,proto3" json:"seed,omitempty"`
+	// Question.template_id of every question already asked in this room, ordered by
+	// when each template was last asked, oldest first (repeats are fine). The quiz
+	// uses unused templates first; when they run out it reuses these, the one asked
+	// longest ago first.
+	AskedTemplateIds []string `protobuf:"bytes,4,rep,name=asked_template_ids,json=askedTemplateIds,proto3" json:"asked_template_ids,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *GenerateQuizRequest) Reset() {
@@ -139,13 +144,26 @@ func (x *GenerateQuizRequest) GetSeed() int64 {
 	return 0
 }
 
+func (x *GenerateQuizRequest) GetAskedTemplateIds() []string {
+	if x != nil {
+		return x.AskedTemplateIds
+	}
+	return nil
+}
+
 type QuizPlayer struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	// Used as the option text in PICK_THE_PLAYER questions.
-	DisplayName   string `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	DisplayName string `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// From RoomService's Player.not_enough_matches: fewer than 5 Competitive
+	// or Unrated matches. Such a player is never compared, so never the answer,
+	// a pair question's friend or the source of a stat. They are still an option
+	// in every question, and their matches still count when deciding which
+	// matches the room played together.
+	NotEnoughMatches bool `protobuf:"varint,3,opt,name=not_enough_matches,json=notEnoughMatches,proto3" json:"not_enough_matches,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *QuizPlayer) Reset() {
@@ -190,6 +208,13 @@ func (x *QuizPlayer) GetDisplayName() string {
 		return x.DisplayName
 	}
 	return ""
+}
+
+func (x *QuizPlayer) GetNotEnoughMatches() bool {
+	if x != nil {
+		return x.NotEnoughMatches
+	}
+	return false
 }
 
 type GenerateQuizResponse struct {
@@ -243,13 +268,18 @@ type Question struct {
 	QuestionId string                 `protobuf:"bytes,1,opt,name=question_id,json=questionId,proto3" json:"question_id,omitempty"`
 	Type       QuestionType           `protobuf:"varint,2,opt,name=type,proto3,enum=friendlyfire.quiz.v1.QuestionType" json:"type,omitempty"`
 	// e.g. "Who had 31 kills on Ascent last Tuesday?"
-	Text            string          `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
+	Text string `protobuf:"bytes,3,opt,name=text,proto3" json:"text,omitempty"`
+	// Every player in the room, by user_id, including players the question
+	// didn't compare (so the text says who was compared).
 	Options         []*AnswerOption `protobuf:"bytes,4,rep,name=options,proto3" json:"options,omitempty"`
 	CorrectOptionId string          `protobuf:"bytes,5,opt,name=correct_option_id,json=correctOptionId,proto3" json:"correct_option_id,omitempty"`
 	// Shown after the reveal, e.g. "Sam went 31/12/4 as Jett."
 	Explanation string `protobuf:"bytes,6,opt,name=explanation,proto3" json:"explanation,omitempty"`
 	// The match the question came from.
 	SourceMatchId string `protobuf:"bytes,7,opt,name=source_match_id,json=sourceMatchId,proto3" json:"source_match_id,omitempty"`
+	// The template the question was made from. RoomService passes it back in
+	// GenerateQuizRequest.asked_template_ids so a replay avoids repeating it.
+	TemplateId    string `protobuf:"bytes,8,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -333,6 +363,13 @@ func (x *Question) GetSourceMatchId() string {
 	return ""
 }
 
+func (x *Question) GetTemplateId() string {
+	if x != nil {
+		return x.TemplateId
+	}
+	return ""
+}
+
 type AnswerOption struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// For PICK_THE_PLAYER this is the player's user_id.
@@ -391,17 +428,19 @@ var File_friendlyfire_quiz_v1_quiz_service_proto protoreflect.FileDescriptor
 
 const file_friendlyfire_quiz_v1_quiz_service_proto_rawDesc = "" +
 	"\n" +
-	"'friendlyfire/quiz/v1/quiz_service.proto\x12\x14friendlyfire.quiz.v1\"\x8c\x01\n" +
+	"'friendlyfire/quiz/v1/quiz_service.proto\x12\x14friendlyfire.quiz.v1\"\xba\x01\n" +
 	"\x13GenerateQuizRequest\x12:\n" +
 	"\aplayers\x18\x01 \x03(\v2 .friendlyfire.quiz.v1.QuizPlayerR\aplayers\x12%\n" +
 	"\x0equestion_count\x18\x02 \x01(\x05R\rquestionCount\x12\x12\n" +
-	"\x04seed\x18\x03 \x01(\x03R\x04seed\"H\n" +
+	"\x04seed\x18\x03 \x01(\x03R\x04seed\x12,\n" +
+	"\x12asked_template_ids\x18\x04 \x03(\tR\x10askedTemplateIds\"v\n" +
 	"\n" +
 	"QuizPlayer\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
-	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"T\n" +
+	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12,\n" +
+	"\x12not_enough_matches\x18\x03 \x01(\bR\x10notEnoughMatches\"T\n" +
 	"\x14GenerateQuizResponse\x12<\n" +
-	"\tquestions\x18\x01 \x03(\v2\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xab\x02\n" +
+	"\tquestions\x18\x01 \x03(\v2\x1e.friendlyfire.quiz.v1.QuestionR\tquestions\"\xcc\x02\n" +
 	"\bQuestion\x12\x1f\n" +
 	"\vquestion_id\x18\x01 \x01(\tR\n" +
 	"questionId\x126\n" +
@@ -410,7 +449,9 @@ const file_friendlyfire_quiz_v1_quiz_service_proto_rawDesc = "" +
 	"\aoptions\x18\x04 \x03(\v2\".friendlyfire.quiz.v1.AnswerOptionR\aoptions\x12*\n" +
 	"\x11correct_option_id\x18\x05 \x01(\tR\x0fcorrectOptionId\x12 \n" +
 	"\vexplanation\x18\x06 \x01(\tR\vexplanation\x12&\n" +
-	"\x0fsource_match_id\x18\a \x01(\tR\rsourceMatchId\"A\n" +
+	"\x0fsource_match_id\x18\a \x01(\tR\rsourceMatchId\x12\x1f\n" +
+	"\vtemplate_id\x18\b \x01(\tR\n" +
+	"templateId\"A\n" +
 	"\fAnswerOption\x12\x1b\n" +
 	"\toption_id\x18\x01 \x01(\tR\boptionId\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label*P\n" +

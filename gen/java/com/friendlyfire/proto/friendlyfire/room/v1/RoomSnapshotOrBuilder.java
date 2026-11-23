@@ -172,7 +172,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -182,7 +184,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -192,7 +196,9 @@ public interface RoomSnapshotOrBuilder extends
   /**
    * <pre>
    * When the current phase ends: the countdown, the question timer, the
-   * reveal, or the vote. Not set in LOBBY and FINISHED.
+   * reveal, the vote, or the pause. Not set in LOBBY and FINISHED. During
+   * PREPARING: the earliest the countdown can start (Start + 8 seconds); the
+   * phase lasts longer if the questions aren't ready yet.
    * </pre>
    *
    * <code>.google.protobuf.Timestamp phase_deadline = 9 [json_name = "phaseDeadline"];</code>
@@ -269,4 +275,83 @@ public interface RoomSnapshotOrBuilder extends
    * <code>.friendlyfire.room.v1.Vote active_vote = 11 [json_name = "activeVote"];</code>
    */
   com.friendlyfire.proto.friendlyfire.room.v1.VoteOrBuilder getActiveVoteOrBuilder();
+
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The waitingForUserId.
+   */
+  java.lang.String getWaitingForUserId();
+  /**
+   * <pre>
+   * Set during PAUSED: the disconnected player the room is waiting for.
+   * </pre>
+   *
+   * <code>string waiting_for_user_id = 12 [json_name = "waitingForUserId"];</code>
+   * @return The bytes for waitingForUserId.
+   */
+  com.google.protobuf.ByteString
+      getWaitingForUserIdBytes();
+
+  /**
+   * <pre>
+   * Pause time left in this quiz, in seconds: 180 when a quiz starts.
+   * </pre>
+   *
+   * <code>int32 pause_seconds_left = 13 [json_name = "pauseSecondsLeft"];</code>
+   * @return The pauseSecondsLeft.
+   */
+  int getPauseSecondsLeft();
+
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The enum numeric value on the wire for endReason.
+   */
+  int getEndReasonValue();
+  /**
+   * <pre>
+   * Set during FINISHED: why the quiz ended.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.EndReason end_reason = 14 [json_name = "endReason"];</code>
+   * @return The endReason.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.EndReason getEndReason();
+
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return Whether the fastestAnswer field is set.
+   */
+  boolean hasFastestAnswer();
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   * @return The fastestAnswer.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer getFastestAnswer();
+  /**
+   * <pre>
+   * Set during FINISHED, if anyone answered correctly: the quickest correct
+   * answer of the quiz, for the podium.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.FastestAnswer fastest_answer = 15 [json_name = "fastestAnswer"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswerOrBuilder getFastestAnswerOrBuilder();
 }

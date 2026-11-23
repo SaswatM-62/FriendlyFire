@@ -35,6 +35,16 @@ public enum PlayerStatus
    * <code>PLAYER_STATUS_SITTING_OUT = 3;</code>
    */
   PLAYER_STATUS_SITTING_OUT(3),
+  /**
+   * <pre>
+   * Joined while a quiz was preparing or running. They see the room and can
+   * chat, but can't answer or vote, aren't an option and have no score. They
+   * become CONNECTED when the quiz finishes, and play from the next one.
+   * </pre>
+   *
+   * <code>PLAYER_STATUS_SPECTATING = 4;</code>
+   */
+  PLAYER_STATUS_SPECTATING(4),
   UNRECOGNIZED(-1),
   ;
 
@@ -71,6 +81,16 @@ public enum PlayerStatus
    * <code>PLAYER_STATUS_SITTING_OUT = 3;</code>
    */
   public static final int PLAYER_STATUS_SITTING_OUT_VALUE = 3;
+  /**
+   * <pre>
+   * Joined while a quiz was preparing or running. They see the room and can
+   * chat, but can't answer or vote, aren't an option and have no score. They
+   * become CONNECTED when the quiz finishes, and play from the next one.
+   * </pre>
+   *
+   * <code>PLAYER_STATUS_SPECTATING = 4;</code>
+   */
+  public static final int PLAYER_STATUS_SPECTATING_VALUE = 4;
 
 
   public final int getNumber() {
@@ -101,6 +121,7 @@ public enum PlayerStatus
       case 1: return PLAYER_STATUS_CONNECTED;
       case 2: return PLAYER_STATUS_DISCONNECTED;
       case 3: return PLAYER_STATUS_SITTING_OUT;
+      case 4: return PLAYER_STATUS_SPECTATING;
       default: return null;
     }
   }

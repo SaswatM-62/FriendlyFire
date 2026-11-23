@@ -142,6 +142,8 @@ services:
     depends_on:
       match-data-service:
         condition: service_healthy
+      scoring-service:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       mock-rso-service:
@@ -172,7 +174,7 @@ services:
         condition: service_healthy
       scoring-service:
         condition: service_healthy
-      match-data-service:
+      account-service:
         condition: service_healthy
 
   gateway-service:
@@ -200,8 +202,6 @@ services:
       room-service:
         condition: service_healthy
       scoring-service:
-        condition: service_healthy
-      match-data-service:
         condition: service_healthy
 
   frontend:

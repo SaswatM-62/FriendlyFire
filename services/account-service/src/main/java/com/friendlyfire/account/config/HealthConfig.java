@@ -30,11 +30,14 @@ public class HealthConfig {
             DataSource dataSource,
             @Qualifier("mockRsoRestClient") RestClient mockRso,
             @Qualifier("matchDataHealth") DependencyHealthServiceBlockingStub matchDataHealth,
-            @Qualifier("matchDataChannel") ManagedChannel matchDataChannel) {
+            @Qualifier("matchDataChannel") ManagedChannel matchDataChannel,
+            @Qualifier("scoringHealth") DependencyHealthServiceBlockingStub scoringHealth,
+            @Qualifier("scoringChannel") ManagedChannel scoringChannel) {
         return new DependencyHealthChecker(serviceName, List.of(
                 new PostgresDependencyCheck(dataSource),
                 new HttpDependencyCheck("mock-rso-service", mockRso, "/healthz"),
-                new GrpcDependencyCheck("match-data-service", matchDataHealth, matchDataChannel)),
+                new GrpcDependencyCheck("match-data-service", matchDataHealth, matchDataChannel),
+                new GrpcDependencyCheck("scoring-service", scoringHealth, scoringChannel)),
                 DEADLINE);
     }
 }

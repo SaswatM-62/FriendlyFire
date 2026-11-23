@@ -1,9 +1,9 @@
 package com.friendlyfire.room.config;
 
+import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
+import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.health.v1.DependencyHealthServiceGrpc.DependencyHealthServiceBlockingStub;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc;
-import com.friendlyfire.proto.friendlyfire.matchdata.v1.MatchDataServiceGrpc.MatchDataServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.quiz.v1.QuizServiceGrpc;
 import com.friendlyfire.proto.friendlyfire.quiz.v1.QuizServiceGrpc.QuizServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc;
@@ -52,18 +52,19 @@ public class GrpcClientsConfig {
         return DependencyHealthServiceGrpc.newBlockingStub(channel);
     }
 
+    // Account owns each player's data status (ADR-010), so Room asks it, not Match Data.
     @Bean
-    ManagedChannel matchDataChannel(GrpcChannelFactory channels) {
-        return channels.createChannel("matchdata");
+    ManagedChannel accountChannel(GrpcChannelFactory channels) {
+        return channels.createChannel("account");
     }
 
     @Bean
-    MatchDataServiceBlockingStub matchDataService(@Qualifier("matchDataChannel") ManagedChannel channel) {
-        return MatchDataServiceGrpc.newBlockingStub(channel);
+    AccountServiceBlockingStub accountService(@Qualifier("accountChannel") ManagedChannel channel) {
+        return AccountServiceGrpc.newBlockingStub(channel);
     }
 
     @Bean
-    DependencyHealthServiceBlockingStub matchDataHealth(@Qualifier("matchDataChannel") ManagedChannel channel) {
+    DependencyHealthServiceBlockingStub accountHealth(@Qualifier("accountChannel") ManagedChannel channel) {
         return DependencyHealthServiceGrpc.newBlockingStub(channel);
     }
 }
