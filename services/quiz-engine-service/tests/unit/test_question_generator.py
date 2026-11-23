@@ -206,8 +206,8 @@ def test_nonempty_quiz_has_three_templates_and_mixes_shared_and_solo() -> None:
 
 
 def test_every_question_names_its_template() -> None:
-    questions = QuestionGenerator().generate(players(), history(), 5, 42)
-    assert sorted(template_ids(questions)) == sorted(t.id for t in TEMPLATES)
+    questions = QuestionGenerator([KILLS, ACS, WINS]).generate(players(), history(), 5, 42)
+    assert sorted(template_ids(questions)) == sorted([KILLS.id, ACS.id, WINS.id])
     for question in questions:
         assert len(question.question_id) == 64
         assert not question.question_id.startswith(question.template_id)
@@ -260,12 +260,13 @@ def test_template_asked_longest_ago_is_reused_first() -> None:
 def test_play_again_rotates_through_every_template() -> None:
     # Real scopes: recent wins has no shared/solo version, so mixing scopes mustn't
     # keep swapping it out once it's the template asked longest ago.
-    generator = QuestionGenerator()
+    rotation = [KILLS, ACS, WINS]
+    generator = QuestionGenerator(rotation)
     asked: list[str] = []
     last_asked: dict[str, int] = {}
     for quiz in range(7):
         questions = generator.generate(players(), history(), 2, quiz, asked_template_ids=asked)
-        unused = [t.id for t in TEMPLATES if t.id not in last_asked]
+        unused = [t.id for t in rotation if t.id not in last_asked]
         longest_ago = sorted(last_asked, key=lambda t: last_asked[t])
         if len(unused) >= 2:
             assert set(template_ids(questions)) <= set(unused)
