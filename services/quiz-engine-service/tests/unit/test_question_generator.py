@@ -64,18 +64,36 @@ def row(
 
 
 def history() -> list[PlayerMatchStats]:
-    return [
-        row(
-            uid,
-            f"shared-{n}" if n < 5 else f"{uid}-{n}",
-            kills=30 if uid == "a" else 10,
-            score=400 if uid == "a" else 100,
-            seconds=n + 1,
-            won=uid == "a",
-        )
-        for n in range(10)
-        for uid in ("a", "b")
-    ]
+    stats = []
+    for n in range(10):
+        for uid in ("a", "b"):
+            alice = uid == "a"
+            match = row(
+                uid,
+                f"shared-{n}" if n < 5 else f"{uid}-{n}",
+                kills=30 if alice else 10,
+                score=400 if alice else 100,
+                seconds=n + 1,
+                won=alice,
+            )
+            match.labels["agent"] = "Jett" if alice else "Sage"
+            match.numbers.update(
+                {
+                    "performance_score": 265.1 if alice else 170.5,
+                    "max_round_damage": 160 if alice else 80,
+                    "first_bloods": 4 if alice else 2,
+                    "first_deaths": 6 if alice else 8,
+                    "max_round_kills": 4 if alice else 2,
+                    "post_plant_kills": 3 if alice else 1,
+                    "ninja_defuses": 1 if alice else 0,
+                    "clutch_wins": 2 if alice else 1,
+                    "clutch_attempts": 4,
+                    "fall_deaths": 1 if alice else 0,
+                    "pistol_round_kills": 2 if alice else 1,
+                }
+            )
+            stats.append(match)
+    return stats
 
 
 def rated(leads: dict[str, int]) -> tuple[list[QuestionTemplate], list[PlayerMatchStats]]:

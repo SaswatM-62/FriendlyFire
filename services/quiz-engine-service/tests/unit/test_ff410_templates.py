@@ -254,6 +254,37 @@ def test_a_missing_stat_skips_the_question(case: Case) -> None:
     assert not [q for q in found if q.correct_option_id == ALICE]
 
 
+@pytest.mark.parametrize(
+    ("template_id", "key", "question", "explanation"),
+    [
+        (
+            "most-defuses-v1",
+            "defuses",
+            f"This player has defused the spike 1 time {ALL}, more than anyone else here. "
+            "Who does the team trust with the defuse?",
+            "Alice: 1 defuse.",
+        ),
+        (
+            "most-sniper-kills-v1",
+            "sniper_kills",
+            f"Behind a scope, this player has taken down 1 enemy {ALL}, more than anyone else "
+            "here. Who's the group's sniper?",
+            "Alice: 1 kill with sniper rifles.",
+        ),
+    ],
+)
+def test_a_count_of_one_reads_in_the_singular(
+    template_id: str, key: str, question: str, explanation: str
+) -> None:
+    stats = [row(uid, n, {key: 0}) for uid in (ALICE, BOB, CARA) for n in range(5)]
+    stats[0].numbers[key] = 1  # Alice's oldest match
+
+    by_text = {q.text: q for q in ask(BY_ID[template_id], stats, ALICE, BOB, CARA)}
+
+    assert question in by_text, sorted(by_text)
+    assert by_text[question].explanation == explanation
+
+
 def replace_user(stats: PlayerMatchStats, uid: str) -> PlayerMatchStats:
     copy = PlayerMatchStats()
     copy.CopyFrom(stats)
