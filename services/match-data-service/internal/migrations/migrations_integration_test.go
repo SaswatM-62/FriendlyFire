@@ -45,13 +45,13 @@ func appliedVersion(t *testing.T, conn *pgx.Conn) (version int, dirty bool) {
 	return version, dirty
 }
 
-func TestUpAppliesTheFirstMigrationToTheMatchdataSchema(t *testing.T) {
+func TestUpAppliesEveryMigrationToTheMatchdataSchema(t *testing.T) {
 	connString, conn := startPostgres(t)
 
 	require.NoError(t, migrations.Up(context.Background(), connString))
 
 	version, dirty := appliedVersion(t, conn)
-	assert.Equal(t, 1, version)
+	assert.Equal(t, 2, version)
 	assert.False(t, dirty)
 }
 
@@ -62,6 +62,6 @@ func TestUpAgainChangesNothing(t *testing.T) {
 	require.NoError(t, migrations.Up(context.Background(), connString))
 
 	version, dirty := appliedVersion(t, conn)
-	assert.Equal(t, 1, version)
+	assert.Equal(t, 2, version)
 	assert.False(t, dirty)
 }

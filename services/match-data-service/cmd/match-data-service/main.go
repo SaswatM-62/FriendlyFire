@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,8 +16,13 @@ import (
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/config"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/grpcserver"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/health"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/lookup"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/matchdata"
 	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/migrations"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/ratelimit"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/source"
+	"github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/store"
+	matchsync "github.com/SaswatM-62/FriendlyFire/services/match-data-service/internal/sync"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -35,8 +41,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if cfg.HenrikDevAPIKey == "" {
-		slog.Warn("HENRIKDEV_API_KEY is empty: match syncs won't work, everything else will")
+	slog.Info("match source", "source", cfg.MatchSource)
+	if cfg.MatchSource == config.SourceHenrikDev && cfg.HenrikDevAPIKey == "" {
+		slog.Warn("MATCH_SOURCE=henrikdev but HENRIKDEV_API_KEY is empty: syncs will fail")
+	}
+	tables, err := lookup.Load()
+	if err != nil {
+		return err
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
@@ -64,12 +75,29 @@ func run() error {
 		return fmt.Errorf("postgres ping: %w", err)
 	}
 
+	matchStore := store.New(pool)
+	src, estimate, sourceCheck, err := newSource(cfg)
+	if err != nil {
+		return err
+	}
+	worker := matchsync.New(src, matchStore, tables, estimate, time.Now, slog.Default())
+	if err := worker.RecoverInterrupted(ctx); err != nil {
+		return fmt.Errorf("recover interrupted syncs: %w", err)
+	}
+	workerDone := make(chan struct{})
+	go func() {
+		defer close(workerDone)
+		_ = worker.Run(ctx)
+	}()
+	defer func() { <-workerDone }()
+
 	// What /api/health/deep checks for this service. When it starts calling something
 	// new, add it here, using the same client the feature uses.
 	checker := health.NewChecker(serviceName, []health.Check{
 		health.NewPostgresCheck(pool),
+		sourceCheck,
 	}, health.DefaultDeadline)
-	server := grpcserver.New(matchdata.NewServer(), checker)
+	server := grpcserver.New(matchdata.NewServer(matchStore, worker, slog.Default()), checker)
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPCPort))
 	if err != nil {
@@ -92,4 +120,23 @@ func run() error {
 
 	slog.Info("listening", "port", cfg.GRPCPort)
 	return server.Serve(listener)
+}
+
+// newSource picks the match source (MATCH_SOURCE), how long a number of its requests
+// takes, and its health check.
+func newSource(cfg config.Config) (source.MatchSource, matchsync.Estimator, health.Check, error) {
+	if cfg.MatchSource == config.SourceFixtures {
+		fixtures, err := source.NewFixtures(time.Now)
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		// No rate limit: a fixtures sync takes a moment.
+		estimate := func(requests int) time.Duration { return time.Duration(requests) * 200 * time.Millisecond }
+		return fixtures, estimate, health.NewSourceCheck("fixtures", nil), nil
+	}
+	clock := ratelimit.SystemClock{}
+	limiter := ratelimit.New(clock)
+	henrikDev := source.NewHenrikDev(&http.Client{Timeout: 20 * time.Second}, cfg.HenrikDevBaseURL,
+		cfg.HenrikDevAPIKey, limiter, clock)
+	return henrikDev, limiter.Estimate, health.NewSourceCheck("henrikdev", henrikDev.Health), nil
 }
