@@ -93,8 +93,10 @@ type StartQuizRequest struct {
 	Players            []*QuizParticipant     `protobuf:"bytes,3,rep,name=players,proto3" json:"players,omitempty"`
 	TotalRounds        int32                  `protobuf:"varint,4,opt,name=total_rounds,json=totalRounds,proto3" json:"total_rounds,omitempty"`
 	SecondsPerQuestion int32                  `protobuf:"varint,5,opt,name=seconds_per_question,json=secondsPerQuestion,proto3" json:"seconds_per_question,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	// Saved for the history page ("Maya's room").
+	HostDisplayName string `protobuf:"bytes,6,opt,name=host_display_name,json=hostDisplayName,proto3" json:"host_display_name,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *StartQuizRequest) Reset() {
@@ -160,6 +162,13 @@ func (x *StartQuizRequest) GetSecondsPerQuestion() int32 {
 		return x.SecondsPerQuestion
 	}
 	return 0
+}
+
+func (x *StartQuizRequest) GetHostDisplayName() string {
+	if x != nil {
+		return x.HostDisplayName
+	}
+	return ""
 }
 
 type QuizParticipant struct {
@@ -675,8 +684,11 @@ type QuizSummary struct {
 	RoundsPlayed    int32                  `protobuf:"varint,5,opt,name=rounds_played,json=roundsPlayed,proto3" json:"rounds_played,omitempty"`
 	EndReason       EndReason              `protobuf:"varint,6,opt,name=end_reason,json=endReason,proto3,enum=friendlyfire.scoring.v1.EndReason" json:"end_reason,omitempty"`
 	FinalScoreboard []*ScoreboardEntry     `protobuf:"bytes,7,rep,name=final_scoreboard,json=finalScoreboard,proto3" json:"final_scoreboard,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// From StartQuiz.
+	HostDisplayName    string `protobuf:"bytes,8,opt,name=host_display_name,json=hostDisplayName,proto3" json:"host_display_name,omitempty"`
+	SecondsPerQuestion int32  `protobuf:"varint,9,opt,name=seconds_per_question,json=secondsPerQuestion,proto3" json:"seconds_per_question,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
 }
 
 func (x *QuizSummary) Reset() {
@@ -756,6 +768,20 @@ func (x *QuizSummary) GetFinalScoreboard() []*ScoreboardEntry {
 		return x.FinalScoreboard
 	}
 	return nil
+}
+
+func (x *QuizSummary) GetHostDisplayName() string {
+	if x != nil {
+		return x.HostDisplayName
+	}
+	return ""
+}
+
+func (x *QuizSummary) GetSecondsPerQuestion() int32 {
+	if x != nil {
+		return x.SecondsPerQuestion
+	}
+	return 0
 }
 
 type GetQuizResultRequest struct {
@@ -1045,13 +1071,14 @@ var File_friendlyfire_scoring_v1_scoring_service_proto protoreflect.FileDescript
 
 const file_friendlyfire_scoring_v1_scoring_service_proto_rawDesc = "" +
 	"\n" +
-	"-friendlyfire/scoring/v1/scoring_service.proto\x12\x17friendlyfire.scoring.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe1\x01\n" +
+	"-friendlyfire/scoring/v1/scoring_service.proto\x12\x17friendlyfire.scoring.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8d\x02\n" +
 	"\x10StartQuizRequest\x12\x17\n" +
 	"\aquiz_id\x18\x01 \x01(\tR\x06quizId\x12\x1b\n" +
 	"\troom_code\x18\x02 \x01(\tR\broomCode\x12B\n" +
 	"\aplayers\x18\x03 \x03(\v2(.friendlyfire.scoring.v1.QuizParticipantR\aplayers\x12!\n" +
 	"\ftotal_rounds\x18\x04 \x01(\x05R\vtotalRounds\x120\n" +
-	"\x14seconds_per_question\x18\x05 \x01(\x05R\x12secondsPerQuestion\"M\n" +
+	"\x14seconds_per_question\x18\x05 \x01(\x05R\x12secondsPerQuestion\x12*\n" +
+	"\x11host_display_name\x18\x06 \x01(\tR\x0fhostDisplayName\"M\n" +
 	"\x0fQuizParticipant\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\"\x13\n" +
@@ -1085,7 +1112,7 @@ const file_friendlyfire_scoring_v1_scoring_service_proto_rawDesc = "" +
 	"\n" +
 	"end_reason\x18\x03 \x01(\x0e2\".friendlyfire.scoring.v1.EndReasonR\tendReason\"V\n" +
 	"\x14FinalizeQuizResponse\x12>\n" +
-	"\asummary\x18\x01 \x01(\v2$.friendlyfire.scoring.v1.QuizSummaryR\asummary\"\xfe\x02\n" +
+	"\asummary\x18\x01 \x01(\v2$.friendlyfire.scoring.v1.QuizSummaryR\asummary\"\xdc\x03\n" +
 	"\vQuizSummary\x12\x17\n" +
 	"\aquiz_id\x18\x01 \x01(\tR\x06quizId\x129\n" +
 	"\n" +
@@ -1096,7 +1123,9 @@ const file_friendlyfire_scoring_v1_scoring_service_proto_rawDesc = "" +
 	"\rrounds_played\x18\x05 \x01(\x05R\froundsPlayed\x12A\n" +
 	"\n" +
 	"end_reason\x18\x06 \x01(\x0e2\".friendlyfire.scoring.v1.EndReasonR\tendReason\x12S\n" +
-	"\x10final_scoreboard\x18\a \x03(\v2(.friendlyfire.scoring.v1.ScoreboardEntryR\x0ffinalScoreboard\"/\n" +
+	"\x10final_scoreboard\x18\a \x03(\v2(.friendlyfire.scoring.v1.ScoreboardEntryR\x0ffinalScoreboard\x12*\n" +
+	"\x11host_display_name\x18\b \x01(\tR\x0fhostDisplayName\x120\n" +
+	"\x14seconds_per_question\x18\t \x01(\x05R\x12secondsPerQuestion\"/\n" +
 	"\x14GetQuizResultRequest\x12\x17\n" +
 	"\aquiz_id\x18\x01 \x01(\tR\x06quizId\"W\n" +
 	"\x15GetQuizResultResponse\x12>\n" +

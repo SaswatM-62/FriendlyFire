@@ -106,4 +106,31 @@ public interface RoomEventOrBuilder extends
    */
   com.google.protobuf.ByteString
       getMessageBytes();
+
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return Whether the chat field is set.
+   */
+  boolean hasChat();
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   * @return The chat.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.ChatMessage getChat();
+  /**
+   * <pre>
+   * Set on CHAT_MESSAGE.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.ChatMessage chat = 6 [json_name = "chat"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.ChatMessageOrBuilder getChatOrBuilder();
 }

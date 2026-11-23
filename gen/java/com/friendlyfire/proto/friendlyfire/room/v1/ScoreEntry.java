@@ -165,6 +165,17 @@ private static final long serialVersionUID = 0L;
     return pointsLastRound_;
   }
 
+  public static final int CORRECT_ANSWERS_FIELD_NUMBER = 6;
+  private int correctAnswers_ = 0;
+  /**
+   * <code>int32 correct_answers = 6 [json_name = "correctAnswers"];</code>
+   * @return The correctAnswers.
+   */
+  @java.lang.Override
+  public int getCorrectAnswers() {
+    return correctAnswers_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -194,6 +205,9 @@ private static final long serialVersionUID = 0L;
     if (pointsLastRound_ != 0) {
       output.writeInt32(5, pointsLastRound_);
     }
+    if (correctAnswers_ != 0) {
+      output.writeInt32(6, correctAnswers_);
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -215,6 +229,10 @@ private static final long serialVersionUID = 0L;
     if (pointsLastRound_ != 0) {
       size += com.google.protobuf.CodedOutputStream
         .computeInt32Size(5, pointsLastRound_);
+    }
+    if (correctAnswers_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(6, correctAnswers_);
     }
     return size;
   }
@@ -250,6 +268,8 @@ private static final long serialVersionUID = 0L;
         != other.getRank()) return false;
     if (getPointsLastRound()
         != other.getPointsLastRound()) return false;
+    if (getCorrectAnswers()
+        != other.getCorrectAnswers()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -271,6 +291,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getRank();
     hash = (37 * hash) + POINTS_LAST_ROUND_FIELD_NUMBER;
     hash = (53 * hash) + getPointsLastRound();
+    hash = (37 * hash) + CORRECT_ANSWERS_FIELD_NUMBER;
+    hash = (53 * hash) + getCorrectAnswers();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -407,6 +429,7 @@ private static final long serialVersionUID = 0L;
       totalPoints_ = 0;
       rank_ = 0;
       pointsLastRound_ = 0;
+      correctAnswers_ = 0;
       return this;
     }
 
@@ -455,6 +478,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000010) != 0)) {
         result.pointsLastRound_ = pointsLastRound_;
       }
+      if (((from_bitField0_ & 0x00000020) != 0)) {
+        result.correctAnswers_ = correctAnswers_;
+      }
     }
 
     @java.lang.Override
@@ -487,6 +513,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.getPointsLastRound() != 0) {
         setPointsLastRound(other.getPointsLastRound());
+      }
+      if (other.getCorrectAnswers() != 0) {
+        setCorrectAnswers(other.getCorrectAnswers());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -537,6 +566,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000010;
               break;
             } // case 40
+            case 48: {
+              correctAnswers_ = input.readInt32();
+              bitField0_ |= 0x00000020;
+              break;
+            } // case 48
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -802,6 +836,38 @@ private static final long serialVersionUID = 0L;
     public Builder clearPointsLastRound() {
       bitField0_ = (bitField0_ & ~0x00000010);
       pointsLastRound_ = 0;
+      onChanged();
+      return this;
+    }
+
+    private int correctAnswers_ ;
+    /**
+     * <code>int32 correct_answers = 6 [json_name = "correctAnswers"];</code>
+     * @return The correctAnswers.
+     */
+    @java.lang.Override
+    public int getCorrectAnswers() {
+      return correctAnswers_;
+    }
+    /**
+     * <code>int32 correct_answers = 6 [json_name = "correctAnswers"];</code>
+     * @param value The correctAnswers to set.
+     * @return This builder for chaining.
+     */
+    public Builder setCorrectAnswers(int value) {
+
+      correctAnswers_ = value;
+      bitField0_ |= 0x00000020;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int32 correct_answers = 6 [json_name = "correctAnswers"];</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearCorrectAnswers() {
+      bitField0_ = (bitField0_ & ~0x00000020);
+      correctAnswers_ = 0;
       onChanged();
       return this;
     }

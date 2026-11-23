@@ -9,13 +9,13 @@ class ScoreCalculator:
         score = 500 + 500 * (time_left / time_limit)
         return round(score)
 
-    def calculate_ranks(self, player_scores: dict[str, int]) -> dict[str, int]:
+    def calculate_ranks[K](self, player_scores: dict[K, int]) -> dict[K, int]:
         """Computes ranks based off of score, giving players of the same score the same rank"""
         if len(player_scores) == 0:
             return {}
 
         sorted_players = sorted(player_scores.items(), key=lambda item: item[1], reverse=True)
-        player_ranks = {}
+        player_ranks: dict[K, int] = {}
 
         # Tracks the first player's rank details manually for comparison
         current_rank = 1

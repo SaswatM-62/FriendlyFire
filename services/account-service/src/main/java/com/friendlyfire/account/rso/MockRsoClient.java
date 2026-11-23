@@ -18,6 +18,9 @@ import org.springframework.web.client.RestClientException;
  * RsoClient for mock-rso-service, used until Riot approves the app. It speaks the same
  * OAuth flow as Riot Sign-On: /authorize (a page in the browser), /token, then Riot's
  * account-v1 "me" endpoint. The mock also returns the player's region there.
+ *
+ * <p>Unlike Riot, the mock's page asks for a Riot ID and only accepts it for the email
+ * it's assigned to, so the URL carries the account's email as {@code login_hint}.
  */
 public class MockRsoClient implements RsoClient {
 
@@ -36,13 +39,16 @@ public class MockRsoClient implements RsoClient {
     }
 
     @Override
-    public String authorizeUrl(String state, String redirectUri) {
+    public String authorizeUrl(String state, String redirectUri, String email) {
         Map<String, String> query = new LinkedHashMap<>();
         query.put("response_type", "code");
         query.put("client_id", CLIENT_ID);
         query.put("redirect_uri", redirectUri);
         query.put("scope", "openid");
         query.put("state", state);
+        // Mock only: a Riot ID can be linked only by the email assigned to it in the
+        // mock's test player list.
+        query.put("login_hint", email == null ? "" : email);
         return browserUrl + "/authorize?" + query.entrySet().stream()
                 .map(e -> e.getKey() + "=" + URLEncoder.encode(e.getValue(), StandardCharsets.UTF_8))
                 .collect(Collectors.joining("&"));

@@ -32,6 +32,11 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_room_v1_RoomSnapshot_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_FastestAnswer_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_FastestAnswer_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
     internal_static_friendlyfire_room_v1_RoomSettings_descriptor;
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
@@ -76,6 +81,11 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_room_v1_RoomEvent_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_ChatMessage_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_ChatMessage_fieldAccessorTable;
   static final com.google.protobuf.Descriptors.Descriptor
     internal_static_friendlyfire_room_v1_CreateRoomRequest_descriptor;
   static final 
@@ -206,6 +216,26 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
   static final 
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_friendlyfire_room_v1_RemovePlayerResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_SendChatMessageRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_SendChatMessageRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_SendChatMessageResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_SendChatMessageResponse_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_GetChatHistoryRequest_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_GetChatHistoryRequest_fieldAccessorTable;
+  static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_friendlyfire_room_v1_GetChatHistoryResponse_descriptor;
+  static final 
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_friendlyfire_room_v1_GetChatHistoryResponse_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -217,7 +247,7 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
     java.lang.String[] descriptorData = {
       "\n\'friendlyfire/room/v1/room_service.prot" +
       "o\022\024friendlyfire.room.v1\032\037google/protobuf" +
-      "/timestamp.proto\"\246\005\n\014RoomSnapshot\022\033\n\troo" +
+      "/timestamp.proto\"\262\006\n\014RoomSnapshot\022\033\n\troo" +
       "m_code\030\001 \001(\tR\010roomCode\022 \n\014host_user_id\030\002" +
       " \001(\tR\nhostUserId\0225\n\005phase\030\003 \001(\0162\037.friend" +
       "lyfire.room.v1.RoomPhaseR\005phase\022>\n\010setti" +
@@ -234,192 +264,223 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
       " \001(\0132\032.friendlyfire.room.v1.VoteR\nactive" +
       "Vote\022-\n\023waiting_for_user_id\030\014 \001(\tR\020waiti" +
       "ngForUserId\022,\n\022pause_seconds_left\030\r \001(\005R" +
-      "\020pauseSecondsLeft\"g\n\014RoomSettings\022%\n\016que" +
-      "stion_count\030\001 \001(\005R\rquestionCount\0220\n\024seco" +
-      "nds_per_question\030\002 \001(\005R\022secondsPerQuesti" +
-      "on\"\375\003\n\006Player\022\027\n\007user_id\030\001 \001(\tR\006userId\022!" +
-      "\n\014display_name\030\002 \001(\tR\013displayName\022:\n\006sta" +
-      "tus\030\003 \001(\0162\".friendlyfire.room.v1.PlayerS" +
-      "tatusR\006status\022V\n\022connection_quality\030\005 \001(" +
-      "\0162\'.friendlyfire.room.v1.ConnectionQuali" +
-      "tyR\021connectionQuality\022:\n\031answered_curren" +
-      "t_question\030\006 \001(\010R\027answeredCurrentQuestio" +
-      "n\022G\n\013data_status\030\007 \001(\0162&.friendlyfire.ro" +
-      "om.v1.PlayerDataStatusR\ndataStatus\0224\n\026da" +
-      "ta_estimated_seconds\030\010 \001(\005R\024dataEstimate" +
-      "dSeconds\022,\n\022not_enough_matches\030\t \001(\010R\020no" +
-      "tEnoughMatches\022\"\n\rriot_tag_line\030\n \001(\tR\013r" +
-      "iotTagLineJ\004\010\004\020\005R\020match_data_ready\"\271\001\n\014Q" +
-      "uestionView\022\037\n\013question_id\030\001 \001(\tR\nquesti" +
-      "onId\022\022\n\004text\030\002 \001(\tR\004text\022>\n\007options\030\003 \003(" +
-      "\0132$.friendlyfire.room.v1.QuestionOptionR" +
-      "\007options\0224\n\006reveal\030\004 \001(\0132\034.friendlyfire." +
-      "room.v1.RevealR\006reveal\"C\n\016QuestionOption" +
-      "\022\033\n\toption_id\030\001 \001(\tR\010optionId\022\024\n\005label\030\002" +
-      " \001(\tR\005label\"\224\001\n\006Reveal\022*\n\021correct_option" +
-      "_id\030\001 \001(\tR\017correctOptionId\022 \n\013explanatio" +
-      "n\030\002 \001(\tR\013explanation\022<\n\007results\030\003 \003(\0132\"." +
-      "friendlyfire.room.v1.PlayerResultR\007resul" +
-      "ts\"\203\001\n\014PlayerResult\022\027\n\007user_id\030\001 \001(\tR\006us" +
-      "erId\022(\n\020chosen_option_id\030\002 \001(\tR\016chosenOp" +
-      "tionId\022\030\n\007correct\030\003 \001(\010R\007correct\022\026\n\006poin" +
-      "ts\030\004 \001(\005R\006points\"\253\001\n\nScoreEntry\022\027\n\007user_" +
-      "id\030\001 \001(\tR\006userId\022!\n\014display_name\030\002 \001(\tR\013" +
-      "displayName\022!\n\014total_points\030\003 \001(\005R\013total" +
-      "Points\022\022\n\004rank\030\004 \001(\005R\004rank\022*\n\021points_las" +
-      "t_round\030\005 \001(\005R\017pointsLastRound\"\222\002\n\004Vote\022" +
-      "\"\n\rabout_user_id\030\001 \001(\tR\013aboutUserId\0226\n\010d" +
-      "eadline\030\002 \001(\0132\032.google.protobuf.Timestam" +
-      "pR\010deadline\022\037\n\013pause_votes\030\003 \001(\005R\npauseV" +
-      "otes\022%\n\016continue_votes\030\004 \001(\005R\rcontinueVo" +
-      "tes\022\033\n\tend_votes\030\005 \001(\005R\010endVotes\022$\n\016vote" +
-      "d_user_ids\030\006 \003(\tR\014votedUserIds\022#\n\rpause_" +
-      "allowed\030\007 \001(\010R\014pauseAllowed\"\203\002\n\tRoomEven" +
-      "t\0227\n\004type\030\001 \001(\0162#.friendlyfire.room.v1.R" +
-      "oomEventTypeR\004type\022&\n\017subject_user_id\030\002 " +
-      "\001(\tR\rsubjectUserId\022;\n\013occurred_at\030\003 \001(\0132" +
-      "\032.google.protobuf.TimestampR\noccurredAt\022" +
-      ">\n\010snapshot\030\004 \001(\0132\".friendlyfire.room.v1" +
-      ".RoomSnapshotR\010snapshot\022\030\n\007message\030\005 \001(\t" +
-      "R\007message\"\216\001\n\021CreateRoomRequest\022 \n\014host_" +
-      "user_id\030\001 \001(\tR\nhostUserId\022*\n\021host_displa" +
-      "y_name\030\002 \001(\tR\017hostDisplayName\022+\n\022host_ri" +
-      "ot_tag_line\030\003 \001(\tR\017hostRiotTagLine\"T\n\022Cr" +
-      "eateRoomResponse\022>\n\010snapshot\030\001 \001(\0132\".fri" +
-      "endlyfire.room.v1.RoomSnapshotR\010snapshot" +
-      "\"\216\001\n\017JoinRoomRequest\022\033\n\troom_code\030\001 \001(\tR" +
-      "\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022!\n\014di" +
-      "splay_name\030\003 \001(\tR\013displayName\022\"\n\rriot_ta" +
-      "g_line\030\004 \001(\tR\013riotTagLine\"R\n\020JoinRoomRes" +
-      "ponse\022>\n\010snapshot\030\001 \001(\0132\".friendlyfire.r" +
-      "oom.v1.RoomSnapshotR\010snapshot\"H\n\020LeaveRo" +
-      "omRequest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027" +
-      "\n\007user_id\030\002 \001(\tR\006userId\"\023\n\021LeaveRoomResp" +
-      "onse\"o\n\021KickPlayerRequest\022\033\n\troom_code\030\001" +
-      " \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022" +
-      "$\n\016target_user_id\030\003 \001(\tR\014targetUserId\"T\n" +
-      "\022KickPlayerResponse\022>\n\010snapshot\030\001 \001(\0132\"." +
-      "friendlyfire.room.v1.RoomSnapshotR\010snaps" +
-      "hot\"\215\001\n\025UpdateSettingsRequest\022\033\n\troom_co" +
+      "\020pauseSecondsLeft\022>\n\nend_reason\030\016 \001(\0162\037." +
+      "friendlyfire.room.v1.EndReasonR\tendReaso" +
+      "n\022J\n\016fastest_answer\030\017 \001(\0132#.friendlyfire" +
+      ".room.v1.FastestAnswerR\rfastestAnswer\"R\n" +
+      "\rFastestAnswer\022\027\n\007user_id\030\001 \001(\tR\006userId\022" +
+      "(\n\020response_time_ms\030\002 \001(\005R\016responseTimeM" +
+      "s\"g\n\014RoomSettings\022%\n\016question_count\030\001 \001(" +
+      "\005R\rquestionCount\0220\n\024seconds_per_question" +
+      "\030\002 \001(\005R\022secondsPerQuestion\"\375\003\n\006Player\022\027\n" +
+      "\007user_id\030\001 \001(\tR\006userId\022!\n\014display_name\030\002" +
+      " \001(\tR\013displayName\022:\n\006status\030\003 \001(\0162\".frie" +
+      "ndlyfire.room.v1.PlayerStatusR\006status\022V\n" +
+      "\022connection_quality\030\005 \001(\0162\'.friendlyfire" +
+      ".room.v1.ConnectionQualityR\021connectionQu" +
+      "ality\022:\n\031answered_current_question\030\006 \001(\010" +
+      "R\027answeredCurrentQuestion\022G\n\013data_status" +
+      "\030\007 \001(\0162&.friendlyfire.room.v1.PlayerData" +
+      "StatusR\ndataStatus\0224\n\026data_estimated_sec" +
+      "onds\030\010 \001(\005R\024dataEstimatedSeconds\022,\n\022not_" +
+      "enough_matches\030\t \001(\010R\020notEnoughMatches\022\"" +
+      "\n\rriot_tag_line\030\n \001(\tR\013riotTagLineJ\004\010\004\020\005" +
+      "R\020match_data_ready\"\271\001\n\014QuestionView\022\037\n\013q" +
+      "uestion_id\030\001 \001(\tR\nquestionId\022\022\n\004text\030\002 \001" +
+      "(\tR\004text\022>\n\007options\030\003 \003(\0132$.friendlyfire" +
+      ".room.v1.QuestionOptionR\007options\0224\n\006reve" +
+      "al\030\004 \001(\0132\034.friendlyfire.room.v1.RevealR\006" +
+      "reveal\"C\n\016QuestionOption\022\033\n\toption_id\030\001 " +
+      "\001(\tR\010optionId\022\024\n\005label\030\002 \001(\tR\005label\"\224\001\n\006" +
+      "Reveal\022*\n\021correct_option_id\030\001 \001(\tR\017corre" +
+      "ctOptionId\022 \n\013explanation\030\002 \001(\tR\013explana" +
+      "tion\022<\n\007results\030\003 \003(\0132\".friendlyfire.roo" +
+      "m.v1.PlayerResultR\007results\"\203\001\n\014PlayerRes" +
+      "ult\022\027\n\007user_id\030\001 \001(\tR\006userId\022(\n\020chosen_o" +
+      "ption_id\030\002 \001(\tR\016chosenOptionId\022\030\n\007correc" +
+      "t\030\003 \001(\010R\007correct\022\026\n\006points\030\004 \001(\005R\006points" +
+      "\"\324\001\n\nScoreEntry\022\027\n\007user_id\030\001 \001(\tR\006userId" +
+      "\022!\n\014display_name\030\002 \001(\tR\013displayName\022!\n\014t" +
+      "otal_points\030\003 \001(\005R\013totalPoints\022\022\n\004rank\030\004" +
+      " \001(\005R\004rank\022*\n\021points_last_round\030\005 \001(\005R\017p" +
+      "ointsLastRound\022\'\n\017correct_answers\030\006 \001(\005R" +
+      "\016correctAnswers\"\222\002\n\004Vote\022\"\n\rabout_user_i" +
+      "d\030\001 \001(\tR\013aboutUserId\0226\n\010deadline\030\002 \001(\0132\032" +
+      ".google.protobuf.TimestampR\010deadline\022\037\n\013" +
+      "pause_votes\030\003 \001(\005R\npauseVotes\022%\n\016continu" +
+      "e_votes\030\004 \001(\005R\rcontinueVotes\022\033\n\tend_vote" +
+      "s\030\005 \001(\005R\010endVotes\022$\n\016voted_user_ids\030\006 \003(" +
+      "\tR\014votedUserIds\022#\n\rpause_allowed\030\007 \001(\010R\014" +
+      "pauseAllowed\"\272\002\n\tRoomEvent\0227\n\004type\030\001 \001(\016" +
+      "2#.friendlyfire.room.v1.RoomEventTypeR\004t" +
+      "ype\022&\n\017subject_user_id\030\002 \001(\tR\rsubjectUse" +
+      "rId\022;\n\013occurred_at\030\003 \001(\0132\032.google.protob" +
+      "uf.TimestampR\noccurredAt\022>\n\010snapshot\030\004 \001" +
+      "(\0132\".friendlyfire.room.v1.RoomSnapshotR\010" +
+      "snapshot\022\030\n\007message\030\005 \001(\tR\007message\0225\n\004ch" +
+      "at\030\006 \001(\0132!.friendlyfire.room.v1.ChatMess" +
+      "ageR\004chat\"\261\001\n\013ChatMessage\022\035\n\nmessage_id\030" +
+      "\001 \001(\tR\tmessageId\022\027\n\007user_id\030\002 \001(\tR\006userI" +
+      "d\022!\n\014display_name\030\003 \001(\tR\013displayName\022\022\n\004" +
+      "text\030\004 \001(\tR\004text\0223\n\007sent_at\030\005 \001(\0132\032.goog" +
+      "le.protobuf.TimestampR\006sentAt\"\216\001\n\021Create" +
+      "RoomRequest\022 \n\014host_user_id\030\001 \001(\tR\nhostU" +
+      "serId\022*\n\021host_display_name\030\002 \001(\tR\017hostDi" +
+      "splayName\022+\n\022host_riot_tag_line\030\003 \001(\tR\017h" +
+      "ostRiotTagLine\"T\n\022CreateRoomResponse\022>\n\010" +
+      "snapshot\030\001 \001(\0132\".friendlyfire.room.v1.Ro" +
+      "omSnapshotR\010snapshot\"\216\001\n\017JoinRoomRequest" +
+      "\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id" +
+      "\030\002 \001(\tR\006userId\022!\n\014display_name\030\003 \001(\tR\013di" +
+      "splayName\022\"\n\rriot_tag_line\030\004 \001(\tR\013riotTa" +
+      "gLine\"R\n\020JoinRoomResponse\022>\n\010snapshot\030\001 " +
+      "\001(\0132\".friendlyfire.room.v1.RoomSnapshotR" +
+      "\010snapshot\"H\n\020LeaveRoomRequest\022\033\n\troom_co" +
       "de\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006use" +
-      "rId\022>\n\010settings\030\003 \001(\0132\".friendlyfire.roo" +
-      "m.v1.RoomSettingsR\010settings\"X\n\026UpdateSet" +
-      "tingsResponse\022>\n\010snapshot\030\001 \001(\0132\".friend" +
-      "lyfire.room.v1.RoomSnapshotR\010snapshot\"H\n" +
-      "\020StartQuizRequest\022\033\n\troom_code\030\001 \001(\tR\010ro" +
-      "omCode\022\027\n\007user_id\030\002 \001(\tR\006userId\"S\n\021Start" +
-      "QuizResponse\022>\n\010snapshot\030\001 \001(\0132\".friendl" +
-      "yfire.room.v1.RoomSnapshotR\010snapshot\"\211\001\n" +
-      "\023SubmitAnswerRequest\022\033\n\troom_code\030\001 \001(\tR" +
-      "\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\022\037\n\013qu" +
-      "estion_id\030\003 \001(\tR\nquestionId\022\033\n\toption_id" +
-      "\030\004 \001(\tR\010optionId\"\026\n\024SubmitAnswerResponse" +
-      "\"Q\n\031ReportDisconnectedRequest\022\033\n\troom_co" +
-      "de\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006use" +
-      "rId\"\034\n\032ReportDisconnectedResponse\"\231\001\n\036Re" +
-      "portConnectionQualityRequest\022\033\n\troom_cod" +
-      "e\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006user" +
-      "Id\022A\n\007quality\030\003 \001(\0162\'.friendlyfire.room." +
-      "v1.ConnectionQualityR\007quality\"!\n\037ReportC" +
-      "onnectionQualityResponse\"\201\001\n\017CastVoteReq" +
+      "rId\"\023\n\021LeaveRoomResponse\"o\n\021KickPlayerRe" +
+      "quest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007us" +
+      "er_id\030\002 \001(\tR\006userId\022$\n\016target_user_id\030\003 " +
+      "\001(\tR\014targetUserId\"T\n\022KickPlayerResponse\022" +
+      ">\n\010snapshot\030\001 \001(\0132\".friendlyfire.room.v1" +
+      ".RoomSnapshotR\010snapshot\"\215\001\n\025UpdateSettin" +
+      "gsRequest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027" +
+      "\n\007user_id\030\002 \001(\tR\006userId\022>\n\010settings\030\003 \001(" +
+      "\0132\".friendlyfire.room.v1.RoomSettingsR\010s" +
+      "ettings\"X\n\026UpdateSettingsResponse\022>\n\010sna" +
+      "pshot\030\001 \001(\0132\".friendlyfire.room.v1.RoomS" +
+      "napshotR\010snapshot\"H\n\020StartQuizRequest\022\033\n" +
+      "\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 " +
+      "\001(\tR\006userId\"S\n\021StartQuizResponse\022>\n\010snap" +
+      "shot\030\001 \001(\0132\".friendlyfire.room.v1.RoomSn" +
+      "apshotR\010snapshot\"\211\001\n\023SubmitAnswerRequest" +
+      "\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_id" +
+      "\030\002 \001(\tR\006userId\022\037\n\013question_id\030\003 \001(\tR\nque" +
+      "stionId\022\033\n\toption_id\030\004 \001(\tR\010optionId\"\026\n\024" +
+      "SubmitAnswerResponse\"Q\n\031ReportDisconnect" +
+      "edRequest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027" +
+      "\n\007user_id\030\002 \001(\tR\006userId\"\034\n\032ReportDisconn" +
+      "ectedResponse\"\231\001\n\036ReportConnectionQualit" +
+      "yRequest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n" +
+      "\007user_id\030\002 \001(\tR\006userId\022A\n\007quality\030\003 \001(\0162" +
+      "\'.friendlyfire.room.v1.ConnectionQuality" +
+      "R\007quality\"!\n\037ReportConnectionQualityResp" +
+      "onse\"\201\001\n\017CastVoteRequest\022\033\n\troom_code\030\001 " +
+      "\001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\0228" +
+      "\n\006option\030\003 \001(\0162 .friendlyfire.room.v1.Vo" +
+      "teOptionR\006option\"\022\n\020CastVoteResponse\"N\n\026" +
+      "GetRoomSnapshotRequest\022\033\n\troom_code\030\001 \001(" +
+      "\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006userId\"Y\n\027" +
+      "GetRoomSnapshotResponse\022>\n\010snapshot\030\001 \001(" +
+      "\0132\".friendlyfire.room.v1.RoomSnapshotR\010s" +
+      "napshot\"6\n\027StreamRoomEventsRequest\022\033\n\tro" +
+      "om_code\030\001 \001(\tR\010roomCode\"Q\n\030StreamRoomEve" +
+      "ntsResponse\0225\n\005event\030\001 \001(\0132\037.friendlyfir" +
+      "e.room.v1.RoomEventR\005event\".\n\023RemovePlay" +
+      "erRequest\022\027\n\007user_id\030\001 \001(\tR\006userId\"\026\n\024Re" +
+      "movePlayerResponse\"b\n\026SendChatMessageReq" +
       "uest\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007use" +
-      "r_id\030\002 \001(\tR\006userId\0228\n\006option\030\003 \001(\0162 .fri" +
-      "endlyfire.room.v1.VoteOptionR\006option\"\022\n\020" +
-      "CastVoteResponse\"N\n\026GetRoomSnapshotReque" +
-      "st\022\033\n\troom_code\030\001 \001(\tR\010roomCode\022\027\n\007user_" +
-      "id\030\002 \001(\tR\006userId\"Y\n\027GetRoomSnapshotRespo" +
-      "nse\022>\n\010snapshot\030\001 \001(\0132\".friendlyfire.roo" +
-      "m.v1.RoomSnapshotR\010snapshot\"6\n\027StreamRoo" +
-      "mEventsRequest\022\033\n\troom_code\030\001 \001(\tR\010roomC" +
-      "ode\"Q\n\030StreamRoomEventsResponse\0225\n\005event" +
-      "\030\001 \001(\0132\037.friendlyfire.room.v1.RoomEventR" +
-      "\005event\".\n\023RemovePlayerRequest\022\027\n\007user_id" +
-      "\030\001 \001(\tR\006userId\"\026\n\024RemovePlayerResponse*\345" +
-      "\001\n\tRoomPhase\022\032\n\026ROOM_PHASE_UNSPECIFIED\020\000" +
-      "\022\024\n\020ROOM_PHASE_LOBBY\020\001\022\027\n\023ROOM_PHASE_STA" +
-      "RTING\020\002\022\027\n\023ROOM_PHASE_QUESTION\020\003\022\025\n\021ROOM" +
-      "_PHASE_REVEAL\020\004\022\023\n\017ROOM_PHASE_VOTE\020\005\022\027\n\023" +
-      "ROOM_PHASE_FINISHED\020\006\022\025\n\021ROOM_PHASE_PAUS" +
-      "ED\020\007\022\030\n\024ROOM_PHASE_PREPARING\020\010*\247\001\n\014Playe" +
-      "rStatus\022\035\n\031PLAYER_STATUS_UNSPECIFIED\020\000\022\033" +
-      "\n\027PLAYER_STATUS_CONNECTED\020\001\022\036\n\032PLAYER_ST" +
-      "ATUS_DISCONNECTED\020\002\022\035\n\031PLAYER_STATUS_SIT" +
-      "TING_OUT\020\003\022\034\n\030PLAYER_STATUS_SPECTATING\020\004" +
-      "*\216\001\n\021ConnectionQuality\022\"\n\036CONNECTION_QUA" +
-      "LITY_UNSPECIFIED\020\000\022\033\n\027CONNECTION_QUALITY" +
-      "_GOOD\020\001\022\033\n\027CONNECTION_QUALITY_FAIR\020\002\022\033\n\027" +
-      "CONNECTION_QUALITY_POOR\020\003*\332\001\n\020PlayerData" +
-      "Status\022\"\n\036PLAYER_DATA_STATUS_UNSPECIFIED" +
-      "\020\000\022\035\n\031PLAYER_DATA_STATUS_SYNCED\020\001\022\036\n\032PLA" +
-      "YER_DATA_STATUS_SYNCING\020\002\022!\n\035PLAYER_DATA" +
-      "_STATUS_NOT_SYNCED\020\003\022!\n\035PLAYER_DATA_STAT" +
-      "US_NOT_LINKED\020\004\022\035\n\031PLAYER_DATA_STATUS_FA" +
-      "ILED\020\005*\203\001\n\nVoteOption\022\033\n\027VOTE_OPTION_UNS" +
-      "PECIFIED\020\000\022\025\n\021VOTE_OPTION_PAUSE\020\001\022\'\n#VOT" +
-      "E_OPTION_CONTINUE_WITHOUT_PLAYER\020\002\022\030\n\024VO" +
-      "TE_OPTION_END_QUIZ\020\003*\316\006\n\rRoomEventType\022\037" +
-      "\n\033ROOM_EVENT_TYPE_UNSPECIFIED\020\000\022\034\n\030ROOM_" +
-      "EVENT_TYPE_SNAPSHOT\020\001\022!\n\035ROOM_EVENT_TYPE" +
-      "_PLAYER_JOINED\020\002\022\037\n\033ROOM_EVENT_TYPE_PLAY" +
-      "ER_LEFT\020\003\022!\n\035ROOM_EVENT_TYPE_PLAYER_KICK" +
-      "ED\020\004\022\'\n#ROOM_EVENT_TYPE_PLAYER_DISCONNEC" +
-      "TED\020\005\022&\n\"ROOM_EVENT_TYPE_PLAYER_RECONNEC" +
-      "TED\020\006\022 \n\034ROOM_EVENT_TYPE_HOST_CHANGED\020\007\022" +
-      "$\n ROOM_EVENT_TYPE_SETTINGS_CHANGED\020\010\022%\n" +
-      "!ROOM_EVENT_TYPE_PLAYER_DATA_READY\020\t\022.\n*" +
-      "ROOM_EVENT_TYPE_CONNECTION_QUALITY_CHANG" +
-      "ED\020\n\022!\n\035ROOM_EVENT_TYPE_QUIZ_STARTING\020\013\022" +
-      "$\n ROOM_EVENT_TYPE_QUESTION_STARTED\020\014\022#\n" +
-      "\037ROOM_EVENT_TYPE_PLAYER_ANSWERED\020\r\022%\n!RO" +
-      "OM_EVENT_TYPE_QUESTION_REVEALED\020\016\022 \n\034ROO" +
-      "M_EVENT_TYPE_VOTE_STARTED\020\017\022!\n\035ROOM_EVEN" +
-      "T_TYPE_VOTE_RESOLVED\020\020\022!\n\035ROOM_EVENT_TYP" +
-      "E_QUIZ_FINISHED\020\021\022\037\n\033ROOM_EVENT_TYPE_ROO" +
-      "M_CLOSED\020\022\022\035\n\031ROOM_EVENT_TYPE_VOTE_CAST\020" +
-      "\023\022\037\n\033ROOM_EVENT_TYPE_QUIZ_PAUSED\020\024\022\"\n\036RO" +
-      "OM_EVENT_TYPE_QUIZ_PREPARING\020\025\022%\n!ROOM_E" +
-      "VENT_TYPE_QUIZ_START_FAILED\020\0262\343\n\n\013RoomSe" +
-      "rvice\022_\n\nCreateRoom\022\'.friendlyfire.room." +
-      "v1.CreateRoomRequest\032(.friendlyfire.room" +
-      ".v1.CreateRoomResponse\022Y\n\010JoinRoom\022%.fri" +
-      "endlyfire.room.v1.JoinRoomRequest\032&.frie" +
-      "ndlyfire.room.v1.JoinRoomResponse\022\\\n\tLea" +
-      "veRoom\022&.friendlyfire.room.v1.LeaveRoomR" +
-      "equest\032\'.friendlyfire.room.v1.LeaveRoomR" +
-      "esponse\022_\n\nKickPlayer\022\'.friendlyfire.roo" +
-      "m.v1.KickPlayerRequest\032(.friendlyfire.ro" +
-      "om.v1.KickPlayerResponse\022k\n\016UpdateSettin" +
-      "gs\022+.friendlyfire.room.v1.UpdateSettings" +
-      "Request\032,.friendlyfire.room.v1.UpdateSet" +
-      "tingsResponse\022\\\n\tStartQuiz\022&.friendlyfir" +
-      "e.room.v1.StartQuizRequest\032\'.friendlyfir" +
-      "e.room.v1.StartQuizResponse\022e\n\014SubmitAns" +
-      "wer\022).friendlyfire.room.v1.SubmitAnswerR" +
-      "equest\032*.friendlyfire.room.v1.SubmitAnsw" +
-      "erResponse\022w\n\022ReportDisconnected\022/.frien" +
-      "dlyfire.room.v1.ReportDisconnectedReques" +
-      "t\0320.friendlyfire.room.v1.ReportDisconnec" +
-      "tedResponse\022\206\001\n\027ReportConnectionQuality\022" +
-      "4.friendlyfire.room.v1.ReportConnectionQ" +
-      "ualityRequest\0325.friendlyfire.room.v1.Rep" +
-      "ortConnectionQualityResponse\022Y\n\010CastVote" +
-      "\022%.friendlyfire.room.v1.CastVoteRequest\032" +
-      "&.friendlyfire.room.v1.CastVoteResponse\022" +
-      "n\n\017GetRoomSnapshot\022,.friendlyfire.room.v" +
-      "1.GetRoomSnapshotRequest\032-.friendlyfire." +
-      "room.v1.GetRoomSnapshotResponse\022s\n\020Strea" +
-      "mRoomEvents\022-.friendlyfire.room.v1.Strea" +
-      "mRoomEventsRequest\032..friendlyfire.room.v" +
-      "1.StreamRoomEventsResponse0\001\022e\n\014RemovePl" +
-      "ayer\022).friendlyfire.room.v1.RemovePlayer" +
-      "Request\032*.friendlyfire.room.v1.RemovePla" +
-      "yerResponseB\370\001\n+com.friendlyfire.proto.f" +
-      "riendlyfire.room.v1B\020RoomServiceProtoP\001Z" +
-      "Egithub.com/SaswatM-62/FriendlyFire/gen/" +
-      "go/friendlyfire/room/v1;roomv1\242\002\003FRX\252\002\024F" +
-      "riendlyfire.Room.V1\312\002\024Friendlyfire\\Room\\" +
-      "V1\342\002 Friendlyfire\\Room\\V1\\GPBMetadata\352\002\026" +
-      "Friendlyfire::Room::V1b\006proto3"
+      "r_id\030\002 \001(\tR\006userId\022\022\n\004text\030\003 \001(\tR\004text\"V" +
+      "\n\027SendChatMessageResponse\022;\n\007message\030\001 \001" +
+      "(\0132!.friendlyfire.room.v1.ChatMessageR\007m" +
+      "essage\"M\n\025GetChatHistoryRequest\022\033\n\troom_" +
+      "code\030\001 \001(\tR\010roomCode\022\027\n\007user_id\030\002 \001(\tR\006u" +
+      "serId\"W\n\026GetChatHistoryResponse\022=\n\010messa" +
+      "ges\030\001 \003(\0132!.friendlyfire.room.v1.ChatMes" +
+      "sageR\010messages*\345\001\n\tRoomPhase\022\032\n\026ROOM_PHA" +
+      "SE_UNSPECIFIED\020\000\022\024\n\020ROOM_PHASE_LOBBY\020\001\022\027" +
+      "\n\023ROOM_PHASE_STARTING\020\002\022\027\n\023ROOM_PHASE_QU" +
+      "ESTION\020\003\022\025\n\021ROOM_PHASE_REVEAL\020\004\022\023\n\017ROOM_" +
+      "PHASE_VOTE\020\005\022\027\n\023ROOM_PHASE_FINISHED\020\006\022\025\n" +
+      "\021ROOM_PHASE_PAUSED\020\007\022\030\n\024ROOM_PHASE_PREPA" +
+      "RING\020\010*\247\001\n\014PlayerStatus\022\035\n\031PLAYER_STATUS" +
+      "_UNSPECIFIED\020\000\022\033\n\027PLAYER_STATUS_CONNECTE" +
+      "D\020\001\022\036\n\032PLAYER_STATUS_DISCONNECTED\020\002\022\035\n\031P" +
+      "LAYER_STATUS_SITTING_OUT\020\003\022\034\n\030PLAYER_STA" +
+      "TUS_SPECTATING\020\004*\216\001\n\021ConnectionQuality\022\"" +
+      "\n\036CONNECTION_QUALITY_UNSPECIFIED\020\000\022\033\n\027CO" +
+      "NNECTION_QUALITY_GOOD\020\001\022\033\n\027CONNECTION_QU" +
+      "ALITY_FAIR\020\002\022\033\n\027CONNECTION_QUALITY_POOR\020" +
+      "\003*\332\001\n\020PlayerDataStatus\022\"\n\036PLAYER_DATA_ST" +
+      "ATUS_UNSPECIFIED\020\000\022\035\n\031PLAYER_DATA_STATUS" +
+      "_SYNCED\020\001\022\036\n\032PLAYER_DATA_STATUS_SYNCING\020" +
+      "\002\022!\n\035PLAYER_DATA_STATUS_NOT_SYNCED\020\003\022!\n\035" +
+      "PLAYER_DATA_STATUS_NOT_LINKED\020\004\022\035\n\031PLAYE" +
+      "R_DATA_STATUS_FAILED\020\005*\203\001\n\nVoteOption\022\033\n" +
+      "\027VOTE_OPTION_UNSPECIFIED\020\000\022\025\n\021VOTE_OPTIO" +
+      "N_PAUSE\020\001\022\'\n#VOTE_OPTION_CONTINUE_WITHOU" +
+      "T_PLAYER\020\002\022\030\n\024VOTE_OPTION_END_QUIZ\020\003*\360\006\n" +
+      "\rRoomEventType\022\037\n\033ROOM_EVENT_TYPE_UNSPEC" +
+      "IFIED\020\000\022\034\n\030ROOM_EVENT_TYPE_SNAPSHOT\020\001\022!\n" +
+      "\035ROOM_EVENT_TYPE_PLAYER_JOINED\020\002\022\037\n\033ROOM" +
+      "_EVENT_TYPE_PLAYER_LEFT\020\003\022!\n\035ROOM_EVENT_" +
+      "TYPE_PLAYER_KICKED\020\004\022\'\n#ROOM_EVENT_TYPE_" +
+      "PLAYER_DISCONNECTED\020\005\022&\n\"ROOM_EVENT_TYPE" +
+      "_PLAYER_RECONNECTED\020\006\022 \n\034ROOM_EVENT_TYPE" +
+      "_HOST_CHANGED\020\007\022$\n ROOM_EVENT_TYPE_SETTI" +
+      "NGS_CHANGED\020\010\022%\n!ROOM_EVENT_TYPE_PLAYER_" +
+      "DATA_READY\020\t\022.\n*ROOM_EVENT_TYPE_CONNECTI" +
+      "ON_QUALITY_CHANGED\020\n\022!\n\035ROOM_EVENT_TYPE_" +
+      "QUIZ_STARTING\020\013\022$\n ROOM_EVENT_TYPE_QUEST" +
+      "ION_STARTED\020\014\022#\n\037ROOM_EVENT_TYPE_PLAYER_" +
+      "ANSWERED\020\r\022%\n!ROOM_EVENT_TYPE_QUESTION_R" +
+      "EVEALED\020\016\022 \n\034ROOM_EVENT_TYPE_VOTE_STARTE" +
+      "D\020\017\022!\n\035ROOM_EVENT_TYPE_VOTE_RESOLVED\020\020\022!" +
+      "\n\035ROOM_EVENT_TYPE_QUIZ_FINISHED\020\021\022\037\n\033ROO" +
+      "M_EVENT_TYPE_ROOM_CLOSED\020\022\022\035\n\031ROOM_EVENT" +
+      "_TYPE_VOTE_CAST\020\023\022\037\n\033ROOM_EVENT_TYPE_QUI" +
+      "Z_PAUSED\020\024\022\"\n\036ROOM_EVENT_TYPE_QUIZ_PREPA" +
+      "RING\020\025\022%\n!ROOM_EVENT_TYPE_QUIZ_START_FAI" +
+      "LED\020\026\022 \n\034ROOM_EVENT_TYPE_CHAT_MESSAGE\020\027*" +
+      "\201\001\n\tEndReason\022\032\n\026END_REASON_UNSPECIFIED\020" +
+      "\000\022\030\n\024END_REASON_COMPLETED\020\001\022\033\n\027END_REASO" +
+      "N_VOTED_TO_END\020\002\022!\n\035END_REASON_NOT_ENOUG" +
+      "H_PLAYERS\020\0032\300\014\n\013RoomService\022_\n\nCreateRoo" +
+      "m\022\'.friendlyfire.room.v1.CreateRoomReque" +
+      "st\032(.friendlyfire.room.v1.CreateRoomResp" +
+      "onse\022Y\n\010JoinRoom\022%.friendlyfire.room.v1." +
+      "JoinRoomRequest\032&.friendlyfire.room.v1.J" +
+      "oinRoomResponse\022\\\n\tLeaveRoom\022&.friendlyf" +
+      "ire.room.v1.LeaveRoomRequest\032\'.friendlyf" +
+      "ire.room.v1.LeaveRoomResponse\022_\n\nKickPla" +
+      "yer\022\'.friendlyfire.room.v1.KickPlayerReq" +
+      "uest\032(.friendlyfire.room.v1.KickPlayerRe" +
+      "sponse\022k\n\016UpdateSettings\022+.friendlyfire." +
+      "room.v1.UpdateSettingsRequest\032,.friendly" +
+      "fire.room.v1.UpdateSettingsResponse\022\\\n\tS" +
+      "tartQuiz\022&.friendlyfire.room.v1.StartQui" +
+      "zRequest\032\'.friendlyfire.room.v1.StartQui" +
+      "zResponse\022e\n\014SubmitAnswer\022).friendlyfire" +
+      ".room.v1.SubmitAnswerRequest\032*.friendlyf" +
+      "ire.room.v1.SubmitAnswerResponse\022w\n\022Repo" +
+      "rtDisconnected\022/.friendlyfire.room.v1.Re" +
+      "portDisconnectedRequest\0320.friendlyfire.r" +
+      "oom.v1.ReportDisconnectedResponse\022\206\001\n\027Re" +
+      "portConnectionQuality\0224.friendlyfire.roo" +
+      "m.v1.ReportConnectionQualityRequest\0325.fr" +
+      "iendlyfire.room.v1.ReportConnectionQuali" +
+      "tyResponse\022Y\n\010CastVote\022%.friendlyfire.ro" +
+      "om.v1.CastVoteRequest\032&.friendlyfire.roo" +
+      "m.v1.CastVoteResponse\022n\n\017GetRoomSnapshot" +
+      "\022,.friendlyfire.room.v1.GetRoomSnapshotR" +
+      "equest\032-.friendlyfire.room.v1.GetRoomSna" +
+      "pshotResponse\022s\n\020StreamRoomEvents\022-.frie" +
+      "ndlyfire.room.v1.StreamRoomEventsRequest" +
+      "\032..friendlyfire.room.v1.StreamRoomEvents" +
+      "Response0\001\022e\n\014RemovePlayer\022).friendlyfir" +
+      "e.room.v1.RemovePlayerRequest\032*.friendly" +
+      "fire.room.v1.RemovePlayerResponse\022n\n\017Sen" +
+      "dChatMessage\022,.friendlyfire.room.v1.Send" +
+      "ChatMessageRequest\032-.friendlyfire.room.v" +
+      "1.SendChatMessageResponse\022k\n\016GetChatHist" +
+      "ory\022+.friendlyfire.room.v1.GetChatHistor" +
+      "yRequest\032,.friendlyfire.room.v1.GetChatH" +
+      "istoryResponseB\370\001\n+com.friendlyfire.prot" +
+      "o.friendlyfire.room.v1B\020RoomServiceProto" +
+      "P\001ZEgithub.com/SaswatM-62/FriendlyFire/g" +
+      "en/go/friendlyfire/room/v1;roomv1\242\002\003FRX\252" +
+      "\002\024Friendlyfire.Room.V1\312\002\024Friendlyfire\\Ro" +
+      "om\\V1\342\002 Friendlyfire\\Room\\V1\\GPBMetadata" +
+      "\352\002\026Friendlyfire::Room::V1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -431,217 +492,253 @@ public final class RoomServiceProto extends com.google.protobuf.GeneratedFile {
     internal_static_friendlyfire_room_v1_RoomSnapshot_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RoomSnapshot_descriptor,
-        new java.lang.String[] { "RoomCode", "HostUserId", "Phase", "Settings", "Players", "QuizId", "RoundNumber", "CurrentQuestion", "PhaseDeadline", "Scoreboard", "ActiveVote", "WaitingForUserId", "PauseSecondsLeft", });
-    internal_static_friendlyfire_room_v1_RoomSettings_descriptor =
+        new java.lang.String[] { "RoomCode", "HostUserId", "Phase", "Settings", "Players", "QuizId", "RoundNumber", "CurrentQuestion", "PhaseDeadline", "Scoreboard", "ActiveVote", "WaitingForUserId", "PauseSecondsLeft", "EndReason", "FastestAnswer", });
+    internal_static_friendlyfire_room_v1_FastestAnswer_descriptor =
       getDescriptor().getMessageType(1);
+    internal_static_friendlyfire_room_v1_FastestAnswer_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_FastestAnswer_descriptor,
+        new java.lang.String[] { "UserId", "ResponseTimeMs", });
+    internal_static_friendlyfire_room_v1_RoomSettings_descriptor =
+      getDescriptor().getMessageType(2);
     internal_static_friendlyfire_room_v1_RoomSettings_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RoomSettings_descriptor,
         new java.lang.String[] { "QuestionCount", "SecondsPerQuestion", });
     internal_static_friendlyfire_room_v1_Player_descriptor =
-      getDescriptor().getMessageType(2);
+      getDescriptor().getMessageType(3);
     internal_static_friendlyfire_room_v1_Player_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_Player_descriptor,
         new java.lang.String[] { "UserId", "DisplayName", "Status", "ConnectionQuality", "AnsweredCurrentQuestion", "DataStatus", "DataEstimatedSeconds", "NotEnoughMatches", "RiotTagLine", });
     internal_static_friendlyfire_room_v1_QuestionView_descriptor =
-      getDescriptor().getMessageType(3);
+      getDescriptor().getMessageType(4);
     internal_static_friendlyfire_room_v1_QuestionView_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_QuestionView_descriptor,
         new java.lang.String[] { "QuestionId", "Text", "Options", "Reveal", });
     internal_static_friendlyfire_room_v1_QuestionOption_descriptor =
-      getDescriptor().getMessageType(4);
+      getDescriptor().getMessageType(5);
     internal_static_friendlyfire_room_v1_QuestionOption_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_QuestionOption_descriptor,
         new java.lang.String[] { "OptionId", "Label", });
     internal_static_friendlyfire_room_v1_Reveal_descriptor =
-      getDescriptor().getMessageType(5);
+      getDescriptor().getMessageType(6);
     internal_static_friendlyfire_room_v1_Reveal_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_Reveal_descriptor,
         new java.lang.String[] { "CorrectOptionId", "Explanation", "Results", });
     internal_static_friendlyfire_room_v1_PlayerResult_descriptor =
-      getDescriptor().getMessageType(6);
+      getDescriptor().getMessageType(7);
     internal_static_friendlyfire_room_v1_PlayerResult_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_PlayerResult_descriptor,
         new java.lang.String[] { "UserId", "ChosenOptionId", "Correct", "Points", });
     internal_static_friendlyfire_room_v1_ScoreEntry_descriptor =
-      getDescriptor().getMessageType(7);
+      getDescriptor().getMessageType(8);
     internal_static_friendlyfire_room_v1_ScoreEntry_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_ScoreEntry_descriptor,
-        new java.lang.String[] { "UserId", "DisplayName", "TotalPoints", "Rank", "PointsLastRound", });
+        new java.lang.String[] { "UserId", "DisplayName", "TotalPoints", "Rank", "PointsLastRound", "CorrectAnswers", });
     internal_static_friendlyfire_room_v1_Vote_descriptor =
-      getDescriptor().getMessageType(8);
+      getDescriptor().getMessageType(9);
     internal_static_friendlyfire_room_v1_Vote_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_Vote_descriptor,
         new java.lang.String[] { "AboutUserId", "Deadline", "PauseVotes", "ContinueVotes", "EndVotes", "VotedUserIds", "PauseAllowed", });
     internal_static_friendlyfire_room_v1_RoomEvent_descriptor =
-      getDescriptor().getMessageType(9);
+      getDescriptor().getMessageType(10);
     internal_static_friendlyfire_room_v1_RoomEvent_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RoomEvent_descriptor,
-        new java.lang.String[] { "Type", "SubjectUserId", "OccurredAt", "Snapshot", "Message", });
+        new java.lang.String[] { "Type", "SubjectUserId", "OccurredAt", "Snapshot", "Message", "Chat", });
+    internal_static_friendlyfire_room_v1_ChatMessage_descriptor =
+      getDescriptor().getMessageType(11);
+    internal_static_friendlyfire_room_v1_ChatMessage_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_ChatMessage_descriptor,
+        new java.lang.String[] { "MessageId", "UserId", "DisplayName", "Text", "SentAt", });
     internal_static_friendlyfire_room_v1_CreateRoomRequest_descriptor =
-      getDescriptor().getMessageType(10);
+      getDescriptor().getMessageType(12);
     internal_static_friendlyfire_room_v1_CreateRoomRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_CreateRoomRequest_descriptor,
         new java.lang.String[] { "HostUserId", "HostDisplayName", "HostRiotTagLine", });
     internal_static_friendlyfire_room_v1_CreateRoomResponse_descriptor =
-      getDescriptor().getMessageType(11);
+      getDescriptor().getMessageType(13);
     internal_static_friendlyfire_room_v1_CreateRoomResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_CreateRoomResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_JoinRoomRequest_descriptor =
-      getDescriptor().getMessageType(12);
+      getDescriptor().getMessageType(14);
     internal_static_friendlyfire_room_v1_JoinRoomRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_JoinRoomRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "DisplayName", "RiotTagLine", });
     internal_static_friendlyfire_room_v1_JoinRoomResponse_descriptor =
-      getDescriptor().getMessageType(13);
+      getDescriptor().getMessageType(15);
     internal_static_friendlyfire_room_v1_JoinRoomResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_JoinRoomResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_LeaveRoomRequest_descriptor =
-      getDescriptor().getMessageType(14);
+      getDescriptor().getMessageType(16);
     internal_static_friendlyfire_room_v1_LeaveRoomRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_LeaveRoomRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", });
     internal_static_friendlyfire_room_v1_LeaveRoomResponse_descriptor =
-      getDescriptor().getMessageType(15);
+      getDescriptor().getMessageType(17);
     internal_static_friendlyfire_room_v1_LeaveRoomResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_LeaveRoomResponse_descriptor,
         new java.lang.String[] { });
     internal_static_friendlyfire_room_v1_KickPlayerRequest_descriptor =
-      getDescriptor().getMessageType(16);
+      getDescriptor().getMessageType(18);
     internal_static_friendlyfire_room_v1_KickPlayerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_KickPlayerRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "TargetUserId", });
     internal_static_friendlyfire_room_v1_KickPlayerResponse_descriptor =
-      getDescriptor().getMessageType(17);
+      getDescriptor().getMessageType(19);
     internal_static_friendlyfire_room_v1_KickPlayerResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_KickPlayerResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_UpdateSettingsRequest_descriptor =
-      getDescriptor().getMessageType(18);
+      getDescriptor().getMessageType(20);
     internal_static_friendlyfire_room_v1_UpdateSettingsRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_UpdateSettingsRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "Settings", });
     internal_static_friendlyfire_room_v1_UpdateSettingsResponse_descriptor =
-      getDescriptor().getMessageType(19);
+      getDescriptor().getMessageType(21);
     internal_static_friendlyfire_room_v1_UpdateSettingsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_UpdateSettingsResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_StartQuizRequest_descriptor =
-      getDescriptor().getMessageType(20);
+      getDescriptor().getMessageType(22);
     internal_static_friendlyfire_room_v1_StartQuizRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_StartQuizRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", });
     internal_static_friendlyfire_room_v1_StartQuizResponse_descriptor =
-      getDescriptor().getMessageType(21);
+      getDescriptor().getMessageType(23);
     internal_static_friendlyfire_room_v1_StartQuizResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_StartQuizResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_SubmitAnswerRequest_descriptor =
-      getDescriptor().getMessageType(22);
+      getDescriptor().getMessageType(24);
     internal_static_friendlyfire_room_v1_SubmitAnswerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_SubmitAnswerRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "QuestionId", "OptionId", });
     internal_static_friendlyfire_room_v1_SubmitAnswerResponse_descriptor =
-      getDescriptor().getMessageType(23);
+      getDescriptor().getMessageType(25);
     internal_static_friendlyfire_room_v1_SubmitAnswerResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_SubmitAnswerResponse_descriptor,
         new java.lang.String[] { });
     internal_static_friendlyfire_room_v1_ReportDisconnectedRequest_descriptor =
-      getDescriptor().getMessageType(24);
+      getDescriptor().getMessageType(26);
     internal_static_friendlyfire_room_v1_ReportDisconnectedRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_ReportDisconnectedRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", });
     internal_static_friendlyfire_room_v1_ReportDisconnectedResponse_descriptor =
-      getDescriptor().getMessageType(25);
+      getDescriptor().getMessageType(27);
     internal_static_friendlyfire_room_v1_ReportDisconnectedResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_ReportDisconnectedResponse_descriptor,
         new java.lang.String[] { });
     internal_static_friendlyfire_room_v1_ReportConnectionQualityRequest_descriptor =
-      getDescriptor().getMessageType(26);
+      getDescriptor().getMessageType(28);
     internal_static_friendlyfire_room_v1_ReportConnectionQualityRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_ReportConnectionQualityRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "Quality", });
     internal_static_friendlyfire_room_v1_ReportConnectionQualityResponse_descriptor =
-      getDescriptor().getMessageType(27);
+      getDescriptor().getMessageType(29);
     internal_static_friendlyfire_room_v1_ReportConnectionQualityResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_ReportConnectionQualityResponse_descriptor,
         new java.lang.String[] { });
     internal_static_friendlyfire_room_v1_CastVoteRequest_descriptor =
-      getDescriptor().getMessageType(28);
+      getDescriptor().getMessageType(30);
     internal_static_friendlyfire_room_v1_CastVoteRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_CastVoteRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", "Option", });
     internal_static_friendlyfire_room_v1_CastVoteResponse_descriptor =
-      getDescriptor().getMessageType(29);
+      getDescriptor().getMessageType(31);
     internal_static_friendlyfire_room_v1_CastVoteResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_CastVoteResponse_descriptor,
         new java.lang.String[] { });
     internal_static_friendlyfire_room_v1_GetRoomSnapshotRequest_descriptor =
-      getDescriptor().getMessageType(30);
+      getDescriptor().getMessageType(32);
     internal_static_friendlyfire_room_v1_GetRoomSnapshotRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_GetRoomSnapshotRequest_descriptor,
         new java.lang.String[] { "RoomCode", "UserId", });
     internal_static_friendlyfire_room_v1_GetRoomSnapshotResponse_descriptor =
-      getDescriptor().getMessageType(31);
+      getDescriptor().getMessageType(33);
     internal_static_friendlyfire_room_v1_GetRoomSnapshotResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_GetRoomSnapshotResponse_descriptor,
         new java.lang.String[] { "Snapshot", });
     internal_static_friendlyfire_room_v1_StreamRoomEventsRequest_descriptor =
-      getDescriptor().getMessageType(32);
+      getDescriptor().getMessageType(34);
     internal_static_friendlyfire_room_v1_StreamRoomEventsRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_StreamRoomEventsRequest_descriptor,
         new java.lang.String[] { "RoomCode", });
     internal_static_friendlyfire_room_v1_StreamRoomEventsResponse_descriptor =
-      getDescriptor().getMessageType(33);
+      getDescriptor().getMessageType(35);
     internal_static_friendlyfire_room_v1_StreamRoomEventsResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_StreamRoomEventsResponse_descriptor,
         new java.lang.String[] { "Event", });
     internal_static_friendlyfire_room_v1_RemovePlayerRequest_descriptor =
-      getDescriptor().getMessageType(34);
+      getDescriptor().getMessageType(36);
     internal_static_friendlyfire_room_v1_RemovePlayerRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RemovePlayerRequest_descriptor,
         new java.lang.String[] { "UserId", });
     internal_static_friendlyfire_room_v1_RemovePlayerResponse_descriptor =
-      getDescriptor().getMessageType(35);
+      getDescriptor().getMessageType(37);
     internal_static_friendlyfire_room_v1_RemovePlayerResponse_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_friendlyfire_room_v1_RemovePlayerResponse_descriptor,
         new java.lang.String[] { });
+    internal_static_friendlyfire_room_v1_SendChatMessageRequest_descriptor =
+      getDescriptor().getMessageType(38);
+    internal_static_friendlyfire_room_v1_SendChatMessageRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_SendChatMessageRequest_descriptor,
+        new java.lang.String[] { "RoomCode", "UserId", "Text", });
+    internal_static_friendlyfire_room_v1_SendChatMessageResponse_descriptor =
+      getDescriptor().getMessageType(39);
+    internal_static_friendlyfire_room_v1_SendChatMessageResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_SendChatMessageResponse_descriptor,
+        new java.lang.String[] { "Message", });
+    internal_static_friendlyfire_room_v1_GetChatHistoryRequest_descriptor =
+      getDescriptor().getMessageType(40);
+    internal_static_friendlyfire_room_v1_GetChatHistoryRequest_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_GetChatHistoryRequest_descriptor,
+        new java.lang.String[] { "RoomCode", "UserId", });
+    internal_static_friendlyfire_room_v1_GetChatHistoryResponse_descriptor =
+      getDescriptor().getMessageType(41);
+    internal_static_friendlyfire_room_v1_GetChatHistoryResponse_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+        internal_static_friendlyfire_room_v1_GetChatHistoryResponse_descriptor,
+        new java.lang.String[] { "Messages", });
     descriptor.resolveAllFeaturesImmutable();
     com.google.protobuf.TimestampProto.getDescriptor();
   }

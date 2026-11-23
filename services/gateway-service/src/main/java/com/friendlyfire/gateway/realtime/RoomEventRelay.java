@@ -131,7 +131,7 @@ public class RoomEventRelay implements AutoCloseable {
             streams.remove(stream.roomCode);
             RoomSnapshotJson last = stream.lastSnapshot;
             if (last != null) {
-                forward(stream.roomCode, new RoomEventJson("ROOM_CLOSED", null, clock.instant().toString(), last, null));
+                forward(stream.roomCode, new RoomEventJson("ROOM_CLOSED", null, clock.instant().toString(), last, null, null));
             }
             return;
         }

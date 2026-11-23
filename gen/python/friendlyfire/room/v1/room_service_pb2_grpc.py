@@ -79,6 +79,16 @@ class RoomServiceStub:
                 request_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.FromString,
                 _registered_method=True)
+        self.SendChatMessage = channel.unary_unary(
+                '/friendlyfire.room.v1.RoomService/SendChatMessage',
+                request_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageResponse.FromString,
+                _registered_method=True)
+        self.GetChatHistory = channel.unary_unary(
+                '/friendlyfire.room.v1.RoomService/GetChatHistory',
+                request_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryResponse.FromString,
+                _registered_method=True)
 
 
 class RoomServiceServicer:
@@ -96,6 +106,8 @@ class RoomServiceServicer:
         refresh or dropped connection), marks them connected again instead.
         Someone new who joins while a quiz is preparing or running joins as a
         spectator (PLAYER_STATUS_SPECTATING) and plays from the next quiz.
+        A user is in one room at a time: joining another room takes them out of
+        the one they were in first, like LeaveRoom.
         Errors:
         RESOURCE_EXHAUSTED   the room already has 8 people (spectators count)
         """
@@ -112,14 +124,16 @@ class RoomServiceServicer:
         raise NotImplementedError('Method not implemented!')
 
     def KickPlayer(self, request, context):
-        """Host only. Removes another player. Only allowed in the lobby.
+        """Host only. Removes another player. Only allowed in the lobby, or after a
+        quiz finishes (ROOM_PHASE_FINISHED, before playing again).
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def UpdateSettings(self, request, context):
-        """Host only. Only allowed in the lobby.
+        """Host only. Only allowed in the lobby, or after a quiz finishes
+        (ROOM_PHASE_FINISHED, before playing again).
         INVALID_ARGUMENT if a value is outside the allowed range.
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -216,6 +230,24 @@ class RoomServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SendChatMessage(self, request, context):
+        """A chat message from someone in the room (spectators too), in any phase.
+        The text is trimmed and must then be 1–200 characters (INVALID_ARGUMENT
+        otherwise). Everyone gets it as a ROOM_EVENT_TYPE_CHAT_MESSAGE event.
+        The room keeps its last 200 messages until it closes.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetChatHistory(self, request, context):
+        """The room's kept messages, oldest first, for a browser that just opened
+        or rejoined the room.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_RoomServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -283,6 +315,16 @@ def add_RoomServiceServicer_to_server(servicer, server):
                     servicer.RemovePlayer,
                     request_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.FromString,
                     response_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.SerializeToString,
+            ),
+            'SendChatMessage': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendChatMessage,
+                    request_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageRequest.FromString,
+                    response_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageResponse.SerializeToString,
+            ),
+            'GetChatHistory': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetChatHistory,
+                    request_deserializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryRequest.FromString,
+                    response_serializer=friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -636,6 +678,60 @@ class RoomService:
             '/friendlyfire.room.v1.RoomService/RemovePlayer',
             friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerRequest.SerializeToString,
             friendlyfire_dot_room_dot_v1_dot_room__service__pb2.RemovePlayerResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SendChatMessage(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.room.v1.RoomService/SendChatMessage',
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageRequest.SerializeToString,
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.SendChatMessageResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetChatHistory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.room.v1.RoomService/GetChatHistory',
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryRequest.SerializeToString,
+            friendlyfire_dot_room_dot_v1_dot_room__service__pb2.GetChatHistoryResponse.FromString,
             options,
             channel_credentials,
             insecure,

@@ -154,7 +154,9 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
     inputs: tuple[list[QuizPlayer], list[PlayerMatchStats]], seed: int
 ) -> None:
     roster, stats = inputs
-    questions = QuestionGenerator().generate(roster, stats, question_count=5, seed=seed)
+    questions = QuestionGenerator([KILLS, ACS, WINS]).generate(
+        roster, stats, question_count=5, seed=seed
+    )
     ids = {p.user_id for p in roster}
     compared = {p.user_id for p in roster if not p.not_enough_matches}
     for question in questions:
@@ -194,11 +196,13 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
         assert winners == [question.correct_option_id]
     assert len(template_ids(questions)) == len(set(template_ids(questions)))
     assert len({q.question_id for q in questions}) == len(questions)
-    assert questions == QuestionGenerator().generate(roster[::-1], stats[::-1], 5, seed)
+    assert questions == QuestionGenerator([KILLS, ACS, WINS]).generate(
+        roster[::-1], stats[::-1], 5, seed
+    )
 
 
 def test_nonempty_quiz_has_three_templates_and_mixes_shared_and_solo() -> None:
-    questions = QuestionGenerator().generate(players(), history(), 5, 42)
+    questions = QuestionGenerator([KILLS, ACS, WINS]).generate(players(), history(), 5, 42)
     assert len(questions) == 3
     assert all(q.correct_option_id == "a" for q in questions)
     assert any("with other room players" in q.text for q in questions)
@@ -231,7 +235,7 @@ def test_outsiders_cannot_change_questions_or_leak_into_text_or_explanations() -
 
 
 def test_play_again_with_every_template_used_is_still_full_oldest_first() -> None:
-    generator = QuestionGenerator()
+    generator = QuestionGenerator([KILLS, ACS, WINS])
     first = generator.generate(players(), history(), 3, 1)
     asked = template_ids(first)
     for seed in (0, 1, 42):
@@ -249,7 +253,7 @@ def test_a_used_template_is_skipped_in_every_scope_while_others_are_left(seed: i
 
 
 def test_template_asked_longest_ago_is_reused_first() -> None:
-    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in TEMPLATES])
+    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in (KILLS, ACS, WINS)])
     # Most kills was asked first but asked again last, so it's the most recent.
     asked = [KILLS.id, ACS.id, WINS.id, KILLS.id]
     for seed in range(10):
@@ -476,7 +480,7 @@ def test_scope_repair_keeps_templates_and_facts_unique(seed: int) -> None:
 
 
 def test_new_template_precedes_reused_ones_when_history_is_partly_used() -> None:
-    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in TEMPLATES])
+    generator = QuestionGenerator([replace(t, scopes=("all",)) for t in (KILLS, ACS, WINS)])
     actual = generator.generate(players(), history(), 3, 42, asked_template_ids=[KILLS.id, ACS.id])
     assert template_ids(actual) == [WINS.id, KILLS.id, ACS.id]
 

@@ -3,24 +3,35 @@
     "puuid": "00000000-0000-4000-8000-000000000001",
     "gameName": "Sam",
     "tagLine": "NA1",
-    "region": "na"
+    "region": "na",
+    "email": "sam@example.com"
   },
   {
     "puuid": "00000000-0000-4000-8000-000000000002",
     "gameName": "Alex",
     "tagLine": "EUW",
-    "region": "eu"
+    "region": "eu",
+    "email": "alex@example.com"
   },
   {
     "puuid": "00000000-0000-4000-8000-000000000003",
     "gameName": "Kim",
     "tagLine": "KR1",
-    "region": "ap"
+    "region": "ap",
+    "email": "kim@example.com"
   },
   {
     "puuid": "00000000-0000-4000-8000-000000000004",
     "gameName": "Jordan",
     "tagLine": "TEST",
-    "region": "na"
+    "region": "na",
+    "email": "jordan@example.com"
+  },
+  {
+    "puuid": "00000000-0000-4000-8000-000000000005",
+    "gameName": "Riley",
+    "tagLine": "TEST",
+    "region": "na",
+    "email": "riley@example.com"
   }
 ]

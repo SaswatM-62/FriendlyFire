@@ -1,11 +1,15 @@
 package com.friendlyfire.room.room;
 
+import java.util.Collection;
 import java.util.Optional;
 
 /** Where rooms live. */
 public interface RoomRepository {
 
     Optional<Room> findByCode(String code);
+
+    /** Every open room, for the scheduled checks (data status, abandoned rooms). */
+    Collection<Room> findAll();
 
     /**
      * Saves a new room. Returns false, and keeps the existing room, if another room

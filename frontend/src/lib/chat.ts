@@ -1,8 +1,18 @@
-import type { RoomEvent, RoomSnapshot } from "@/lib/api-types";
+import type { ChatMessage, RoomEvent, RoomSnapshot } from "@/lib/api-types";
 import { endedEarly } from "@/lib/players";
 
 /** A chat line before it gets an id: something a player said, or what just happened in the room. */
-export type NewChatLine = { kind: "msg"; userId: string; text: string } | { kind: "sys"; text: string };
+export type NewChatLine =
+  | {
+      kind: "msg";
+      userId: string;
+      text: string;
+      /** The sender's name when they sent it, for someone no longer in the room. */
+      name?: string;
+      /** The server's ID, so a message isn't shown twice after the history loads. */
+      messageId?: string;
+    }
+  | { kind: "sys"; text: string };
 
 /** One line in the room chat, with an id for React. */
 export type ChatLine = NewChatLine & { id: string };
@@ -11,9 +21,9 @@ export type ChatLine = NewChatLine & { id: string };
 export const CHAT_KEEP = 200;
 
 /**
- * The chat lines for one room event: the message itself on CHAT_MESSAGE (planned), and a
- * short system line for joins, leaves, questions, votes and the result. These come
- * from events the room already sends, so they work before chat reaches the server.
+ * The chat lines for one room event: the message itself on CHAT_MESSAGE, and a short
+ * system line for joins, leaves, questions, votes and the result (from events the room
+ * already sends).
  */
 export function chatLinesFor(event: RoomEvent, previous: RoomSnapshot | null, meId: string): NewChatLine[] {
   const s = event.snapshot;
@@ -26,7 +36,7 @@ export function chatLinesFor(event: RoomEvent, previous: RoomSnapshot | null, me
 
   switch (event.type) {
     case "CHAT_MESSAGE":
-      return event.chat ? [{ kind: "msg", userId: event.chat.userId, text: event.chat.text }] : [];
+      return event.chat ? [messageLine(event.chat)] : [];
     case "PLAYER_JOINED":
       return event.subjectUserId === meId ? [] : sys(`${who} joined the room`);
     case "PLAYER_LEFT":
@@ -64,4 +74,31 @@ export function chatLinesFor(event: RoomEvent, previous: RoomSnapshot | null, me
     default:
       return [];
   }
+}
+
+function messageLine(message: ChatMessage): NewChatLine {
+  return {
+    kind: "msg",
+    userId: message.userId,
+    text: message.text,
+    messageId: message.messageId,
+    ...(message.displayName ? { name: message.displayName } : {}),
+  };
+}
+
+/**
+ * Adds the room's kept messages (GET /api/rooms/{code}/chat) to the chat, skipping any
+ * already shown. On the first load they go before everything else (they're older);
+ * after a rejoin, the ones missed while away go at the end.
+ */
+export function withHistory(
+  lines: ChatLine[],
+  messages: ChatMessage[],
+  newId: () => string,
+  where: "before" | "after",
+): ChatLine[] {
+  const shown = new Set(lines.flatMap((line) => (line.kind === "msg" && line.messageId ? [line.messageId] : [])));
+  const missing = messages.filter((m) => !shown.has(m.messageId)).map((m): ChatLine => ({ ...messageLine(m), id: newId() }));
+  if (missing.length === 0) return lines;
+  return (where === "before" ? [...missing, ...lines] : [...lines, ...missing]).slice(-CHAT_KEEP);
 }

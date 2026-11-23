@@ -1,5 +1,5 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { ApiErrorBody, HistoryPage, LiveStats } from "@/lib/api-types";
+import type { ApiErrorBody, ChatHistory, HistoryPage, LiveStats } from "@/lib/api-types";
 import { config } from "@/lib/config";
 import { ME_ID } from "@/mocks/data";
 import { FULL_ROOM, type FakeGateway } from "@/mocks/gateway";
@@ -87,6 +87,16 @@ export function createHandlers(gateway: FakeGateway, baseUrl: string = config.ga
         return fail(403, "NOT_IN_ROOM", "You're not in this room.");
       }
       return HttpResponse.json(room.snapshot);
+    }),
+
+    http.get(url("/api/rooms/:code/chat"), ({ params }) => {
+      if (!gateway.signedIn) return signedOut();
+      const room = gateway.room(String(params.code));
+      if (!room) return fail(404, "ROOM_NOT_FOUND", "Room not found.");
+      if (!room.snapshot.players.some((p) => p.userId === ME_ID)) {
+        return fail(403, "NOT_IN_ROOM", "You're not in this room.");
+      }
+      return HttpResponse.json({ messages: room.chatLog } satisfies ChatHistory);
     }),
 
     // ---------- history ----------
