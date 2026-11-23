@@ -20,7 +20,7 @@ import pytest
 from friendlyfire.matchdata.v1.match_data_service_pb2 import PlayerMatchStats
 from friendlyfire.quiz.v1.quiz_service_pb2 import Question
 
-from quiz_engine.question_generator import _PLACEHOLDERS
+from quiz_engine.question_generator import _PLACEHOLDERS, _PLURAL
 from quiz_engine.templates import TEMPLATES, QuestionTemplate
 from tests.unit.test_template_rules import ALICE, BOB, CARA, ask
 
@@ -47,6 +47,7 @@ def primary_stats(t: QuestionTemplate) -> set[str]:
 
 
 def placeholders(text: str) -> set[str]:
+    text = _PLURAL.sub(r"\2", text)  # {singular|plural} isn't a placeholder
     return {name for _, name, _, _ in string.Formatter().parse(text) if name}
 
 
@@ -86,7 +87,7 @@ def test_declared_stats_cover_everything_the_template_reads(t: QuestionTemplate)
     declared = {s.split(":")[0] for s in t.stats}
     read = primary_stats(t) | set(t.denominator)
     assert read <= declared
-    if t.last_n is not None:
+    if t.last_n is not None or any(n is not None for n in t.windows):
         assert "played_at" in t.stats
     if t.parameter_label:
         assert f"labels.{t.parameter_label}" in t.stats
@@ -238,6 +239,11 @@ def only(t: QuestionTemplate, stats: list[PlayerMatchStats], scope: str = "all")
     return question
 
 
+def last(n: int, template_id: str) -> QuestionTemplate:
+    """Only the last-n-matches version of a template with windows."""
+    return replace(BY_ID[template_id], windows=(n,))
+
+
 def check(question: Question, winner: str, text: str, explanation: str) -> None:
     assert (question.correct_option_id, question.text, question.explanation) == (
         winner,
@@ -302,23 +308,58 @@ def _utility_stats() -> list[PlayerMatchStats]:
 
 def test_utility_assists_totals_the_last_ten_matches() -> None:
     check(
-        only(BY_ID["utility-assists-v1"], _utility_stats()),
+        only(last(10, "utility-assists-v1"), _utility_stats()),
         ALICE,
-        "In their last 10 matches, this player earned 35 assists without dealing any damage "
-        "to the victim, so flashes and utility did the work, the most in this group. "
+        "Flashes and utility did the work: this player earned 35 assists without damaging "
+        "the victim in their last 10 matches, the most in this group. "
         "Who sets everyone else up?",
-        "Alice had 35 damage-free assists in their last 10 matches.",
+        "Alice: 35 assists with no damage dealt.",
     )
 
 
 def test_utility_assists_ignores_matches_older_than_the_window() -> None:
     stats = [*_utility_stats(), game(CARA, "c-0", 0, {UTILITY: 50})]
-    assert only(BY_ID["utility-assists-v1"], stats).correct_option_id == ALICE
+    assert only(last(10, "utility-assists-v1"), stats).correct_option_id == ALICE
 
 
 def test_utility_assists_is_skipped_when_someone_has_fewer_than_ten_matches() -> None:
     stats = [r for r in _utility_stats() if r.match_id not in {"c-9", "c-10"}]
-    assert questions(BY_ID["utility-assists-v1"], stats) == []
+    assert questions(last(10, "utility-assists-v1"), stats) == []
+
+
+@pytest.mark.parametrize(
+    ("scope", "texts"),
+    [
+        (
+            "all",
+            [
+                "17 assists without damaging the victim in their last 5 matches",
+                "35 assists without damaging the victim in their last 10 matches",
+                f"35 assists without damaging the victim {ALL}",
+            ],
+        ),
+        (
+            "solo",
+            [
+                "17 assists without damaging the victim in their last 5 matches without other "
+                "room players",
+                "35 assists without damaging the victim in their last 10 matches without "
+                "other room players",
+                "35 assists without damaging the victim in available matches played without "
+                "other room players",
+            ],
+        ),
+        ("shared", []),
+    ],
+)
+def test_utility_assists_asks_the_last_5_the_last_10_and_all_matches_in_each_scope(
+    scope: str, texts: list[str]
+) -> None:
+    # The players only have solo matches, so there's no "with other room players" version.
+    found = questions(BY_ID["utility-assists-v1"], _utility_stats(), scope)
+    shown = sorted(q.text.split("earned ", 1)[1].split(", the most")[0] for q in found)
+    assert shown == sorted(texts)
+    assert all(q.correct_option_id == ALICE for q in found)
 
 
 # ---- 3. underdog-kill-share-v1 ---------------------------------------------------------
@@ -466,11 +507,26 @@ def test_kills_on_enemy_mvp_totals_the_last_ten_matches() -> None:
         *series(CARA, {MVP_KILLS: [3, 3, 2, 2, 3, 2, 3, 2, 3, 2]}),
     ]
     check(
-        only(BY_ID["kills-on-enemy-mvp-v1"], stats),
+        only(last(10, "kills-on-enemy-mvp-v1"), stats),
         ALICE,
-        "Over their last 10 matches, this player took down the other team's MVP 29 times, "
+        "This player took down the other team's MVP 29 times in their last 10 matches, "
         "the most in this group. Who hunts the star player?",
-        "Alice killed the opposing MVP 29 times in their last 10 matches.",
+        "Alice killed the opposing MVP 29 times.",
+    )
+
+
+def test_kills_on_enemy_mvp_says_one_time_not_one_times() -> None:
+    stats = [
+        *series(ALICE, {MVP_KILLS: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0]}),
+        *series(BOB, {MVP_KILLS: [0] * 10}),
+        *series(CARA, {MVP_KILLS: [0] * 10}),
+    ]
+    check(
+        only(last(10, "kills-on-enemy-mvp-v1"), stats),
+        ALICE,
+        "This player took down the other team's MVP 1 time in their last 10 matches, "
+        "the most in this group. Who hunts the star player?",
+        "Alice killed the opposing MVP 1 time.",
     )
 
 
@@ -489,15 +545,16 @@ def _team_mvp_stats(bob: list[float]) -> list[PlayerMatchStats]:
 
 def test_team_mvps_counts_awards_in_the_last_ten_matches() -> None:
     check(
-        only(BY_ID["team-mvps-v1"], _team_mvp_stats([0, 1, 0, 1, 0, 0, 1, 0, 1, 0])),
+        only(last(10, "team-mvps-v1"), _team_mvp_stats([0, 1, 0, 1, 0, 0, 1, 0, 1, 0])),
         ALICE,
-        "This player was their team's MVP in 6 of their last 10 matches, more than anyone "
+        "This player was their team's MVP 6 times in their last 10 matches, more than anyone "
         "else in this group. Who carries the squad?",
-        "Alice was team MVP in 6 of their last 10 matches.",
+        "Alice: team MVP 6 times.",
     )
 
 
 def test_team_mvps_is_skipped_on_a_tie_for_the_lead() -> None:
+    # Alice and Bob tie over the last 5 and the last 10 (all of their matches).
     stats = _team_mvp_stats([1, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     assert questions(BY_ID["team-mvps-v1"], stats) == []
 
@@ -561,7 +618,7 @@ def test_unarmored_rounds_totals_the_last_five_matches_only() -> None:
         only(BY_ID["unarmored-rounds-v1"], stats),
         ALICE,
         "Across their last 5 matches, this player headed into 70 rounds with no armor, more "
-        "than anyone else here. Who's the culprit?",
+        "than anyone else here. Who's playing on hard mode?",
         "Alice started 70 rounds unarmored over their last 5 matches.",
     )
 
@@ -584,7 +641,7 @@ def test_deaths_to_one_opponent_names_the_worst_match_and_agent() -> None:
         only(BY_ID["most-deaths-to-one-opponent-v1"], _farmed_stats()),
         BOB,
         f"One of you once died 6 times to the same opponent in a single match {ALL}, more "
-        "than anyone else here. Who would rather forget this one?",
+        "than anyone else here. Who got farmed that day?",
         "Bob, playing Omen: 6 deaths to one opponent.",
     )
 

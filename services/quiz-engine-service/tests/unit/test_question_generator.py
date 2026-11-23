@@ -611,7 +611,10 @@ def test_unused_templates_fill_every_level_before_a_template_is_reused() -> None
 def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
     """Three players with every stat and label the default templates read: six matches
     all three played on one team, then six solo matches each. Alice is ahead on every
-    stat, Cara second; denominator-only stats (rounds, attempts) are equal for all."""
+    stat, Cara second, with three exceptions so that no comparison ties: denominator-only
+    stats (rounds, attempts) are equal for all; deaths, and stats that are counted in one
+    template and a denominator in another (first deaths), put Alice last; and Alice always
+    plays Jett, Cara mostly and Bob every other match."""
     room = [*players(), QuizPlayer(user_id="c", display_name="Cara")]
     keys = {
         name.removeprefix("numbers.")
@@ -623,12 +626,23 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
     flat = {k for t in TEMPLATES for k in t.denominator} - {
         k for t in TEMPLATES for k in (t.stat, *t.numerator)
     }
+    # A first-death count must not move with first bloods, or every opening-duel rate is 50%.
+    inverse = {k for t in TEMPLATES for k in t.denominator} - {
+        k for t in TEMPLATES for k in t.numerator
+    }
     level = {"a": 9, "b": 2, "c": 5}
+    # Jett in the last five matches: Alice 5, Cara 4, Bob 2.
+    agent_pattern = {"a": lambda n: True, "b": lambda n: n % 2 == 0, "c": lambda n: n % 3 != 0}
     stats = []
     for uid in level:
         numbers: dict[str, float] = {}
         for key in keys - pair_keys:
-            numbers[key] = 20 if f"numbers.{key}" in flat else level[uid]
+            if f"numbers.{key}" in flat:
+                numbers[key] = 20
+            elif f"numbers.{key}" in inverse:
+                numbers[key] = 20 - level[uid]
+            else:
+                numbers[key] = level[uid]
         for key in pair_keys:
             numbers.update({f"{key}:{friend}": level[uid] for friend in level if friend != uid})
         for n in range(12):
@@ -638,13 +652,14 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
                 game="valorant",
                 # Not a multiple of the numerators, so kill shares don't tie.
                 kills=10 + level[uid],
-                deaths=10,
+                deaths=20 - level[uid],
+                assists=level[uid],
                 won=uid == "a",
                 labels={
                     "queue_id": "competitive",
                     "result": "win" if uid == "a" else "loss",
                     "team_id": "Red",
-                    "agent": "Jett",
+                    "agent": "Jett" if agent_pattern[uid](n) else "Sage",
                     "map": "Ascent",
                     "role": "Duelist",
                 },

@@ -11,7 +11,8 @@ How a template is evaluated, for every room player who is compared (see below):
    (all matches, "shared" ones with 2+ room players, or "solo" ones).
 2. Window: the player's newest last_n matches by played_at (fewer than last_n, a
    missing timestamp, or a tie across the boundary skips the question), or every
-   stored match when last_n is None. The window is chosen before any filter.
+   stored match when last_n is None. The window is chosen before any filter. With
+   windows, each window is its own version of the question (see QuestionTemplate).
 3. Filter: with a parameter_label, one question per value of that label (e.g. per
    agent), keeping only the window's matches with that value. A match missing the
    label skips the question rather than silently dropping out.
@@ -95,6 +96,11 @@ class QuestionTemplate:
     min_denominator: int = 0
     # max_in_match only: leave out matches that don't have the stat (see above).
     skip_missing: bool = False
+    # Instead of last_n, which must then be None: one version of the question per window,
+    # e.g. (5, 10, None) for the last 5 matches, the last 10 and every stored match, in
+    # each scope. {scope} then says how many matches too ("in their last 5 matches with
+    # other room players"), and {last_n} can't be used. A quiz asks one version at most.
+    windows: tuple[int | None, ...] = ()
 
 
 TEMPLATES = (
@@ -516,14 +522,16 @@ TEMPLATES = (
     # 2. Totals: assists that came from pure utility (no damage on the victim).
     QuestionTemplate(
         id="utility-assists-v1",
-        question="In their last {last_n} matches, this player earned {value} assists without "
-        "dealing any damage to the victim, so flashes and utility did the work, the most in "
-        "this group. Who sets everyone else up?",
-        explanation="{name} had {value} damage-free assists in their last {last_n} matches.",
+        question="Flashes and utility did the work: this player earned {value} "
+        "{assist|assists} without damaging the victim {scope}, the most in this group. "
+        "Who sets everyone else up?",
+        explanation="{name}: {value} {assist|assists} with no damage dealt.",
         stats=("numbers.utility_assists", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.utility_assists",
-        last_n=10,
+        scopes=ALL_SCOPES,
+        last_n=None,
+        windows=(5, 10, None),
     ),
     # 3. Rates: share of kills made against a pricier loadout.
     QuestionTemplate(
@@ -542,7 +550,7 @@ TEMPLATES = (
     QuestionTemplate(
         id="role-utility-per-round-v1",
         question="Playing {parameter} {scope}, this player casts {value} non-ultimate "
-        "abilities per round, the most of anyone here who has played that role. "
+        "{ability|abilities} per round, the most of anyone here who has played that role. "
         "Who keeps the utility flowing?",
         explanation="{name}: {numerator} ability casts in {denominator} rounds as {parameter}.",
         stats=(
@@ -568,7 +576,7 @@ TEMPLATES = (
     # 5. Friend pairs: who avenges a given friend's deaths the most.
     QuestionTemplate(
         id="trades-for-friend-v1",
-        question="Someone here has avenged {friend} {value} times {scope} by killing their "
+        question="Someone here has avenged {friend} {value} {time|times} {scope} by killing their "
         "killer within 3 seconds, more than anyone else who has played on {friend}'s team. "
         "Who has {friend}'s back?",
         explanation="{name}, across {denominator} matches together.",
@@ -580,30 +588,34 @@ TEMPLATES = (
     # 6. Opponents: kills on the other team's MVP.
     QuestionTemplate(
         id="kills-on-enemy-mvp-v1",
-        question="Over their last {last_n} matches, this player took down the other team's MVP "
-        "{value} times, the most in this group. Who hunts the star player?",
-        explanation="{name} killed the opposing MVP {value} times in their last {last_n} matches.",
+        question="This player took down the other team's MVP {value} {time|times} {scope}, "
+        "the most in this group. Who hunts the star player?",
+        explanation="{name} killed the opposing MVP {value} {time|times}.",
         stats=("numbers.kills_on_enemy_mvp", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.kills_on_enemy_mvp",
-        last_n=10,
+        scopes=ALL_SCOPES,
+        last_n=None,
+        windows=(5, 10, None),
     ),
     # 7. Scoreboard standing: team MVP awards.
     QuestionTemplate(
         id="team-mvps-v1",
-        question="This player was their team's MVP in {value} of their last {last_n} matches, "
-        "more than anyone else in this group. Who carries the squad?",
-        explanation="{name} was team MVP in {value} of their last {last_n} matches.",
+        question="This player was their team's MVP {value} {time|times} {scope}, more than "
+        "anyone else in this group. Who carries the squad?",
+        explanation="{name}: team MVP {value} {time|times}.",
         stats=("numbers.team_mvp", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.team_mvp",
-        last_n=10,
+        scopes=ALL_SCOPES,
+        last_n=None,
+        windows=(5, 10, None),
     ),
     # 8. Team-shared results: thrifty rounds, solo games only (teammates share the value).
     QuestionTemplate(
         id="solo-thrifty-rounds-v1",
         question="Queueing without the rest of you, this player's team wins {value} thrifty "
-        "rounds per match (rounds won against much bigger buys), the most of anyone here "
+        "{round|rounds} per match (rounds won against much bigger buys), the most of anyone here "
         "who plays solo. Who wins on a budget?",
         explanation="{name}: {numerator} thrifty rounds in {denominator} solo matches.",
         stats=("numbers.thrifty_rounds", "labels.queue_id"),
@@ -616,9 +628,10 @@ TEMPLATES = (
     # 9. Rounds and economy: rounds that started with no armor (a friendly-ribbing stat).
     QuestionTemplate(
         id="unarmored-rounds-v1",
-        question="Across their last {last_n} matches, this player headed into {value} rounds with "
-        "no armor, more than anyone else here. Who's the culprit?",
-        explanation="{name} started {value} rounds unarmored over their last {last_n} matches.",
+        question="Across their last {last_n} matches, this player headed into {value} "
+        "{round|rounds} with no armor, more than anyone else here. Who's playing on hard mode?",
+        explanation="{name} started {value} {round|rounds} unarmored over their last {last_n} "
+        "matches.",
         stats=("numbers.rounds_without_armor", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.rounds_without_armor",
@@ -627,9 +640,9 @@ TEMPLATES = (
     # 10. Single-match record (a blunder): most deaths to one opponent, with the agent played.
     QuestionTemplate(
         id="most-deaths-to-one-opponent-v1",
-        question="One of you once died {value} times to the same opponent in a single match "
-        "{scope}, more than anyone else here. Who would rather forget this one?",
-        explanation="{name}, playing {agent_name}: {value} deaths to one opponent.",
+        question="One of you once died {value} {time|times} to the same opponent in a single match "
+        "{scope}, more than anyone else here. Who got farmed that day?",
+        explanation="{name}, playing {agent_name}: {value} {death|deaths} to one opponent.",
         stats=("numbers.max_deaths_to_one_opponent", "labels.agent", "labels.queue_id"),
         rule="max_in_match",
         stat="numbers.max_deaths_to_one_opponent",
