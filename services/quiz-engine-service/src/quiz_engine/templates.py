@@ -97,6 +97,112 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
     ),
+    # FF-410, question pack 7.
+    QuestionTemplate(
+        id="most-recent-kills-v1",
+        question="Across their last {last_n} matches, this player piled up {value} kills, "
+        "more than anyone else here. Who's been on a tear lately?",
+        explanation="{name}: {value} kills in {last_n} matches.",
+        stats=("kills", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="kills",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-assists-v1",
+        question="Nobody here has helped out more lately: this player picked up {value} "
+        "assists in their last {last_n} matches. Who is the ultimate teammate?",
+        explanation="{name}: {value} assists in {last_n} matches.",
+        stats=("assists", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="assists",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-deaths-v1",
+        question="Over their last {last_n} matches, this player died {value} times, more than "
+        "anyone else here. Who's the culprit?",
+        explanation="{name}: {value} deaths in {last_n} matches.",
+        stats=("deaths", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="deaths",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-plants-v1",
+        question="Someone here planted the spike {value} times in their last {last_n} matches, "
+        "the most in this group. Who keeps the spike moving?",
+        explanation="{name}: {value} plants in {last_n} matches.",
+        stats=("numbers.plants", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="numbers.plants",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-defuses-v1",
+        question="This player has defused the spike {value} times {scope}, more than anyone "
+        "else here. Who does the team trust with the defuse?",
+        explanation="{name}: {value} defuses.",
+        stats=("numbers.defuses", "labels.queue_id"),
+        rule="count",
+        stat="numbers.defuses",
+        scopes=ALL_SCOPES,
+        last_n=None,
+    ),
+    QuestionTemplate(
+        id="highest-recent-kda-v1",
+        question="Counting assists as well as kills, this player gets {value} for every death "
+        "in their last {last_n} matches, the best in this group. Who makes every life count?",
+        explanation="{name}: {numerator} kills and assists against {denominator} deaths.",
+        stats=("kills", "assists", "deaths", "played_at", "labels.queue_id"),
+        rule="pooled_ratio",
+        numerator=("kills", "assists"),
+        denominator=("deaths",),
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-first-deaths-v1",
+        question="Rounds keep starting badly for this player: they were the first one down "
+        "{value} times in their last {last_n} matches, more than anyone else here. Who needs "
+        "to stop peeking first?",
+        explanation="{name} was the first player killed in {value} rounds over {last_n} matches.",
+        stats=("numbers.first_deaths", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="numbers.first_deaths",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-isolated-deaths-v1",
+        question="With no teammate within 20 meters, this player went down alone {value} times "
+        "in their last {last_n} matches, the most in this group. Who keeps wandering off "
+        "by themselves?",
+        explanation="{name}: {value} deaths with no teammate nearby in {last_n} matches.",
+        stats=("numbers.isolated_deaths", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="numbers.isolated_deaths",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-recent-deathless-rounds-v1",
+        question="This player made it through {value} rounds without dying in their last "
+        "{last_n} matches, the most in this group. Who has the best survival instincts?",
+        explanation="{name} survived {value} rounds in {last_n} matches.",
+        stats=("numbers.deathless_rounds", "played_at", "labels.queue_id"),
+        rule="count",
+        stat="numbers.deathless_rounds",
+        last_n=5,
+    ),
+    QuestionTemplate(
+        id="most-sniper-kills-v1",
+        question="Behind a scope, this player has taken down {value} enemies {scope}, more "
+        "than anyone else here. Who's the group's sniper?",
+        explanation="{name}: {value} kills with sniper rifles.",
+        stats=("numbers.sniper_kills", "labels.queue_id"),
+        rule="count",
+        stat="numbers.sniper_kills",
+        scopes=ALL_SCOPES,
+        last_n=None,
+    ),
     QuestionTemplate(
         id="highest-acs-v1",
         question="This player averages {value} combat score per round {scope}, the highest "
