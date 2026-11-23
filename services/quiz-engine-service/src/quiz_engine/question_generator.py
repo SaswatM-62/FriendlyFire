@@ -33,6 +33,12 @@ _SCOPE_TEXT: dict[Scope, str] = {
     "shared": "in available matches played with other room players",
     "solo": "in available matches played without other room players",
 }
+# {scope} for one of a template's windows, after "in their last N matches".
+_WINDOW_SCOPE_TEXT: dict[Scope, str] = {
+    "all": "",
+    "shared": " with other room players",
+    "solo": " without other room players",
+}
 _SCALARS = ("kills", "deaths", "assists")
 _PLACEHOLDERS = (
     "name",
@@ -255,6 +261,12 @@ def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value
         source = rows[0].match_id
         return _Value(numerator / denominator, numerator, denominator, tuple(evidence), source)
     values = [_stat(row, template.stat) for row in rows]
+    if template.skip_missing:
+        # Only max_in_match (_check): a match without the stat can't be the best one.
+        rows = [row for row, v in zip(rows, values, strict=True) if v is not None]
+        values = [v for v in values if v is not None]
+        if not rows:
+            return None
     known = [v for v in values if v is not None]
     if len(known) != len(values):
         return None
@@ -301,6 +313,20 @@ def _plural(text: str, value: str) -> str:
     return _PLURAL.sub(lambda m: m[1] if value == "1" else m[2], text)
 
 
+def _versions(template: QuestionTemplate) -> list[QuestionTemplate]:
+    """The template once per window (QuestionTemplate.windows), or just as it is."""
+    if not template.windows:
+        return [template]
+    return [replace(template, last_n=n) for n in template.windows]
+
+
+def _scope_text(template: QuestionTemplate, scope: Scope) -> str:
+    """{scope}: which matches count, and for a version of a windowed template how many."""
+    if template.windows and template.last_n is not None:
+        return f"in their last {template.last_n} matches{_WINDOW_SCOPE_TEXT[scope]}"
+    return _SCOPE_TEXT[scope]
+
+
 def _check(template: QuestionTemplate) -> None:
     """Rejects a template the generator can't evaluate or render."""
     problem = ""
@@ -322,8 +348,16 @@ def _check(template: QuestionTemplate) -> None:
         and (template.rule != "pooled_ratio" or not template.contenders_only)
     ):
         problem = "min_denominator needs a pooled_ratio with contenders_only"
+    if template.skip_missing and template.rule != "max_in_match":
+        problem = "skip_missing only works with max_in_match"
     if template.last_n is not None and template.last_n < 1:
         problem = "last_n must be at least 1"
+    if template.windows and (
+        template.last_n is not None
+        or len(set(template.windows)) != len(template.windows)
+        or any(n is not None and n < 1 for n in template.windows)
+    ):
+        problem = "windows needs last_n=None and different windows of at least 1"
     if not template.scopes:
         problem = "scopes can't be empty"
     if not problem and not all(_valid_stat(name) for name in stats):
@@ -331,9 +365,12 @@ def _check(template: QuestionTemplate) -> None:
     allowed = {*_PLACEHOLDERS, f"{template.display_label}_name"}
     for text in (template.question, template.explanation):
         text = _PLURAL.sub(r"\2", text)
-        unknown = {name for _, name, _, _ in Formatter().parse(text) if name} - allowed
+        used = {name for _, name, _, _ in Formatter().parse(text) if name}
+        unknown = used - allowed
         if unknown and not problem:
             problem = f"unknown placeholder {{{sorted(unknown)[0]}}}"
+        if template.windows and "last_n" in used and not problem:
+            problem = "with windows, {scope} says how many matches; {last_n} can't be used"
     if problem:
         raise ValueError(f"Template {template.id}: {problem}")
 
@@ -422,12 +459,13 @@ class QuestionGenerator:
                     if (scope == "shared" and not shared) or (scope == "solo" and shared):
                         continue
                     groups[row.user_id].append(row)
-                for parameter, participants in self._comparisons(template, groups, unique):
-                    candidate = self._candidate(
-                        template, scope, parameter, participants, players, names
-                    )
-                    if candidate is not None:
-                        candidates.append(candidate)
+                for version in _versions(template):
+                    for parameter, participants in self._comparisons(version, groups, unique):
+                        candidate = self._candidate(
+                            version, scope, parameter, participants, players, names
+                        )
+                        if candidate is not None:
+                            candidates.append(candidate)
         return self._select(candidates, question_count, seed, asked_template_ids)
 
     @staticmethod
@@ -532,7 +570,7 @@ class QuestionGenerator:
         )
         context = {
             "name": names[winner],
-            "scope": _SCOPE_TEXT[scope],
+            "scope": _scope_text(template, scope),
             "value": _display(value.score),
             "numerator": _display(value.numerator),
             "denominator": _display(value.denominator),

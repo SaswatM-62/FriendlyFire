@@ -325,7 +325,7 @@ def test_pooled_acs_uses_round_weighting_not_mean_of_match_acs() -> None:
     questions = QuestionGenerator([ACS]).generate(players(), stats, 1, 0)
     assert len(questions) == 1
     assert questions[0].correct_option_id == "b"
-    assert "20 combat score over 10 rounds" in questions[0].explanation
+    assert "20 total combat score / 10 rounds" in questions[0].explanation
 
 
 @pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), -1])
@@ -606,3 +606,79 @@ def test_unused_templates_fill_every_level_before_a_template_is_reused() -> None
         players(), stats, 2, 0, asked_template_ids=["easy-old"]
     )
     assert sorted(template_ids(questions)) == ["easy-new", "medium-new"]
+
+
+def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
+    """Three players with every stat and label the default templates read: six matches
+    all three played on one team, then six solo matches each. Alice is ahead on every
+    stat, Cara second, with three exceptions so that no comparison ties: denominator-only
+    stats (rounds, attempts) are equal for all; deaths, and stats that are counted in one
+    template and a denominator in another (first deaths), put Alice last; and Alice always
+    plays Jett, Cara mostly and Bob every other match."""
+    room = [*players(), QuizPlayer(user_id="c", display_name="Cara")]
+    keys = {
+        name.removeprefix("numbers.")
+        for t in TEMPLATES
+        for name in (t.stat, *t.numerator, *t.denominator)
+        if name.startswith("numbers.")
+    }
+    pair_keys = {t.stat.removeprefix("numbers.") for t in TEMPLATES if t.rule == "pair"}
+    flat = {k for t in TEMPLATES for k in t.denominator} - {
+        k for t in TEMPLATES for k in (t.stat, *t.numerator)
+    }
+    # A first-death count must not move with first bloods, or every opening-duel rate is 50%.
+    inverse = {k for t in TEMPLATES for k in t.denominator} - {
+        k for t in TEMPLATES for k in t.numerator
+    }
+    level = {"a": 9, "b": 2, "c": 5}
+    # Jett in the last five matches: Alice 5, Cara 4, Bob 2.
+    agent_pattern = {"a": lambda n: True, "b": lambda n: n % 2 == 0, "c": lambda n: n % 3 != 0}
+    stats = []
+    for uid in level:
+        numbers: dict[str, float] = {}
+        for key in keys - pair_keys:
+            if f"numbers.{key}" in flat:
+                numbers[key] = 20
+            elif f"numbers.{key}" in inverse:
+                numbers[key] = 20 - level[uid]
+            else:
+                numbers[key] = level[uid]
+        for key in pair_keys:
+            numbers.update({f"{key}:{friend}": level[uid] for friend in level if friend != uid})
+        for n in range(12):
+            match = PlayerMatchStats(
+                user_id=uid,
+                match_id=f"shared-{n}" if n < 6 else f"{uid}-{n}",
+                game="valorant",
+                # Not a multiple of the numerators, so kill shares don't tie.
+                kills=10 + level[uid],
+                deaths=20 - level[uid],
+                assists=level[uid],
+                won=uid == "a",
+                labels={
+                    "queue_id": "competitive",
+                    "result": "win" if uid == "a" else "loss",
+                    "team_id": "Red",
+                    "agent": "Jett" if agent_pattern[uid](n) else "Sage",
+                    "map": "Ascent",
+                    "role": "Duelist",
+                },
+                numbers=numbers,
+            )
+            match.played_at.seconds = n + 1
+            stats.append(match)
+    return room, stats
+
+
+@pytest.mark.parametrize("template", TEMPLATES, ids=lambda t: t.id)
+def test_every_default_template_can_make_a_question(template: QuestionTemplate) -> None:
+    # Catches a template that the generator accepts but that can never be asked.
+    room, stats = every_stat_history()
+    generator = QuestionGenerator([template])
+    made = [
+        q
+        for count in (1, 3, 8)
+        for seed in range(5)
+        for q in generator.generate(room, stats, count, seed)
+    ]
+    assert made, f"{template.id} made no question from data with every stat it reads"

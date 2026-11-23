@@ -156,6 +156,23 @@ def test_max_in_match_takes_each_players_best_match_and_lowest_can_win() -> None
     assert question.source_match_id == "1"
 
 
+def test_skip_missing_leaves_out_matches_without_the_stat() -> None:
+    # Bob's second match had no kills, so it has no longest kill.
+    stats = [
+        match(ALICE, "1", longest_kill_m=40),
+        match(BOB, "2", longest_kill_m=30),
+        match(BOB, "3"),
+    ]
+    strict = template(rule="max_in_match", stat="numbers.longest_kill_m")
+    assert ask(strict, stats, ALICE, BOB) == []
+    lenient = replace(strict, skip_missing=True)
+    [question] = ask(lenient, stats, ALICE, BOB)
+    assert question.correct_option_id == ALICE
+    assert question.explanation == "Alice: 40 (40/1)"
+    # A player with no match that has the stat is still unknown.
+    assert ask(lenient, [match(ALICE, "1", longest_kill_m=40), match(BOB, "3")], ALICE, BOB) == []
+
+
 def test_average_is_per_match() -> None:
     performance = template(rule="average", stat="numbers.performance_score")
     stats = [
@@ -701,6 +718,48 @@ def test_ff409_clutch_rate_needs_five_attempts() -> None:
     assert question.explanation == "Bob: 9 clutch wins out of 20 clutch attempts."
 
 
+def test_windows_make_one_version_per_window_and_scope() -> None:
+    t = template(rule="count", stat="kills", question="{value} kills {scope}?", windows=(2, None))
+    stats = [
+        match(uid, f"{uid}{n}", seconds=n, kills=k)
+        for uid, k in ((ALICE, 9), (BOB, 5))
+        for n in range(3)
+    ]
+    texts = [q.text for q in ask(replace(t, scopes=("all", "solo")), stats, ALICE, BOB)]
+    assert sorted(texts) == sorted(
+        [
+            "18 kills in their last 2 matches?",
+            "18 kills in their last 2 matches without other room players?",
+            f"27 kills {_SCOPE_TEXT['all']}?",
+            f"27 kills {_SCOPE_TEXT['solo']}?",
+        ]
+    )
+
+
+def test_a_window_longer_than_someones_history_skips_only_that_version() -> None:
+    t = template(rule="count", stat="kills", question="{value} kills {scope}?", windows=(2, 5))
+    stats = [
+        match(uid, f"{uid}{n}", seconds=n, kills=k)
+        for uid, k in ((ALICE, 9), (BOB, 5))
+        for n in range(3)
+    ]
+    assert [q.text for q in ask(t, stats, ALICE, BOB)] == ["18 kills in their last 2 matches?"]
+
+
+def test_a_quiz_asks_one_version_of_a_template_with_windows() -> None:
+    t = template(
+        rule="count", stat="kills", question="{value} kills {scope}?", windows=(1, 2, None)
+    )
+    stats = [
+        match(uid, f"{uid}{n}", seconds=n, kills=k)
+        for uid, k in ((ALICE, 9), (BOB, 5))
+        for n in range(3)
+    ]
+    assert len(ask(t, stats, ALICE, BOB)) == 3
+    for seed in range(10):
+        assert len(QuestionGenerator([t]).generate(players(ALICE, BOB), stats, 5, seed)) == 1
+
+
 @pytest.mark.parametrize(
     ("fields", "problem"),
     [
@@ -719,6 +778,14 @@ def test_ff409_clutch_rate_needs_five_attempts() -> None:
                 "min_denominator": 5,
             },
             "min_denominator",
+        ),
+        ({"rule": "count", "stat": "kills", "skip_missing": True}, "skip_missing"),
+        ({"rule": "count", "stat": "kills", "windows": (5,), "last_n": 10}, "windows"),
+        ({"rule": "count", "stat": "kills", "windows": (5, 5)}, "windows"),
+        ({"rule": "count", "stat": "kills", "windows": (0, None)}, "windows"),
+        (
+            {"rule": "count", "stat": "kills", "windows": (5,), "question": "{last_n}?"},
+            "{last_n} can't be used",
         ),
         ({"rule": "count", "stat": "kills", "question": "Who has {rank}?"}, "{rank}"),
     ],
