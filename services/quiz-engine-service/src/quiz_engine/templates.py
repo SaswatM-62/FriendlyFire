@@ -214,10 +214,10 @@ TEMPLATES = (
     QuestionTemplate(
         id="round-winning-kills-v1",
         question="When a round ends with the last enemy down, this player is often the one "
-        "who did it: {value} times in their last {last_n} matches, the most in this group. "
-        "Who closes rounds out?",
-        explanation="{name} got the final kill of {value} won rounds in their last {last_n} "
-        "matches.",
+        "who did it: {value} {time|times} in their last {last_n} matches, the most in this "
+        "group. Who closes rounds out?",
+        explanation="{name} got the final kill of {value} won {round|rounds} in their last "
+        "{last_n} matches.",
         stats=("numbers.round_winning_kills", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.round_winning_kills",
@@ -237,9 +237,9 @@ TEMPLATES = (
     # FF-410, question pack 7.
     QuestionTemplate(
         id="most-recent-kills-v1",
-        question="Across their last {last_n} matches, this player piled up {value} kills, "
-        "more than anyone else here. Who's been on a tear lately?",
-        explanation="{name}: {value} kills in {last_n} matches.",
+        question="Across their last {last_n} matches, this player piled up {value} "
+        "{kill|kills}, more than anyone else here. Who's been on a tear lately?",
+        explanation="{name}: {value} {kill|kills} in {last_n} matches.",
         stats=("kills", "played_at", "labels.queue_id"),
         rule="count",
         stat="kills",
@@ -248,8 +248,8 @@ TEMPLATES = (
     QuestionTemplate(
         id="most-recent-assists-v1",
         question="Nobody here has helped out more lately: this player picked up {value} "
-        "assists in their last {last_n} matches. Who is the ultimate teammate?",
-        explanation="{name}: {value} assists in {last_n} matches.",
+        "{assist|assists} in their last {last_n} matches. Who is the ultimate teammate?",
+        explanation="{name}: {value} {assist|assists} in {last_n} matches.",
         stats=("assists", "played_at", "labels.queue_id"),
         rule="count",
         stat="assists",
@@ -257,9 +257,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-recent-deaths-v1",
-        question="Over their last {last_n} matches, this player died {value} times, more than "
-        "anyone else here. Who's the culprit?",
-        explanation="{name}: {value} deaths in {last_n} matches.",
+        question="Over their last {last_n} matches, this player died {value} {time|times}, "
+        "more than anyone else here. Who's the culprit?",
+        explanation="{name}: {value} {death|deaths} in {last_n} matches.",
         stats=("deaths", "played_at", "labels.queue_id"),
         rule="count",
         stat="deaths",
@@ -267,9 +267,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-recent-plants-v1",
-        question="Someone here planted the spike {value} times in their last {last_n} matches, "
-        "the most in this group. Who keeps the spike moving?",
-        explanation="{name}: {value} plants in {last_n} matches.",
+        question="Someone here planted the spike {value} {time|times} in their last {last_n} "
+        "matches, the most in this group. Who keeps the spike moving?",
+        explanation="{name}: {value} {plant|plants} in {last_n} matches.",
         stats=("numbers.plants", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.plants",
@@ -277,9 +277,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-defuses-v1",
-        question="This player has defused the spike {value} times {scope}, more than anyone "
+        question="This player has defused the spike {value} {time|times} {scope}, more than anyone "
         "else here. Who does the team trust with the defuse?",
-        explanation="{name}: {value} defuses.",
+        explanation="{name}: {value} {defuse|defuses}.",
         stats=("numbers.defuses", "labels.queue_id"),
         rule="count",
         stat="numbers.defuses",
@@ -300,9 +300,10 @@ TEMPLATES = (
     QuestionTemplate(
         id="most-recent-first-deaths-v1",
         question="Rounds keep starting badly for this player: they were the first one down "
-        "{value} times in their last {last_n} matches, more than anyone else here. Who needs "
-        "to stop peeking first?",
-        explanation="{name} was the first player killed in {value} rounds over {last_n} matches.",
+        "{value} {time|times} in their last {last_n} matches, more than anyone else here. "
+        "Who needs to stop peeking first?",
+        explanation="{name} was the first player killed in {value} {round|rounds} over "
+        "{last_n} matches.",
         stats=("numbers.first_deaths", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.first_deaths",
@@ -310,10 +311,10 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-recent-isolated-deaths-v1",
-        question="With no teammate within 20 meters, this player went down alone {value} times "
-        "in their last {last_n} matches, the most in this group. Who keeps wandering off "
-        "by themselves?",
-        explanation="{name}: {value} deaths with no teammate nearby in {last_n} matches.",
+        question="With no teammate within 20 meters, this player went down alone {value} "
+        "{time|times} in their last {last_n} matches, the most in this group. Who keeps "
+        "wandering off by themselves?",
+        explanation="{name}: {value} {death|deaths} with no teammate nearby in {last_n} matches.",
         stats=("numbers.isolated_deaths", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.isolated_deaths",
@@ -321,9 +322,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-recent-deathless-rounds-v1",
-        question="This player made it through {value} rounds without dying in their last "
+        question="This player made it through {value} {round|rounds} without dying in their last "
         "{last_n} matches, the most in this group. Who has the best survival instincts?",
-        explanation="{name} survived {value} rounds in {last_n} matches.",
+        explanation="{name} survived {value} {round|rounds} in {last_n} matches.",
         stats=("numbers.deathless_rounds", "played_at", "labels.queue_id"),
         rule="count",
         stat="numbers.deathless_rounds",
@@ -331,9 +332,9 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-sniper-kills-v1",
-        question="Behind a scope, this player has taken down {value} enemies {scope}, more "
+        question="Behind a scope, this player has taken down {value} {enemy|enemies} {scope}, more "
         "than anyone else here. Who's the group's sniper?",
-        explanation="{name}: {value} kills with sniper rifles.",
+        explanation="{name}: {value} {kill|kills} with sniper rifles.",
         stats=("numbers.sniper_kills", "labels.queue_id"),
         rule="count",
         stat="numbers.sniper_kills",
