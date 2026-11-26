@@ -71,6 +71,7 @@ func Records(m henrik.Match, linked map[string]string, tables lookup.Tables) ([]
 		b.labelsAndDirect()
 		b.derived()
 		b.teamShared()
+		b.keyNames()
 		board.compare(p, r.Numbers)
 		records = append(records, r)
 	}
@@ -130,6 +131,37 @@ func (n numbers) flag(key string, on bool) {
 func setLabel(labels map[string]string, key, value string) {
 	if value != "" {
 		labels[key] = value
+	}
+}
+
+// namedFamilies are the number keys that end in a weapon or agent ID. Every ID used on a
+// record gets a "name:<id>" label, so a question can name the gun or agent.
+var namedFamilies = []struct {
+	prefix string
+	agent  bool
+}{
+	{"kills_with_weapon:", false},
+	{"rounds_with_loadout:", false},
+	{"kills_vs_agent:", true},
+}
+
+// keyNames labels each weapon or agent ID in the record's keys with its name from the
+// lookup tables. An ID the tables don't know gets no label.
+func (b *builder) keyNames() {
+	for key := range b.n {
+		for _, family := range namedFamilies {
+			id, ok := strings.CutPrefix(key, family.prefix)
+			if !ok {
+				continue
+			}
+			if family.agent {
+				if agent, known := b.tables.Agent(id); known {
+					setLabel(b.labels, "name:"+id, agent.Name)
+				}
+			} else if weapon, known := b.tables.Weapon(id); known {
+				setLabel(b.labels, "name:"+id, weapon.Name)
+			}
+		}
 	}
 }
 

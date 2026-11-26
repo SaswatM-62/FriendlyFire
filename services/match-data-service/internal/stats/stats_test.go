@@ -138,6 +138,44 @@ func TestUnratedHasNoRankStats(t *testing.T) {
 	}
 }
 
+func TestEveryWeaponAndAgentKeyIsNamedOnTheRecord(t *testing.T) {
+	tbl := tables(t)
+	named := 0
+	for _, m := range fixtureMatches(t) {
+		records, err := Records(m, everyone(m), tbl)
+		require.NoError(t, err)
+		for _, r := range records {
+			for key := range r.Numbers {
+				for _, prefix := range []string{"kills_with_weapon:", "rounds_with_loadout:", "kills_vs_agent:"} {
+					if id, ok := strings.CutPrefix(key, prefix); ok {
+						assert.NotEmpty(t, r.Labels["name:"+id], key)
+						named++
+					}
+				}
+			}
+		}
+	}
+	assert.Positive(t, named)
+}
+
+func TestNamesComeFromTheLookupTables(t *testing.T) {
+	m := fixtureMatches(t)[0]
+	records, err := Records(m, everyone(m), tables(t))
+	require.NoError(t, err)
+
+	names := map[string]bool{}
+	for _, r := range records {
+		for key, value := range r.Labels {
+			if strings.HasPrefix(key, "name:") {
+				names[value] = true
+			}
+		}
+	}
+	// Every match has someone holding a Vandal or Phantom, and a Classic in the pistol round.
+	assert.True(t, names["Vandal"] || names["Phantom"], names)
+	assert.True(t, names["Classic"], names)
+}
+
 // ---------- Hand-built matches for the rules real data rarely shows ----------
 
 // game builds a 2-against-2 match: a1, a2 (team Red) against b1, b2 (Blue), with Red
