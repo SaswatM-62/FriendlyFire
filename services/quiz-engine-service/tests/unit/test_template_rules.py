@@ -9,7 +9,7 @@ from friendlyfire.matchdata.v1.match_data_service_pb2 import PlayerMatchStats
 from friendlyfire.quiz.v1.quiz_service_pb2 import Question, QuizPlayer
 
 from quiz_engine.question_generator import _SCOPE_TEXT, QuestionGenerator, difficulty
-from quiz_engine.templates import QuestionTemplate
+from quiz_engine.templates import TEMPLATES, QuestionTemplate
 from tests.unit.test_question_generator import template as pack_template
 
 ALICE, BOB, CARA = "a", "b", "c"
@@ -193,11 +193,13 @@ def test_one_question_per_agent_with_known_zero_counts() -> None:
         match(BOB, "b0", agent="Jett"),
         match(BOB, "b1", agent="Sage"),
         match(BOB, "b2", agent="Sage"),
+        match(BOB, "b3", agent="Omen"),
         match(CARA, "c0", agent="Jett"),
+        *(match(CARA, f"c{n}", agent="Omen") for n in range(1, 4)),
     ]
     questions = {q.text: q.correct_option_id for q in ask(games, stats, ALICE, BOB, CARA)}
     # Cara never played Sage: a known zero, not missing data.
-    assert questions == {"Who? Jett": ALICE, "Who? Sage": BOB}
+    assert questions == {"Who? Jett": ALICE, "Who? Sage": BOB, "Who? Omen": CARA}
 
 
 def test_ratio_on_an_agent_someone_never_played_is_skipped() -> None:
@@ -287,6 +289,8 @@ def test_pair_questions_compare_the_friends_teammates_by_name() -> None:
         # that match doesn't count towards setting Alice up.
         match(ALICE, "2", team="Red"),
         match(CARA, "2", team="Blue"),
+        # Two matches each, so every window is whole (see the equal-window tests).
+        match(BOB, "3", team="Blue"),
     ]
     questions = ask(assists, stats, ALICE, BOB, CARA)
     [for_alice] = [q for q in questions if q.text == "Who sets up Alice the most?"]
@@ -779,6 +783,7 @@ def test_absent_is_zero_counts_a_missing_key_as_zero() -> None:
         match(ALICE, "a1", **{"rounds_with_kills:3": 2}),
         match(ALICE, "a2"),
         match(BOB, "b1"),
+        match(BOB, "b2"),
     ]
     assert ask(triples, stats, ALICE, BOB) == []  # missing is unknown
     [question] = ask(replace(triples, absent_is_zero=True), stats, ALICE, BOB)
@@ -900,3 +905,80 @@ def test_templates_the_generator_cant_evaluate_fail_at_load(
     with pytest.raises(ValueError, match="Template t:") as error:
         QuestionGenerator([template(**fields)])
     assert problem in str(error.value)
+
+
+def test_totals_over_every_match_compare_each_players_newest_matches_equally() -> None:
+    # Alice has played twice as much: over all 6 matches she'd win 12 to 9, but like for
+    # like (each player's newest 3) Bob's 9 beats her 6.
+    kills = template(rule="count", stat="kills", question="{value}?")
+    stats = [
+        *(match(ALICE, f"a{n}", seconds=n, kills=2) for n in range(1, 7)),
+        *(match(BOB, f"b{n}", seconds=n, kills=3) for n in range(1, 4)),
+    ]
+    [question] = ask(kills, stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("9?", BOB)
+    assert question.explanation == "Bob: 9 (9/3)"
+
+
+def test_keyed_totals_compare_equal_windows_too() -> None:
+    guns = template(rule="keyed", stat="numbers.kills_with_weapon")
+    named = {"kills_with_weapon:vandal": 1}
+    stats = [
+        *(match(ALICE, f"a{n}", seconds=n, **named) for n in range(1, 5)),
+        *(match(BOB, f"b{n}", seconds=n, **{"kills_with_weapon:vandal": 3}) for n in (1, 2)),
+    ]
+    for row in stats:
+        row.labels["name:vandal"] = "Vandal"
+    [question] = ask(guns, stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("Who? Vandal", BOB)
+
+
+def test_equal_windows_skip_a_tie_at_the_cut() -> None:
+    kills = template(rule="count", stat="kills", question="{value}?")
+    # Bob's newest 2 is unclear: his 2nd and 3rd newest matches have the same time.
+    stats = [
+        *(match(ALICE, f"a{n}", seconds=n, kills=2) for n in (1, 2)),
+        match(BOB, "b1", seconds=1, kills=5),
+        match(BOB, "b2", seconds=1, kills=5),
+        match(BOB, "b3", seconds=2, kills=5),
+    ]
+    assert ask(kills, stats, ALICE, BOB) == []
+
+
+def test_rates_records_and_last_n_windows_keep_every_match_they_had() -> None:
+    stats = [
+        match(ALICE, "a1", seconds=1, kills=40, deaths=10),
+        *(match(ALICE, f"a{n}", seconds=n, kills=10, deaths=10) for n in range(2, 5)),
+        match(BOB, "b1", seconds=1, kills=20, deaths=10),
+    ]
+    # Alice's oldest match is still her best one, and still in her ratio.
+    best = template(rule="max_in_match", stat="kills", question="{value}?")
+    [question] = ask(best, stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("40?", ALICE)
+    kd = template(
+        rule="pooled_ratio", numerator=("kills",), denominator=("deaths",), question="{value}?"
+    )
+    [question] = ask(kd, stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("2?", BOB)
+    assert question.explanation == "Bob: 2 (20/10)"
+    alice_kd = [q for q in ask(replace(kd, direction="lowest"), stats, ALICE, BOB)]
+    assert [q.explanation for q in alice_kd] == ["Alice: 1.75 (70/40)"]
+
+
+def test_blunders_are_the_questions_about_a_bad_stat() -> None:
+    blunders = {t.id for t in TEMPLATES if t.blunder}
+    # Lowest isn't the same as bad: the fewest damage taken is a feat.
+    assert "lowest-damage-received-v1" not in blunders
+    assert "fewest-recent-deaths-v1" not in blunders
+    assert {t.id for t in TEMPLATES if t.id.startswith("lowest-")} - blunders == {
+        "lowest-damage-received-v1"
+    }
+    assert {
+        "most-recent-deaths-v1",
+        "fall-deaths-v1",
+        "spike-deaths-v1",
+        "topped-match-deaths-v1",
+        "topped-team-first-deaths-v1",
+        "attack-first-deaths-v1",
+    } <= blunders
+    assert len(blunders) == 33

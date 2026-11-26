@@ -11,7 +11,7 @@ import json
 import math
 import random
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from fractions import Fraction
@@ -61,6 +61,9 @@ PERCENT_PLACES = 1
 Difficulty = Literal["easy", "medium", "hard"]
 LEVELS: tuple[Difficulty, ...] = ("easy", "medium", "hard")
 _RANK: dict[Difficulty, int] = {"easy": 0, "medium": 1, "hard": 2}
+# Rules that add a stat up over matches: over every stored match they compare equal
+# windows (_equal_windows), so playing more doesn't win by itself.
+_TOTALS = ("count", "pair", "keyed")
 # Scarce hard questions pick first.
 _FILL_ORDER: tuple[Difficulty, ...] = ("hard", "medium", "easy")
 EASY_LEAD = Fraction(35, 100)
@@ -97,6 +100,9 @@ class _Candidate:
     scope: Scope
     difficulty: Difficulty
     question: Question
+    # The correct player, and whether the question is about a bad stat of theirs.
+    answer: str
+    blunder: bool
 
 
 def difficulty(best: Fraction, runner_up: Fraction, direction: Direction = "highest") -> Difficulty:
@@ -203,13 +209,8 @@ def _valid_time(row: PlayerMatchStats) -> bool:
     )
 
 
-def _window(
-    template: QuestionTemplate, rows: list[PlayerMatchStats]
-) -> list[PlayerMatchStats] | None:
-    """The matches a template looks at for one player, or None if that's unclear."""
-    if template.last_n is None:
-        return sorted(rows, key=lambda r: r.match_id)
-    n = template.last_n
+def _newest(rows: list[PlayerMatchStats], n: int) -> list[PlayerMatchStats] | None:
+    """The newest n matches by played_at, or None if that's unclear."""
     if len(rows) < n or not all(_valid_time(r) for r in rows):
         return None
     newest = sorted(rows, key=lambda r: (_timestamp(r), r.match_id), reverse=True)
@@ -217,6 +218,36 @@ def _window(
     if len(newest) > n and _timestamp(newest[n - 1]) == _timestamp(newest[n]):
         return None
     return newest[:n]
+
+
+def _window(
+    template: QuestionTemplate, rows: list[PlayerMatchStats]
+) -> list[PlayerMatchStats] | None:
+    """The matches a template looks at for one player, or None if that's unclear."""
+    if template.last_n is None:
+        return sorted(rows, key=lambda r: r.match_id)
+    return _newest(rows, template.last_n)
+
+
+def _equal_windows(
+    windows: dict[str, list[PlayerMatchStats]],
+) -> dict[str, list[PlayerMatchStats]] | None:
+    """Every player's newest N matches, N being the fewest anyone has (see templates.py).
+
+    A player already at N keeps their window as it is. None if a cut is unclear."""
+    if not windows:
+        return windows
+    fewest = min(len(window) for window in windows.values())
+    equal = {}
+    for uid, window in windows.items():
+        if len(window) == fewest:
+            equal[uid] = window
+            continue
+        newest = _newest(window, fewest)
+        if newest is None:
+            return None
+        equal[uid] = sorted(newest, key=lambda r: r.match_id)
+    return equal
 
 
 def _filtered(
@@ -432,6 +463,12 @@ class QuestionGenerator:
         templates reused, the one asked longest ago first, in the same way. The quiz
         puts its hardest questions in the middle (arrange()).
 
+        Within those rules the answers are spread evenly: each pick prefers the player
+        who has been the answer least so far (10 questions, 3 players: 4/3/3), and at
+        most half of a player's answers are blunders (QuestionTemplate.blunder) unless
+        nothing else can fill the quiz. A player who tops too few stats leaves the
+        others to fill it.
+
         Every room player is an option in every question. Players with
         not_enough_matches are never compared, so they are never the answer, a pair
         question's friend or the source of a stat, and their missing data can't skip
@@ -512,6 +549,11 @@ class QuestionGenerator:
             elif template.rule != "pair":
                 # Unclear data, or too few matches: the comparison would be incomplete.
                 return []
+        if template.last_n is None and template.rule in _TOTALS:
+            equal = _equal_windows(windows)
+            if equal is None:
+                return []
+            windows = equal
         if template.rule == "pair":
             return [
                 (friend, pair)
@@ -624,7 +666,7 @@ class QuestionGenerator:
             options=[AnswerOption(option_id=p.user_id, label=p.display_name) for p in players],
         )
         rating = difficulty(best, runner_up, template.direction)
-        return _Candidate(template.id, fact_key, scope, rating, question)
+        return _Candidate(template.id, fact_key, scope, rating, question, winner, template.blunder)
 
     @staticmethod
     def _select(
@@ -650,23 +692,40 @@ class QuestionGenerator:
         selected: list[_Candidate] = []
         templates: set[str] = set()
         facts: set[str] = set()
+        answers: Counter[str] = Counter()
+        blunders: Counter[str] = Counter()
+
+        def allowed(candidate: _Candidate, limit: bool) -> bool:
+            if candidate.template_id in templates or candidate.fact_key in facts:
+                return False
+            # At most half of a player's answers are blunders, at every point.
+            mine = candidate.answer
+            within = 2 * (blunders[mine] + 1) <= answers[mine] + 1
+            return not (limit and candidate.blunder and not within)
+
         # Every level takes from its own pool, then from the nearest level, then the
         # farthest; scarce hard questions pick first. Unused templates fill all of that
-        # before any asked template is reused.
-        for pool in (fresh, reused):
+        # before any asked template is reused. Each pick is the question whose answer
+        # has been the answer least so far, in pool order among equals, so the answers
+        # spread evenly over the players unless someone tops too few stats. The blunder
+        # limit gives way only when nothing else, not even a repeat, can fill the quiz.
+        for pool, limit in ((fresh, True), (reused, True), (fresh, False), (reused, False)):
             for step in range(len(LEVELS)):
                 for level in _FILL_ORDER:
                     source = _BORROW[level][step]
-                    for candidate in pool:
-                        if need[level] == 0:
+                    while need[level] > 0:
+                        pick = min(
+                            (c for c in pool if c.difficulty == source and allowed(c, limit)),
+                            key=lambda c: answers[c.answer],
+                            default=None,
+                        )
+                        if pick is None:
                             break
-                        if candidate.difficulty != source:
-                            continue
-                        if candidate.template_id in templates or candidate.fact_key in facts:
-                            continue
-                        selected.append(candidate)
-                        templates.add(candidate.template_id)
-                        facts.add(candidate.fact_key)
+                        selected.append(pick)
+                        templates.add(pick.template_id)
+                        facts.add(pick.fact_key)
+                        answers[pick.answer] += 1
+                        blunders[pick.answer] += pick.blunder
                         need[level] -= 1
 
         # Two bounded repair passes, never a Cartesian product. Retain the other scope
@@ -686,6 +745,9 @@ class QuestionGenerator:
                     for index in range(len(selected) - 1, -1, -1):
                         old = selected[index]
                         if candidate.difficulty != old.difficulty:
+                            continue
+                        # Keep the answers' spread and the blunder limit as they are.
+                        if candidate.answer != old.answer or candidate.blunder > old.blunder:
                             continue
                         if repeat(candidate) and candidate.template_id != old.template_id:
                             continue

@@ -411,6 +411,9 @@ services/scoring-service/
   rules (`max_in_match`, `count`, `average`, `pooled_ratio`, `pair`), windows,
   agent/map parameters and placeholders. The generator rejects a template it can't
   evaluate or render as soon as it loads, and rates each question's difficulty itself.
+  Set `blunder=True` when the answer is the player with the bad stat (most deaths,
+  lowest ADR): a quiz keeps each player's answers at most half blunders, and spreads
+  the answers evenly over the players.
 - scoring-service: Postgres through the injected psycopg `AsyncConnectionPool`, on the
   `scoring` schema, behind the `Quizzes` protocol (`QuizRepository`; `tests/fakes.py` has
   an in-memory `FakeQuizzes` for servicer tests). A quiz's players are numbered by seat,

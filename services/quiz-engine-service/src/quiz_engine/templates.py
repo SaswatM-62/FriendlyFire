@@ -13,6 +13,9 @@ How a template is evaluated, for every room player who is compared (see below):
    missing timestamp, or a tie across the boundary skips the question), or every
    stored match when last_n is None. The window is chosen before any filter. With
    windows, each window is its own version of the question (see QuestionTemplate).
+   Totals (count, pair and keyed) over every stored match compare like for like:
+   each compared player's newest N matches, N being the fewest any of them has, so
+   whoever plays more doesn't win by volume (a tie across that boundary skips too).
 3. Filter: with a parameter_label, one question per value of that label (e.g. per
    agent), keeping only the window's matches with that value. A match missing the
    label skips the question rather than silently dropping out.
@@ -115,6 +118,9 @@ class QuestionTemplate:
     absent_is_zero: bool = False
     # {value} is shown multiplied by this (0.001: milliseconds as seconds).
     value_scale: float = 1
+    # The answer is the player with the bad stat (most deaths, lowest ADR). A quiz
+    # keeps each player's answers at most half blunders (question_generator).
+    blunder: bool = False
 
 
 TEMPLATES = (
@@ -210,6 +216,7 @@ TEMPLATES = (
         direction="lowest",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="highest-adr-v1",
@@ -289,6 +296,7 @@ TEMPLATES = (
         rule="count",
         stat="deaths",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="most-recent-plants-v1",
@@ -333,6 +341,7 @@ TEMPLATES = (
         rule="count",
         stat="numbers.first_deaths",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="most-recent-isolated-deaths-v1",
@@ -344,6 +353,7 @@ TEMPLATES = (
         rule="count",
         stat="numbers.isolated_deaths",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="most-recent-deathless-rounds-v1",
@@ -505,6 +515,7 @@ TEMPLATES = (
         stat="numbers.fall_deaths",
         # Rare: every stored match (the last 30 days), or most rooms would tie at 0.
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="pistol-round-kills-v1",
@@ -650,6 +661,7 @@ TEMPLATES = (
         rule="count",
         stat="numbers.rounds_without_armor",
         last_n=5,
+        blunder=True,
     ),
     # 10. Single-match record (a blunder): most deaths to one opponent, with the agent played.
     QuestionTemplate(
@@ -663,6 +675,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         display_label="agent",
+        blunder=True,
     ),
     # FF-405, question pack 2: multi-kills and fights.
     QuestionTemplate(
@@ -724,6 +737,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         absent_is_zero=True,
+        blunder=True,
     ),
     QuestionTemplate(
         id="double-kills-under-a-second-v1",
@@ -779,6 +793,7 @@ TEMPLATES = (
         rule="count",
         stat="numbers.killed_then_died",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="revenge-kills-v1",
@@ -812,6 +827,7 @@ TEMPLATES = (
         stat="numbers.dominated_by",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="max-duel-margin-v1",
@@ -1058,6 +1074,7 @@ TEMPLATES = (
         stat="numbers.spike_deaths",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="fastest-first-blood-v1",
@@ -1148,6 +1165,7 @@ TEMPLATES = (
         denominator=("numbers.rounds_played",),
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="damage-margin-v1",
@@ -1232,6 +1250,7 @@ TEMPLATES = (
         rule="average",
         stat="numbers.team_position",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="giant-killer-v1",
@@ -1267,6 +1286,7 @@ TEMPLATES = (
         stat="numbers.deaths_to_lower_ranked",
         queues=("competitive",),
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="top-ranked-opponent-kills-v1",
@@ -1337,6 +1357,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         display_label="agent",
+        blunder=True,
     ),
     QuestionTemplate(
         id="most-assists-in-a-match-v1",
@@ -1486,6 +1507,7 @@ TEMPLATES = (
         last_n=None,
         contenders_only=True,
         display_label="map",
+        blunder=True,
     ),
     QuestionTemplate(
         id="assists-for-friend-v1",
@@ -1581,6 +1603,7 @@ TEMPLATES = (
         direction="lowest",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-kast-v1",
@@ -1594,6 +1617,7 @@ TEMPLATES = (
         direction="lowest",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-headshot-percentage-v1",
@@ -1612,6 +1636,7 @@ TEMPLATES = (
         denominator=("numbers.headshots", "numbers.bodyshots", "numbers.legshots"),
         direction="lowest",
         last_n=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-acs-v1",
@@ -1625,6 +1650,7 @@ TEMPLATES = (
         direction="lowest",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-performance-score-v1",
@@ -1637,6 +1663,7 @@ TEMPLATES = (
         direction="lowest",
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="fewest-recent-deaths-v1",
@@ -1687,6 +1714,7 @@ TEMPLATES = (
         last_n=None,
         contenders_only=True,
         min_denominator=10,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-clutch-win-rate-v1",
@@ -1702,6 +1730,7 @@ TEMPLATES = (
         last_n=None,
         contenders_only=True,
         min_denominator=5,
+        blunder=True,
     ),
     QuestionTemplate(
         id="lowest-map-win-rate-v1",
@@ -1716,6 +1745,7 @@ TEMPLATES = (
         last_n=None,
         parameter_label="map",
         contenders_only=True,
+        blunder=True,
     ),
     # Attack and defense, per round of that side.
     QuestionTemplate(
@@ -1851,6 +1881,7 @@ TEMPLATES = (
         denominator=("numbers.rounds_played_attack",),
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="defense-first-deaths-v1",
@@ -1863,6 +1894,7 @@ TEMPLATES = (
         denominator=("numbers.rounds_played_defense",),
         scopes=ALL_SCOPES,
         last_n=None,
+        blunder=True,
     ),
     QuestionTemplate(
         id="attack-assists-per-round-v1",
@@ -2039,6 +2071,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-match-assists-v1",
@@ -2075,6 +2108,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-match-damage-v1",
@@ -2099,6 +2133,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-match-combat-score-v1",
@@ -2135,6 +2170,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-match-plants-v1",
@@ -2219,6 +2255,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-team-assists-v1",
@@ -2255,6 +2292,7 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
     QuestionTemplate(
         id="topped-team-plants-v1",
@@ -2291,5 +2329,6 @@ TEMPLATES = (
         scopes=ALL_SCOPES,
         last_n=None,
         windows=(5, 10, None),
+        blunder=True,
     ),
 )

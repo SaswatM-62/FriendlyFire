@@ -1,5 +1,6 @@
 """Properties and concrete regressions for the FF-402 question engine."""
 
+from collections.abc import Sequence
 from dataclasses import replace
 from fractions import Fraction
 from time import perf_counter
@@ -690,3 +691,86 @@ def test_every_default_template_can_make_a_question(template: QuestionTemplate) 
         for q in generator.generate(room, stats, count, seed)
     ]
     assert made, f"{template.id} made no question from data with every stat it reads"
+
+
+def contests(
+    *winners: str, blunders: Sequence[str] = (), lead: int = 50
+) -> tuple[list[QuestionTemplate], list[PlayerMatchStats]]:
+    """One single-scope kills template per winner, each in its own game.
+
+    The winner has 100 kills and the others 100 - lead. Templates for the players in
+    blunders are marked as blunders, the rest as feats.
+    """
+    templates, stats = [], []
+    for n, (winner, blunder) in enumerate(
+        [(w, False) for w in winners] + [(w, True) for w in blunders]
+    ):
+        game = f"{'blunder' if blunder else 'feat'}-{winner}-{n}"
+        templates.append(replace(KILLS, id=game, game=game, scopes=("all",), blunder=blunder))
+        for uid in ("a", "b", "c"):
+            match = row(uid, f"{game}-{uid}", kills=100 if uid == winner else 100 - lead)
+            match.game = game
+            stats.append(match)
+    return templates, stats
+
+
+def trio() -> list[QuizPlayer]:
+    return [*players(), QuizPlayer(user_id="c", display_name="Cara")]
+
+
+def answers(questions: list[Question]) -> dict[str, int]:
+    counts = dict.fromkeys(("a", "b", "c"), 0)
+    for q in questions:
+        counts[q.correct_option_id] += 1
+    return counts
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_answers_spread_evenly_even_when_one_player_tops_most_stats(seed: int) -> None:
+    templates, stats = contests(*"a" * 20, *"b" * 5, *"c" * 5)
+    questions = QuestionGenerator(templates).generate(trio(), stats, 10, seed)
+    assert len(questions) == 10
+    assert sorted(answers(questions).values()) == [3, 3, 4]
+
+
+def test_a_player_who_tops_nothing_leaves_the_others_to_fill_the_quiz() -> None:
+    templates, stats = contests(*"a" * 15, *"b" * 15)
+    questions = QuestionGenerator(templates).generate(trio(), stats, 10, 0)
+    assert answers(questions) == {"a": 5, "b": 5, "c": 0}
+
+
+@pytest.mark.parametrize("seed", range(10))
+def test_at_most_half_of_a_players_answers_are_blunders(seed: int) -> None:
+    # Cara only ever tops bad stats, Alice tops both, Bob only good ones.
+    templates, stats = contests(*"a" * 10, *"b" * 10, blunders="a" * 10 + "c" * 10)
+    questions = QuestionGenerator(templates).generate(trio(), stats, 12, seed)
+    blunder = {t.id for t in templates if t.blunder}
+    assert len(questions) == 12
+    for uid in ("a", "b", "c"):
+        mine = [q for q in questions if q.correct_option_id == uid]
+        bad = [q for q in mine if q.template_id in blunder]
+        assert 2 * len(bad) <= len(mine), (uid, len(bad), len(mine))
+    # Cara has no good stat to balance a bad one, so she's never the answer.
+    assert answers(questions)["c"] == 0
+
+
+def test_the_blunder_limit_gives_way_rather_than_leave_the_quiz_short() -> None:
+    templates, stats = contests(blunders="aaa")
+    questions = QuestionGenerator(templates).generate(trio(), stats, 3, 0)
+    assert answers(questions) == {"a": 3, "b": 0, "c": 0}
+
+
+def test_unused_templates_still_come_before_an_even_spread() -> None:
+    # Bob's only template was asked last quiz: Alice's unused ones fill the quiz first.
+    templates, stats = contests("a", "a", "b")
+    questions = QuestionGenerator(templates).generate(
+        trio(), stats, 2, 0, asked_template_ids=["feat-b-2"]
+    )
+    assert answers(questions) == {"a": 2, "b": 0, "c": 0}
+
+
+def test_the_spread_is_the_same_for_the_same_seed() -> None:
+    templates, stats = contests(*"a" * 20, *"b" * 5, *"c" * 5)
+    first = QuestionGenerator(templates).generate(trio(), stats, 10, 4)
+    again = QuestionGenerator(templates).generate(trio(), list(reversed(stats)), 10, 4)
+    assert [q.question_id for q in first] == [q.question_id for q in again]
