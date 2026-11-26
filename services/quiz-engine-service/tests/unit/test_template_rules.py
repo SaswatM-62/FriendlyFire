@@ -643,7 +643,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         (
             "average-performance-score-v1",
             "This player averages a Performance Score of 265.10 per match {scope}, the highest in "
-            "this group. Who set the pace?",
+            "this group. Who sets the pace?",
             "Alice, averaging 265.10 over 10 matches.",
         ),
         (
@@ -686,7 +686,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         (
             "pistol-round-kills-v1",
             "This player averages 2 pistol-round kills per match {scope}, the most in this group. "
-            "Who starts rounds with a bang?",
+            "Who starts each half with a bang?",
             "Alice: 20 pistol-round kills in 10 matches.",
         ),
     ],

@@ -200,8 +200,8 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="lowest-adr-v1",
-        question="This player deals {value} damage per round {scope}, the lowest in this "
-        "group. Who would rather forget this one?",
+        question="This player deals {value} damage per round {scope}, the lowest in this group. "
+        "Who's been going easy on the enemy?",
         explanation="{name}: {numerator} damage over {denominator} rounds.",
         stats=("numbers.damage_dealt", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
@@ -282,8 +282,8 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-recent-deaths-v1",
-        question="Over their last {last_n} matches, this player died {value} {time|times}, "
-        "more than anyone else here. Who's the culprit?",
+        question="Over their last {last_n} matches, this player died {value} {time|times}, more "
+        "than anyone else here. Who's spent the most time spectating?",
         explanation="{name}: {value} {death|deaths} in {last_n} matches.",
         stats=("deaths", "played_at", "labels.queue_id"),
         rule="count",
@@ -357,7 +357,7 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="most-sniper-kills-v1",
-        question="Behind a scope, this player has taken down {value} {enemy|enemies} {scope}, more "
+        question="Behind a scope, this player has picked up {value} {kill|kills} {scope}, more "
         "than anyone else here. Who's the group's sniper?",
         explanation="{name}: {value} {kill|kills} with sniper rifles.",
         stats=("numbers.sniper_kills", "labels.queue_id"),
@@ -418,8 +418,8 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="average-performance-score-v1",
-        question="This player averages a Performance Score of {value} per match {scope}, "
-        "the highest in this group. Who set the pace?",
+        question="This player averages a Performance Score of {value} per match {scope}, the "
+        "highest in this group. Who sets the pace?",
         explanation="{name}, averaging {value} over {denominator} matches.",
         stats=("numbers.performance_score", "labels.queue_id"),
         rule="average",
@@ -508,8 +508,8 @@ TEMPLATES = (
     ),
     QuestionTemplate(
         id="pistol-round-kills-v1",
-        question="This player averages {value} pistol-round {kill|kills} per match {scope}, "
-        "the most in this group. Who starts rounds with a bang?",
+        question="This player averages {value} pistol-round {kill|kills} per match {scope}, the "
+        "most in this group. Who starts each half with a bang?",
         explanation="{name}: {numerator} pistol-round kills in {denominator} matches.",
         stats=("numbers.pistol_round_kills", "labels.queue_id"),
         rule="average",
@@ -521,8 +521,8 @@ TEMPLATES = (
     # 1. Single-match record: longest kill distance, with the map it happened on.
     QuestionTemplate(
         id="longest-kill-v1",
-        question="One of you once landed a kill from {value} meters away {scope}, the longest "
-        "shot in this group. Who has the sniper's eye?",
+        question="One of you once landed a kill from {value} meters away {scope}, the longest shot "
+        "in this group. Who can hit a target from across the map?",
         explanation="{name}, on {map_name}: a kill from {value} meters out.",
         stats=("numbers.longest_kill_m", "labels.map", "labels.queue_id"),
         rule="max_in_match",
@@ -551,7 +551,7 @@ TEMPLATES = (
     QuestionTemplate(
         id="underdog-kill-share-v1",
         question="{percent}% of this player's kills came against a better-equipped opponent "
-        "{scope}, the highest share in this group. Who loves playing the underdog?",
+        "{scope}, the highest share in this group. Who wins the fights they shouldn't?",
         explanation="{name}: {numerator} of {denominator} kills against a pricier loadout.",
         stats=("numbers.outgunned_kills", "kills", "labels.queue_id"),
         rule="pooled_ratio",

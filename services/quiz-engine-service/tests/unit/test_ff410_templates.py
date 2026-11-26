@@ -98,7 +98,7 @@ CASES = [
     Case(
         "most-recent-deaths-v1",
         "Over their last 5 matches, this player died 90 times, more than anyone else here. "
-        "Who's the culprit?",
+        "Who's spent the most time spectating?",
         "Alice: 90 deaths in 5 matches.",
         {ALICE: five(deaths=18), BOB: five(deaths=15), CARA: five(deaths=12)},
         ("labels", "queue_id"),
@@ -165,7 +165,7 @@ CASES = [
     ),
     Case(
         "most-sniper-kills-v1",
-        f"Behind a scope, this player has taken down 15 enemies {ALL}, more than anyone else "
+        f"Behind a scope, this player has picked up 15 kills {ALL}, more than anyone else "
         "here. Who's the group's sniper?",
         "Alice: 15 kills with sniper rifles.",
         {ALICE: five(sniper_kills=3), BOB: five(sniper_kills=1), CARA: five(sniper_kills=0)},
@@ -267,7 +267,7 @@ def test_a_missing_stat_skips_the_question(case: Case) -> None:
         (
             "most-sniper-kills-v1",
             "sniper_kills",
-            f"Behind a scope, this player has taken down 1 enemy {ALL}, more than anyone else "
+            f"Behind a scope, this player has picked up 1 kill {ALL}, more than anyone else "
             "here. Who's the group's sniper?",
             "Alice: 1 kill with sniper rifles.",
         ),
