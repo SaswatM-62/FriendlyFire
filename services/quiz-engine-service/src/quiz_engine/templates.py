@@ -31,6 +31,13 @@ How a template is evaluated, for every room player who is compared (see below):
    - pair: friend-pair counts. One question per room player (the {friend}); each
      other player's value is the sum of the "<stat>:<friend's user ID>" number over
      matches where they were on the friend's team.
+   - keyed: stat names a keyed family ("numbers.kills_with_weapon"). One question per
+     key that a compared player's window holds, shown as {parameter} from the row's
+     "name:<key>" label (a key without a name is never asked); each player's value is
+     the sum of "<stat>:<key>" over the matches, a match without it counting as 0.
+   - range: the player's highest minus their lowest value of stat across the
+     matches; {numerator} is the highest and {denominator} the lowest. It needs two
+     matches.
 5. Compare: the unique highest (or lowest) value wins; a tie skips the question,
    and so does a {value} or {percent} in the question that rounds to the same text
    as the runner-up's (it wouldn't single out the winner). Any player with a
@@ -52,20 +59,23 @@ question's friend or the source of a stat. Their matches still count when decidi
 whether a match was shared.
 
 Stats: "kills", "deaths", "assists", "won" (needs a labels.result that agrees),
-"matches", or "numbers.<key>" from the catalogue.
+"matches", or "numbers.<key>" from the catalogue. Match Data writes some keys only
+when they're above zero (one key of a keyed family, like "rounds_with_kills:3"):
+set absent_is_zero so a match without the key counts as 0 instead of missing.
 
 Placeholders: {name} (winner), {value}, {numerator}, {denominator}, {percent}
 (value x 100), {scope}, {last_n}, {parameter}, {friend} and {<display_label>_name}.
 Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
 for {percent} (29.7). {singular|plural}, e.g. "{value} {time|times}", shows the first
-form when {value} shows as 1 and the second otherwise.
+form when {value} shows as 1 and the second otherwise. value_scale multiplies {value}
+for display only, e.g. 0.001 to show milliseconds as seconds.
 """
 
 from dataclasses import dataclass
 from typing import Literal
 
 Scope = Literal["all", "shared", "solo"]
-Rule = Literal["max_in_match", "count", "average", "pooled_ratio", "pair"]
+Rule = Literal["max_in_match", "count", "average", "pooled_ratio", "pair", "keyed", "range"]
 Direction = Literal["highest", "lowest"]
 ParameterLabel = Literal["", "agent", "map", "role"]
 
@@ -101,6 +111,10 @@ class QuestionTemplate:
     # each scope. {scope} then says how many matches too ("in their last 5 matches with
     # other room players"), and {last_n} can't be used. A quiz asks one version at most.
     windows: tuple[int | None, ...] = ()
+    # Count a match without a numbers.<key> stat as 0 instead of missing (see Stats).
+    absent_is_zero: bool = False
+    # {value} is shown multiplied by this (0.001: milliseconds as seconds).
+    value_scale: float = 1
 
 
 TEMPLATES = (
