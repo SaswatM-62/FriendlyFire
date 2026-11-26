@@ -273,7 +273,8 @@ def test_longest_kill_names_the_longest_shot_and_its_map() -> None:
         BOB,
         f"One of you once landed a kill from 52.25 meters away {ALL}, the longest shot in "
         "this group. Who can hit a target from across the map?",
-        "Bob, on Haven: a kill from 52.25 meters out.",
+        "Bob, on Haven: a kill from 52.25 meters out. Next closest: Alice, on Ascent: a kill from "
+        "41.50 meters out.",
     )
 
 
@@ -313,7 +314,8 @@ def test_utility_assists_totals_the_last_ten_matches() -> None:
         "Flashes and utility did the work: this player earned 35 assists without damaging "
         "the victim in their last 10 matches, the most in this group. "
         "Who sets everyone else up?",
-        "Alice: 35 assists with no damage dealt.",
+        "Alice: 35 assists with no damage dealt. Next closest: Bob, 30 assists with no damage "
+        "dealt.",
     )
 
 
@@ -378,7 +380,8 @@ def test_underdog_share_is_pooled_and_shown_as_a_percentage() -> None:
         ALICE,
         f"27.2% of this player's kills came against a better-equipped opponent {ALL}, the "
         "highest share in this group. Who wins the fights they shouldn't?",
-        "Alice: 25 of 92 kills against a pricier loadout.",
+        "Alice: 25 of 92 kills against a pricier loadout (27.2%). Next closest: Cara, 23 of 90 "
+        "kills against a pricier loadout (25.6%).",
     )
 
 
@@ -442,7 +445,8 @@ def test_role_utility_compares_only_that_role_and_lets_non_players_sit_out() -> 
         ALICE,
         f"Playing Controller {ALL}, this player casts 3.02 non-ultimate abilities per round, "
         "the most of anyone here who has played that role. Who keeps the utility flowing?",
-        "Alice: 181 ability casts in 60 rounds as Controller.",
+        "Alice: 181 ability casts in 60 rounds as Controller, 3.02 per round. Next closest: Bob, "
+        "96 ability casts in 44 rounds as Controller, 2.18 per round.",
     )
 
 
@@ -485,7 +489,8 @@ def test_trades_for_friend_counts_only_matches_on_the_friends_team() -> None:
         ALICE,
         f"Someone here has avenged Cara 12 times {ALL} by killing their killer within 3 "
         "seconds, more than anyone else who has played on Cara's team. Who has Cara's back?",
-        "Alice, across 4 matches together.",
+        "Alice avenged Cara 12 times in 4 matches together. Next closest: Bob avenged Cara 5 times "
+        "in 3 matches together.",
     )
 
 
@@ -511,7 +516,8 @@ def test_kills_on_enemy_mvp_totals_the_last_ten_matches() -> None:
         ALICE,
         "This player took down the other team's MVP 29 times in their last 10 matches, "
         "the most in this group. Who hunts the star player?",
-        "Alice killed the opposing MVP 29 times.",
+        "Alice killed the opposing MVP 29 times. Next closest: Cara killed the opposing MVP 25 "
+        "times.",
     )
 
 
@@ -526,7 +532,8 @@ def test_kills_on_enemy_mvp_says_one_time_not_one_times() -> None:
         ALICE,
         "This player took down the other team's MVP 1 time in their last 10 matches, "
         "the most in this group. Who hunts the star player?",
-        "Alice killed the opposing MVP 1 time.",
+        "Alice killed the opposing MVP 1 time. Next closest: Bob killed the opposing MVP 0 times. "
+        "Cara tied.",
     )
 
 
@@ -549,7 +556,7 @@ def test_team_mvps_counts_awards_in_the_last_ten_matches() -> None:
         ALICE,
         "This player was their team's MVP 6 times in their last 10 matches, more than anyone "
         "else in this group. Who carries the squad?",
-        "Alice: team MVP 6 times.",
+        "Alice: team MVP 6 times. Next closest: Bob, team MVP 4 times. Cara tied.",
     )
 
 
@@ -593,7 +600,8 @@ def test_solo_thrifty_uses_solo_games_only_and_lets_a_player_without_any_sit_out
         "Queueing without the rest of you, this player's team wins 2.33 thrifty rounds per "
         "match (rounds won against much bigger buys), the most of anyone here who plays "
         "solo. Who wins on a budget?",
-        "Alice: 7 thrifty rounds in 3 solo matches.",
+        "Alice: 7 thrifty rounds in 3 solo matches, 2.33 per match. Next closest: Bob, 5 thrifty "
+        "rounds in 3 solo matches, 1.67 per match.",
     )
 
 
@@ -619,7 +627,8 @@ def test_unarmored_rounds_totals_the_last_five_matches_only() -> None:
         ALICE,
         "Across their last 5 matches, this player headed into 70 rounds with no armor, more "
         "than anyone else here. Who's playing on hard mode?",
-        "Alice started 70 rounds unarmored over their last 5 matches.",
+        "Alice started 70 rounds unarmored over their last 5 matches. Next closest: Cara started "
+        "62 rounds unarmored over their last 5 matches.",
     )
 
 
@@ -642,7 +651,8 @@ def test_deaths_to_one_opponent_names_the_worst_match_and_agent() -> None:
         BOB,
         f"One of you once died 6 times to the same opponent in a single match {ALL}, more "
         "than anyone else here. Who got farmed that day?",
-        "Bob, playing Omen: 6 deaths to one opponent.",
+        "Bob, playing Omen: 6 deaths to one opponent. Next closest: Alice, playing Jett: 5 deaths "
+        "to one opponent. Cara tied.",
     )
 
 

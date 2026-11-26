@@ -83,6 +83,11 @@ def ask(
     return sorted(found.values(), key=lambda q: q.text)
 
 
+def said(question: Question) -> str:
+    """The explanation's first sentence, about the answer (the runner-up's comes next)."""
+    return question.explanation.split(" Next closest: ")[0]
+
+
 def option_ids(question: Question) -> list[str]:
     return [option.option_id for option in question.options]
 
@@ -96,7 +101,7 @@ def test_pooled_ratio_counts_a_deathless_match_but_skips_a_zero_total() -> None:
     ]
     [question] = ask(kd, stats, ALICE, BOB)
     assert question.correct_option_id == ALICE
-    assert question.explanation == "Alice: 3 (15/5)"
+    assert said(question) == "Alice: 3 (15/5)"
     stats[2].deaths = 0
     assert ask(kd, stats, ALICE, BOB) == []
 
@@ -120,7 +125,7 @@ def test_values_show_two_decimals_and_percentages_one(kills: int, deaths: int, s
     )
     stats = [match(ALICE, "1", kills=kills, deaths=deaths), match(BOB, "2", kills=0, deaths=10)]
     [question] = ask(kd, stats, ALICE, BOB)
-    assert question.explanation == shown
+    assert said(question) == shown
 
 
 def test_a_number_in_the_question_must_single_out_the_winner() -> None:
@@ -168,7 +173,7 @@ def test_skip_missing_leaves_out_matches_without_the_stat() -> None:
     lenient = replace(strict, skip_missing=True)
     [question] = ask(lenient, stats, ALICE, BOB)
     assert question.correct_option_id == ALICE
-    assert question.explanation == "Alice: 40 (40/1)"
+    assert said(question) == "Alice: 40 (40/1)"
     # A player with no match that has the stat is still unknown.
     assert ask(lenient, [match(ALICE, "1", longest_kill_m=40), match(BOB, "3")], ALICE, BOB) == []
 
@@ -429,10 +434,10 @@ def test_plural_forms_follow_the_shown_value() -> None:
     )
     stats = [match(ALICE, "1", ninja_defuses=1), match(BOB, "2", ninja_defuses=0)]
     [question] = ask(counted, stats, ALICE, BOB)
-    assert (question.text, question.explanation) == ("Who defused 1 time?", "Alice: 1 defuse")
+    assert (question.text, said(question)) == ("Who defused 1 time?", "Alice: 1 defuse")
     stats[0].numbers["ninja_defuses"] = 2
     [question] = ask(counted, stats, ALICE, BOB)
-    assert (question.text, question.explanation) == ("Who defused 2 times?", "Alice: 2 defuses")
+    assert (question.text, said(question)) == ("Who defused 2 times?", "Alice: 2 defuses")
 
 
 def test_a_plural_form_that_shows_as_one_point_something_is_plural() -> None:
@@ -445,7 +450,7 @@ def test_a_plural_form_that_shows_as_one_point_something_is_plural() -> None:
         match(BOB, "3", aces=0),
     ]
     [question] = ask(per_match, stats, ALICE, BOB)
-    assert question.explanation == "1.50 aces a match"
+    assert said(question) == "1.50 aces a match"
 
 
 def clutches(**attempts: tuple[int, int]) -> list[PlayerMatchStats]:
@@ -636,62 +641,72 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
             "max-round-damage-v1",
             "One of you dealt 160 damage to enemies in a single round {scope}, more than anyone "
             "else here has managed. Who pulled that off?",
-            "Alice, playing Jett: 160 damage in one round.",
+            "Alice, playing Jett: 160 damage in one round. Next closest: Bob, playing Sage: 80 "
+            "damage in one round.",
         ),
         (
             "recent-first-bloods-v1",
             "Over their last 5 matches, this player drew first blood 10 times, the most in this "
             "group. Who is this player?",
-            "Alice opened 10 rounds with the first kill in their last 5 matches.",
+            "Alice opened 10 rounds with the first kill in their last 5 matches. Next closest: Bob "
+            "opened 5 rounds with the first kill in their last 5 matches.",
         ),
         (
             "average-performance-score-v1",
             "This player averages a Performance Score of 265.10 per match {scope}, the highest in "
             "this group. Who sets the pace?",
-            "Alice, averaging 265.10 over 10 matches.",
+            "Alice, averaging 265.10 over 10 matches. Next closest: Bob, averaging 170.50 over 10 "
+            "matches.",
         ),
         (
             "opening-duel-win-rate-v1",
             "This player wins 40% of their opening duels {scope}, the best record of anyone here "
             "with 10 or more. Who takes the first fight?",
-            "Alice: 40 first bloods out of 100 opening duels.",
+            "Alice: 40 first bloods out of 100 opening duels (40%). Next closest: Bob, 20 first "
+            "bloods out of 100 opening duels (20%).",
         ),
         (
             "max-round-kills-v1",
             "One of you got 4 kills in a single round {scope}, and nobody else here has "
             "matched it. Who is this player?",
-            "Alice, playing Jett: 4 kills in one round.",
+            "Alice, playing Jett: 4 kills in one round. Next closest: Bob, playing Sage: 2 kills "
+            "in one round.",
         ),
         (
             "post-plant-kills-v1",
             "Once the spike is down, this player gets to work: 15 post-plant kills in their last "
             "5 matches, the most in this group. Who might this player be?",
-            "Alice got 15 kills after the plant in their last 5 matches.",
+            "Alice got 15 kills after the plant in their last 5 matches. Next closest: Bob got 5 "
+            "kills after the plant in their last 5 matches.",
         ),
         (
             "ninja-defuses-v1",
             "Someone here defused the spike 10 times with enemies still alive in the last 30 "
             "days. Which of you has that unique distinction?",
-            "Alice: 10 ninja defuses in the last 30 days.",
+            "Alice: 10 ninja defuses in the last 30 days. Next closest: Bob, 0 ninja defuses in "
+            "the last 30 days.",
         ),
         (
             "clutch-win-rate-v1",
             "Left as the last one standing, this player wins 50% of their clutches {scope}. "
             "Nobody here with 5 or more clutch attempts does better. Who stays cold under "
             "pressure?",
-            "Alice: 20 clutch wins out of 40 clutch attempts.",
+            "Alice: 20 clutch wins out of 40 clutch attempts (50%). Next closest: Bob, 10 clutch "
+            "wins out of 40 clutch attempts (25%).",
         ),
         (
             "fall-deaths-v1",
             "In the last 30 days, this player fell to their death 10 times, more than anyone "
             "else here. Who does this unfortunate stat belong to?",
-            "Alice recorded 10 fall deaths in the last 30 days.",
+            "Alice recorded 10 fall deaths in the last 30 days. Next closest: Bob recorded 0 fall "
+            "deaths in the last 30 days.",
         ),
         (
             "pistol-round-kills-v1",
             "This player averages 2 pistol-round kills per match {scope}, the most in this group. "
             "Who starts each half with a bang?",
-            "Alice: 20 pistol-round kills in 10 matches.",
+            "Alice: 20 pistol-round kills in 10 matches, 2 per match. Next closest: Bob, 10 "
+            "pistol-round kills in 10 matches, 1 per match.",
         ),
     ],
 )
@@ -710,7 +725,7 @@ def test_ff409_counts_say_one_time_not_one_times() -> None:
     stats = [match(ALICE, "a1", ninja_defuses=1), match(BOB, "b1", ninja_defuses=0)]
     [question] = ask(ninja, stats, ALICE, BOB)
     assert question.text.startswith("Someone here defused the spike 1 time with")
-    assert question.explanation == "Alice: 1 ninja defuse in the last 30 days."
+    assert said(question) == "Alice: 1 ninja defuse in the last 30 days."
 
 
 def test_ff409_clutch_rate_needs_five_attempts() -> None:
@@ -719,7 +734,7 @@ def test_ff409_clutch_rate_needs_five_attempts() -> None:
     rate = replace(ff409_template("clutch-win-rate-v1"), scopes=("all",))
     [question] = ask(rate, stats, ALICE, BOB, CARA)
     assert question.correct_option_id == BOB
-    assert question.explanation == "Bob: 9 clutch wins out of 20 clutch attempts."
+    assert said(question) == "Bob: 9 clutch wins out of 20 clutch attempts (45%)."
 
 
 def named(row: PlayerMatchStats, **names: str) -> PlayerMatchStats:
@@ -772,7 +787,7 @@ def test_range_is_the_gap_between_the_best_and_worst_match() -> None:
         match(BOB, "b2", kills=15),
     ]
     [question] = ask(swing, stats, ALICE, BOB)
-    assert (question.text, question.explanation) == ("Swung by 20?", "Alice: 30 down to 10")
+    assert (question.text, said(question)) == ("Swung by 20?", "Alice: 30 down to 10")
     # One match has no range.
     assert ask(swing, [*stats[:2], stats[2]], ALICE, BOB) == []
 
@@ -917,7 +932,7 @@ def test_totals_over_every_match_compare_each_players_newest_matches_equally() -
     ]
     [question] = ask(kills, stats, ALICE, BOB)
     assert (question.text, question.correct_option_id) == ("9?", BOB)
-    assert question.explanation == "Bob: 9 (9/3)"
+    assert said(question) == "Bob: 9 (9/3)"
 
 
 def test_keyed_totals_compare_equal_windows_too() -> None:
@@ -960,9 +975,9 @@ def test_rates_records_and_last_n_windows_keep_every_match_they_had() -> None:
     )
     [question] = ask(kd, stats, ALICE, BOB)
     assert (question.text, question.correct_option_id) == ("2?", BOB)
-    assert question.explanation == "Bob: 2 (20/10)"
+    assert said(question) == "Bob: 2 (20/10)"
     alice_kd = [q for q in ask(replace(kd, direction="lowest"), stats, ALICE, BOB)]
-    assert [q.explanation for q in alice_kd] == ["Alice: 1.75 (70/40)"]
+    assert [said(q) for q in alice_kd] == ["Alice: 1.75 (70/40)"]
 
 
 def test_blunders_are_the_questions_about_a_bad_stat() -> None:
@@ -982,3 +997,66 @@ def test_blunders_are_the_questions_about_a_bad_stat() -> None:
         "attack-first-deaths-v1",
     } <= blunders
     assert len(blunders) == 33
+
+
+def test_the_explanation_adds_the_runner_up_in_the_templates_own_words() -> None:
+    kills = template(
+        rule="count", stat="kills", question="{value}?", explanation="{name}: {value} kills."
+    )
+    stats = [
+        match(ALICE, "a1", kills=30),
+        match(BOB, "b1", kills=20),
+        match(CARA, "c1", kills=10),
+    ]
+    [question] = ask(kills, stats, ALICE, BOB, CARA)
+    # "{name}: ..." reads "Bob, ..." after "Next closest:".
+    assert question.explanation == "Alice: 30 kills. Next closest: Bob, 20 kills."
+    worded = replace(kills, explanation="{name} got {value} kills.")
+    [question] = ask(worded, stats, ALICE, BOB, CARA)
+    assert question.explanation == "Alice got 30 kills. Next closest: Bob got 20 kills."
+
+
+def test_for_a_lowest_stat_the_runner_up_is_the_second_lowest() -> None:
+    deaths = template(
+        rule="count",
+        stat="deaths",
+        direction="lowest",
+        question="{value}?",
+        explanation="{name}: {value} deaths.",
+    )
+    stats = [
+        match(ALICE, "a1", deaths=4),
+        match(BOB, "b1", deaths=12),
+        match(CARA, "c1", deaths=7),
+    ]
+    [question] = ask(deaths, stats, ALICE, BOB, CARA)
+    assert question.explanation == "Alice: 4 deaths. Next closest: Cara, 7 deaths."
+
+
+def test_the_runner_up_gets_their_own_plural_and_ties_for_second_are_named() -> None:
+    defuses = template(
+        rule="count",
+        stat="numbers.defuses",
+        question="{value}?",
+        explanation="{name}: {value} {defuse|defuses}.",
+    )
+    stats = [
+        match(ALICE, "a1", defuses=3),
+        match(BOB, "b1", defuses=1),
+        match(CARA, "c1", defuses=1),
+    ]
+    [question] = ask(defuses, stats, ALICE, BOB, CARA)
+    assert question.explanation == "Alice: 3 defuses. Next closest: Bob, 1 defuse. Cara tied."
+
+
+def test_a_player_without_enough_matches_is_never_the_runner_up() -> None:
+    kills = template(
+        rule="count", stat="kills", question="{value}?", explanation="{name}: {value} kills."
+    )
+    stats = [
+        match(ALICE, "a1", kills=30),
+        match(BOB, "b1", kills=10),
+        match(CARA, "c1", kills=25),
+    ]
+    [question] = ask(kills, stats, ALICE, BOB, CARA, short=[CARA])
+    assert question.explanation == "Alice: 30 kills. Next closest: Bob, 10 kills."

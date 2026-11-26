@@ -72,6 +72,11 @@ Whole numbers show as they are; others round half up to 2 decimals (1.28), or 1
 for {percent} (29.7). {singular|plural}, e.g. "{value} {time|times}", shows the first
 form when {value} shows as 1 and the second otherwise. value_scale multiplies {value}
 for display only, e.g. 0.001 to show milliseconds as seconds.
+
+Explanation: rendered for the answer, then again for the runner-up with their own
+numbers after "Next closest:" ("{name}: " becomes "{name}, "; a tie for second adds
+"Cara tied."). So write it to suit anyone, never "had the highest...", and give the
+number the question showed: a rate as "{value} per round", a share as "({percent}%)".
 """
 
 from dataclasses import dataclass
@@ -129,7 +134,7 @@ TEMPLATES = (
         id="highest-kd-v1",
         question="For every death {scope}, this player gets {value} kills, the best ratio in "
         "this group. Who comes out on top in their fights?",
-        explanation="{name}: {numerator} kills and {denominator} deaths.",
+        explanation="{name}: {numerator} kills and {denominator} deaths, {value} per death.",
         stats=("kills", "deaths", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("kills",),
@@ -141,7 +146,7 @@ TEMPLATES = (
         id="headshot-percentage-v1",
         question="In their last {last_n} matches, {percent}% of this player's hits landed on "
         "the head, the best aim in this group. Who keeps clicking heads?",
-        explanation="{name}: {numerator} headshots out of {denominator} hits.",
+        explanation="{name}: {numerator} headshots out of {denominator} hits ({percent}%).",
         stats=(
             "numbers.headshots",
             "numbers.bodyshots",
@@ -182,7 +187,7 @@ TEMPLATES = (
         id="map-win-rate-v1",
         question="On {parameter}, this player wins {percent}% of their matches, the best "
         "record of anyone here who has played it. Who owns {parameter}?",
-        explanation="{name} won {numerator} of {denominator} matches on {parameter}.",
+        explanation="{name} won {numerator} of {denominator} matches on {parameter} ({percent}%).",
         stats=("won", "matches", "labels.result", "labels.map", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("won",),
@@ -195,7 +200,8 @@ TEMPLATES = (
         id="agent-kills-per-round-v1",
         question="As {parameter}, this player averages {value} kills per round, the most of "
         "anyone here who has played {parameter}. Who is the deadliest {parameter}?",
-        explanation="{name}: {numerator} kills in {denominator} rounds as {parameter}.",
+        explanation="{name}: {numerator} kills in {denominator} rounds as {parameter}, {value} per "
+        "round.",
         stats=("kills", "numbers.rounds_played", "labels.agent", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("kills",),
@@ -208,7 +214,7 @@ TEMPLATES = (
         id="lowest-adr-v1",
         question="This player deals {value} damage per round {scope}, the lowest in this group. "
         "Who's been going easy on the enemy?",
-        explanation="{name}: {numerator} damage over {denominator} rounds.",
+        explanation="{name}: {numerator} damage over {denominator} rounds, {value} per round.",
         stats=("numbers.damage_dealt", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.damage_dealt",),
@@ -222,7 +228,7 @@ TEMPLATES = (
         id="highest-adr-v1",
         question="Nobody here hits harder: this player deals {value} damage per round "
         "{scope}. Who brings the pain?",
-        explanation="{name}: {numerator} damage over {denominator} rounds.",
+        explanation="{name}: {numerator} damage over {denominator} rounds, {value} per round.",
         stats=("numbers.damage_dealt", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.damage_dealt",),
@@ -235,7 +241,7 @@ TEMPLATES = (
         question="Kill, assist, survive or get traded: this player did one of those in "
         "{percent}% of their rounds {scope}, the most consistent in this group. Who always "
         "pulls their weight?",
-        explanation="{name} made an impact in {numerator} of {denominator} rounds.",
+        explanation="{name} made an impact in {numerator} of {denominator} rounds ({percent}%).",
         stats=("numbers.kast_rounds", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.kast_rounds",),
@@ -323,7 +329,8 @@ TEMPLATES = (
         id="highest-recent-kda-v1",
         question="Counting assists as well as kills, this player gets {value} for every death "
         "in their last {last_n} matches, the best in this group. Who makes every life count?",
-        explanation="{name}: {numerator} kills and assists against {denominator} deaths.",
+        explanation="{name}: {numerator} kills and assists against {denominator} deaths, {value} "
+        "per death.",
         stats=("kills", "assists", "deaths", "played_at", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("kills", "assists"),
@@ -380,8 +387,7 @@ TEMPLATES = (
         id="highest-acs-v1",
         question="This player averages {value} combat score per round {scope}, the highest "
         "in this group. Who is this player?",
-        explanation="{name} had the highest pooled ACS {scope}: {value} "
-        "({numerator} total combat score / {denominator} rounds).",
+        explanation="{name}: {value} ACS ({numerator} combat score over {denominator} rounds).",
         stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.combat_score",),
@@ -441,7 +447,8 @@ TEMPLATES = (
         id="opening-duel-win-rate-v1",
         question="This player wins {percent}% of their opening duels {scope}, "
         "the best record of anyone here with 10 or more. Who takes the first fight?",
-        explanation="{name}: {numerator} first bloods out of {denominator} opening duels.",
+        explanation="{name}: {numerator} first bloods out of {denominator} opening duels "
+        "({percent}%).",
         stats=("numbers.first_bloods", "numbers.first_deaths", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_bloods",),
@@ -494,7 +501,8 @@ TEMPLATES = (
         question="Left as the last one standing, this player wins {percent}% of their clutches "
         "{scope}. Nobody here with 5 or more clutch attempts does better. Who stays cold "
         "under pressure?",
-        explanation="{name}: {numerator} clutch wins out of {denominator} clutch attempts.",
+        explanation="{name}: {numerator} clutch wins out of {denominator} clutch attempts "
+        "({percent}%).",
         stats=("numbers.clutch_wins", "numbers.clutch_attempts", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.clutch_wins",),
@@ -521,7 +529,8 @@ TEMPLATES = (
         id="pistol-round-kills-v1",
         question="This player averages {value} pistol-round {kill|kills} per match {scope}, the "
         "most in this group. Who starts each half with a bang?",
-        explanation="{name}: {numerator} pistol-round kills in {denominator} matches.",
+        explanation="{name}: {numerator} pistol-round kills in {denominator} matches, {value} per "
+        "match.",
         stats=("numbers.pistol_round_kills", "labels.queue_id"),
         rule="average",
         stat="numbers.pistol_round_kills",
@@ -563,7 +572,8 @@ TEMPLATES = (
         id="underdog-kill-share-v1",
         question="{percent}% of this player's kills came against a better-equipped opponent "
         "{scope}, the highest share in this group. Who wins the fights they shouldn't?",
-        explanation="{name}: {numerator} of {denominator} kills against a pricier loadout.",
+        explanation="{name}: {numerator} of {denominator} kills against a pricier loadout "
+        "({percent}%).",
         stats=("numbers.outgunned_kills", "kills", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.outgunned_kills",),
@@ -577,7 +587,8 @@ TEMPLATES = (
         question="Playing {parameter} {scope}, this player casts {value} non-ultimate "
         "{ability|abilities} per round, the most of anyone here who has played that role. "
         "Who keeps the utility flowing?",
-        explanation="{name}: {numerator} ability casts in {denominator} rounds as {parameter}.",
+        explanation="{name}: {numerator} ability casts in {denominator} rounds as {parameter}, "
+        "{value} per round.",
         stats=(
             "numbers.ability_casts_grenade",
             "numbers.ability_casts_ability1",
@@ -604,7 +615,8 @@ TEMPLATES = (
         question="Someone here has avenged {friend} {value} {time|times} {scope} by killing their "
         "killer within 3 seconds, more than anyone else who has played on {friend}'s team. "
         "Who has {friend}'s back?",
-        explanation="{name}, across {denominator} matches together.",
+        explanation="{name} avenged {friend} {value} {time|times} in {denominator} matches "
+        "together.",
         stats=("numbers.trades_for:<user_id>", "labels.team_id", "labels.queue_id"),
         rule="pair",
         stat="numbers.trades_for",
@@ -642,7 +654,8 @@ TEMPLATES = (
         question="Queueing without the rest of you, this player's team wins {value} thrifty "
         "{round|rounds} per match (rounds won against much bigger buys), the most of anyone here "
         "who plays solo. Who wins on a budget?",
-        explanation="{name}: {numerator} thrifty rounds in {denominator} solo matches.",
+        explanation="{name}: {numerator} thrifty rounds in {denominator} solo matches, {value} per "
+        "match.",
         stats=("numbers.thrifty_rounds", "labels.queue_id"),
         rule="average",
         stat="numbers.thrifty_rounds",
@@ -729,7 +742,7 @@ TEMPLATES = (
         id="kill-less-rounds-v1",
         question="This player went without a kill in {percent}% of their rounds {scope}, more "
         "than anyone else here. Who's been a little too quiet?",
-        explanation="{name}: no kill in {numerator} of {denominator} rounds.",
+        explanation="{name}: no kill in {numerator} of {denominator} rounds ({percent}%).",
         stats=("numbers.rounds_with_kills:0", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.rounds_with_kills:0",),
@@ -891,7 +904,7 @@ TEMPLATES = (
         id="rifle-kill-share-v1",
         question="{percent}% of this player's kills in their last {last_n} matches came from "
         "rifles, the highest share in this group. Who lives on the Vandal and Phantom?",
-        explanation="{name}: {numerator} of {denominator} kills with rifles.",
+        explanation="{name}: {numerator} of {denominator} kills with rifles ({percent}%).",
         stats=("numbers.rifle_kills", "kills", "played_at", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.rifle_kills",),
@@ -1003,7 +1016,7 @@ TEMPLATES = (
         id="ultimates-per-match-v1",
         question="This player uses their ultimate {value} {time|times} per match {scope}, the "
         "most in this group. Who's always got ult ready?",
-        explanation="{name}: {numerator} ultimates in {denominator} matches.",
+        explanation="{name}: {numerator} ultimates in {denominator} matches, {value} per match.",
         stats=("numbers.ability_casts_ultimate", "labels.queue_id"),
         rule="average",
         stat="numbers.ability_casts_ultimate",
@@ -1136,7 +1149,7 @@ TEMPLATES = (
         id="cheapest-loadout-v1",
         question="This player walks into rounds carrying {value} credits of gear on average in "
         "their last {last_n} matches, the least in this group. Who travels light?",
-        explanation="{name}: a {value}-credit loadout per round.",
+        explanation="{name}: gear worth {value} credits per round on average.",
         stats=("numbers.loadout_value_average", "played_at", "labels.queue_id"),
         rule="average",
         stat="numbers.loadout_value_average",
@@ -1158,7 +1171,8 @@ TEMPLATES = (
         id="damage-received-v1",
         question="This player takes {value} damage per round {scope}, more than anyone else here. "
         "Who's the group's damage sponge?",
-        explanation="{name}: {numerator} damage taken over {denominator} rounds.",
+        explanation="{name}: {numerator} damage taken over {denominator} rounds, {value} per "
+        "round.",
         stats=("numbers.damage_received", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.damage_received",),
@@ -1340,7 +1354,7 @@ TEMPLATES = (
         question="Over their last {last_n} matches, this player's Performance Score swung by "
         "{value} between their best and worst game, more than anyone else here. Who blows hot and "
         "cold?",
-        explanation="{name}: a {value}-point gap between their best and worst match.",
+        explanation="{name}: {value} points between their best and worst match.",
         stats=("numbers.performance_score", "played_at", "labels.queue_id"),
         rule="range",
         stat="numbers.performance_score",
@@ -1462,7 +1476,8 @@ TEMPLATES = (
         id="solo-pistol-rounds-v1",
         question="Away from the group, this player's team wins {value} pistol {round|rounds} per "
         "match, the most of anyone here who plays solo. Who's lucky with pistols?",
-        explanation="{name}: {numerator} pistol rounds won in {denominator} solo matches.",
+        explanation="{name}: {numerator} pistol rounds won in {denominator} solo matches, {value} "
+        "per match.",
         stats=("numbers.pistol_rounds_won", "labels.queue_id"),
         rule="average",
         stat="numbers.pistol_rounds_won",
@@ -1474,7 +1489,7 @@ TEMPLATES = (
         id="solo-round-win-rate-v1",
         question="Playing solo, this player's team wins {percent}% of its rounds, the best of "
         "anyone here who plays solo. Who carries random teammates?",
-        explanation="{name}: {numerator} of {denominator} rounds won in solo matches.",
+        explanation="{name}: {numerator} of {denominator} rounds won in solo matches ({percent}%).",
         stats=("numbers.rounds_won", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.rounds_won",),
@@ -1534,7 +1549,7 @@ TEMPLATES = (
         id="solo-attack-round-win-rate-v1",
         question="Solo on attack, this player's team wins {percent}% of its rounds, the best of "
         "anyone here who plays solo. Whose solo teams break sites?",
-        explanation="{name}: {numerator} of {denominator} attack rounds won solo.",
+        explanation="{name}: {numerator} of {denominator} attack rounds won solo ({percent}%).",
         stats=("numbers.rounds_won_attack", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.rounds_won_attack",),
@@ -1547,7 +1562,7 @@ TEMPLATES = (
         id="solo-defense-round-win-rate-v1",
         question="Solo on defense, this player's team holds {percent}% of its rounds, the best of "
         "anyone here who plays solo. Whose solo teams lock sites down?",
-        explanation="{name}: {numerator} of {denominator} defense rounds won solo.",
+        explanation="{name}: {numerator} of {denominator} defense rounds won solo ({percent}%).",
         stats=("numbers.rounds_won_defense", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.rounds_won_defense",),
@@ -1560,7 +1575,7 @@ TEMPLATES = (
         id="solo-first-half-round-win-rate-v1",
         question="First half, solo: this player's team wins {percent}% of those rounds, the best "
         "of anyone here who plays solo. Whose solo teams start fast?",
-        explanation="{name}: {numerator} of {denominator} first-half rounds won solo.",
+        explanation="{name}: {numerator} of {denominator} first-half rounds won solo ({percent}%).",
         stats=(
             "numbers.rounds_won_first_half",
             "numbers.rounds_played_first_half",
@@ -1577,7 +1592,8 @@ TEMPLATES = (
         id="solo-second-half-round-win-rate-v1",
         question="Second half, solo: this player's team takes {percent}% of those rounds, the "
         "best of anyone here who plays solo. Whose solo teams finish the job?",
-        explanation="{name}: {numerator} of {denominator} second-half rounds won solo.",
+        explanation="{name}: {numerator} of {denominator} second-half rounds won solo "
+        "({percent}%).",
         stats=(
             "numbers.rounds_won_second_half",
             "numbers.rounds_played_second_half",
@@ -1595,7 +1611,7 @@ TEMPLATES = (
         id="lowest-kd-v1",
         question="Only {value} kills for every death {scope}: the lowest ratio in this group. "
         "Who's been in a rough patch?",
-        explanation="{name}: {numerator} kills and {denominator} deaths.",
+        explanation="{name}: {numerator} kills and {denominator} deaths, {value} per death.",
         stats=("kills", "deaths", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("kills",),
@@ -1609,7 +1625,7 @@ TEMPLATES = (
         id="lowest-kast-v1",
         question="This player killed, assisted, survived or got traded in just {percent}% of "
         "their rounds {scope}, the lowest in this group. Who needs to get more involved?",
-        explanation="{name}: an impact in {numerator} of {denominator} rounds.",
+        explanation="{name}: an impact in {numerator} of {denominator} rounds ({percent}%).",
         stats=("numbers.kast_rounds", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.kast_rounds",),
@@ -1623,7 +1639,7 @@ TEMPLATES = (
         id="lowest-headshot-percentage-v1",
         question="Only {percent}% of this player's hits landed on the head in their last {last_n} "
         "matches, the lowest in this group. Whose crosshair needs a little lift?",
-        explanation="{name}: {numerator} headshots out of {denominator} hits.",
+        explanation="{name}: {numerator} headshots out of {denominator} hits ({percent}%).",
         stats=(
             "numbers.headshots",
             "numbers.bodyshots",
@@ -1642,7 +1658,8 @@ TEMPLATES = (
         id="lowest-acs-v1",
         question="This player earns just {value} combat score per round {scope}, the lowest in "
         "this group. Who's had a quiet stretch?",
-        explanation="{name}: {numerator} combat score over {denominator} rounds.",
+        explanation="{name}: {numerator} combat score over {denominator} rounds, {value} per "
+        "round.",
         stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.combat_score",),
@@ -1691,7 +1708,8 @@ TEMPLATES = (
         id="lowest-damage-received-v1",
         question="Enemies barely touch this player: just {value} damage taken per round {scope}, "
         "the least in this group. Who's the hardest to hit?",
-        explanation="{name}: {numerator} damage taken over {denominator} rounds.",
+        explanation="{name}: {numerator} damage taken over {denominator} rounds, {value} per "
+        "round.",
         stats=("numbers.damage_received", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.damage_received",),
@@ -1704,7 +1722,8 @@ TEMPLATES = (
         id="lowest-opening-duel-win-rate-v1",
         question="This player wins only {percent}% of their opening duels {scope}, the lowest of "
         "anyone here with 10 or more. Who finds the first fight hardest?",
-        explanation="{name}: {numerator} first bloods out of {denominator} opening duels.",
+        explanation="{name}: {numerator} first bloods out of {denominator} opening duels "
+        "({percent}%).",
         stats=("numbers.first_bloods", "numbers.first_deaths", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_bloods",),
@@ -1720,7 +1739,7 @@ TEMPLATES = (
         id="lowest-clutch-win-rate-v1",
         question="Last one standing, this player wins only {percent}% of their clutches {scope}. "
         "Nobody here with 5 or more attempts does worse. Who wishes for backup in a clutch?",
-        explanation="{name}: {numerator} clutch wins out of {denominator} attempts.",
+        explanation="{name}: {numerator} clutch wins out of {denominator} attempts ({percent}%).",
         stats=("numbers.clutch_wins", "numbers.clutch_attempts", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.clutch_wins",),
@@ -1736,7 +1755,7 @@ TEMPLATES = (
         id="lowest-map-win-rate-v1",
         question="On {parameter}, this player wins only {percent}% of their matches, the worst "
         "record of anyone here who has played it. Who should avoid {parameter}?",
-        explanation="{name} won {numerator} of {denominator} matches on {parameter}.",
+        explanation="{name} won {numerator} of {denominator} matches on {parameter} ({percent}%).",
         stats=("won", "matches", "labels.result", "labels.map", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("won",),
@@ -1752,7 +1771,7 @@ TEMPLATES = (
         id="attack-kills-per-round-v1",
         question="On attack, this player gets {value} kills per round {scope}, the most in this "
         "group. Who leads the charge?",
-        explanation="{name}: {numerator} kills in {denominator} attack rounds.",
+        explanation="{name}: {numerator} kills in {denominator} attack rounds, {value} per round.",
         stats=("numbers.attack_kills", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_kills",),
@@ -1764,7 +1783,7 @@ TEMPLATES = (
         id="defense-kills-per-round-v1",
         question="Holding a site, this player gets {value} kills per round {scope}, the most in "
         "this group. Who's the wall on defense?",
-        explanation="{name}: {numerator} kills in {denominator} defense rounds.",
+        explanation="{name}: {numerator} kills in {denominator} defense rounds, {value} per round.",
         stats=("numbers.defense_kills", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_kills",),
@@ -1776,7 +1795,7 @@ TEMPLATES = (
         id="attack-survival-v1",
         question="This player survives attack rounds better than anyone here: they die in only "
         "{percent}% of them {scope}. Who makes it out alive?",
-        explanation="{name}: {numerator} deaths in {denominator} attack rounds.",
+        explanation="{name}: {numerator} deaths in {denominator} attack rounds ({percent}%).",
         stats=("numbers.attack_deaths", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_deaths",),
@@ -1789,7 +1808,7 @@ TEMPLATES = (
         id="defense-survival-v1",
         question="On defense, this player dies in only {percent}% of rounds {scope}, the fewest "
         "in this group. Who's impossible to dig out?",
-        explanation="{name}: {numerator} deaths in {denominator} defense rounds.",
+        explanation="{name}: {numerator} deaths in {denominator} defense rounds ({percent}%).",
         stats=("numbers.defense_deaths", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_deaths",),
@@ -1802,7 +1821,7 @@ TEMPLATES = (
         id="attack-adr-v1",
         question="Pushing onto a site, this player deals {value} damage per round {scope}, the "
         "most in this group. Who hits hardest on attack?",
-        explanation="{name}: {numerator} damage in {denominator} attack rounds.",
+        explanation="{name}: {numerator} damage in {denominator} attack rounds, {value} per round.",
         stats=("numbers.attack_damage_dealt", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_damage_dealt",),
@@ -1814,7 +1833,8 @@ TEMPLATES = (
         id="defense-adr-v1",
         question="This player deals {value} damage per round on defense {scope}, the most in this "
         "group. Who punishes every push?",
-        explanation="{name}: {numerator} damage in {denominator} defense rounds.",
+        explanation="{name}: {numerator} damage in {denominator} defense rounds, {value} per "
+        "round.",
         stats=("numbers.defense_damage_dealt", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_damage_dealt",),
@@ -1826,7 +1846,7 @@ TEMPLATES = (
         id="attack-kast-v1",
         question="Attack after attack, this player makes an impact in {percent}% of rounds "
         "{scope}, the highest in this group. Who never wastes an attack round?",
-        explanation="{name}: an impact in {numerator} of {denominator} attack rounds.",
+        explanation="{name}: an impact in {numerator} of {denominator} attack rounds ({percent}%).",
         stats=("numbers.attack_kast_rounds", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_kast_rounds",),
@@ -1838,7 +1858,8 @@ TEMPLATES = (
         id="defense-kast-v1",
         question="Defending, this player has an impact in {percent}% of rounds {scope}, more than "
         "anyone else here. Who anchors the defense?",
-        explanation="{name}: an impact in {numerator} of {denominator} defense rounds.",
+        explanation="{name}: an impact in {numerator} of {denominator} defense rounds "
+        "({percent}%).",
         stats=("numbers.defense_kast_rounds", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_kast_rounds",),
@@ -1850,7 +1871,8 @@ TEMPLATES = (
         id="attack-first-bloods-v1",
         question="This player opens {percent}% of attack rounds with the first kill {scope}, the "
         "most in this group. Who's the entry fragger?",
-        explanation="{name}: first blood in {numerator} of {denominator} attack rounds.",
+        explanation="{name}: first blood in {numerator} of {denominator} attack rounds "
+        "({percent}%).",
         stats=("numbers.attack_first_bloods", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_first_bloods",),
@@ -1862,7 +1884,8 @@ TEMPLATES = (
         id="defense-first-bloods-v1",
         question="Holding the line, this player gets the round's first kill in {percent}% of "
         "defense rounds {scope}, more than anyone else here. Who catches the rush first?",
-        explanation="{name}: first blood in {numerator} of {denominator} defense rounds.",
+        explanation="{name}: first blood in {numerator} of {denominator} defense rounds "
+        "({percent}%).",
         stats=("numbers.defense_first_bloods", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_first_bloods",),
@@ -1874,7 +1897,8 @@ TEMPLATES = (
         id="attack-first-deaths-v1",
         question="This player is the first to fall in {percent}% of attack rounds {scope}, more "
         "than anyone else here. Who dry-peeks on attack?",
-        explanation="{name}: first death in {numerator} of {denominator} attack rounds.",
+        explanation="{name}: first death in {numerator} of {denominator} attack rounds "
+        "({percent}%).",
         stats=("numbers.attack_first_deaths", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_first_deaths",),
@@ -1887,7 +1911,8 @@ TEMPLATES = (
         id="defense-first-deaths-v1",
         question="Too eager on defense: this player goes down first in {percent}% of defense "
         "rounds {scope}, the most in this group. Who keeps peeking too early?",
-        explanation="{name}: first death in {numerator} of {denominator} defense rounds.",
+        explanation="{name}: first death in {numerator} of {denominator} defense rounds "
+        "({percent}%).",
         stats=("numbers.defense_first_deaths", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_first_deaths",),
@@ -1900,7 +1925,8 @@ TEMPLATES = (
         id="attack-assists-per-round-v1",
         question="When attacking, this player picks up {value} assists per round {scope}, the "
         "most in this group. Who sets up every execute?",
-        explanation="{name}: {numerator} assists in {denominator} attack rounds.",
+        explanation="{name}: {numerator} assists in {denominator} attack rounds, {value} per "
+        "round.",
         stats=("numbers.attack_assists", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.attack_assists",),
@@ -1912,7 +1938,8 @@ TEMPLATES = (
         id="defense-assists-per-round-v1",
         question="This player chips in {value} assists per round on defense {scope}, more than "
         "anyone else here. Who helps hold every site?",
-        explanation="{name}: {numerator} assists in {denominator} defense rounds.",
+        explanation="{name}: {numerator} assists in {denominator} defense rounds, {value} per "
+        "round.",
         stats=("numbers.defense_assists", "numbers.rounds_played_defense", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.defense_assists",),
@@ -1924,7 +1951,7 @@ TEMPLATES = (
         id="plants-per-attack-round-v1",
         question="Whatever the site, this player plants the spike in {percent}% of their attack "
         "rounds {scope}, more than anyone else here. Who gets the spike down?",
-        explanation="{name}: {numerator} plants in {denominator} attack rounds.",
+        explanation="{name}: {numerator} plants in {denominator} attack rounds ({percent}%).",
         stats=("numbers.plants", "numbers.rounds_played_attack", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.plants",),
@@ -1937,7 +1964,8 @@ TEMPLATES = (
         id="first-half-kills-v1",
         question="In the first half of a match, this player gets {value} kills per round {scope}, "
         "the most in this group. Who starts strong?",
-        explanation="{name}: {numerator} kills in {denominator} first-half rounds.",
+        explanation="{name}: {numerator} kills in {denominator} first-half rounds, {value} per "
+        "round.",
         stats=("numbers.first_half_kills", "numbers.rounds_played_first_half", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_half_kills",),
@@ -1949,7 +1977,8 @@ TEMPLATES = (
         id="second-half-kills-v1",
         question="After the side swap, this player gets {value} kills per round {scope}, the most "
         "in this group. Who finishes strong?",
-        explanation="{name}: {numerator} kills in {denominator} second-half rounds.",
+        explanation="{name}: {numerator} kills in {denominator} second-half rounds, {value} per "
+        "round.",
         stats=("numbers.second_half_kills", "numbers.rounds_played_second_half", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.second_half_kills",),
@@ -1961,7 +1990,7 @@ TEMPLATES = (
         id="first-half-survival-v1",
         question="This player dies in only {percent}% of first-half rounds {scope}, the fewest in "
         "this group. Who's careful early on?",
-        explanation="{name}: {numerator} deaths in {denominator} first-half rounds.",
+        explanation="{name}: {numerator} deaths in {denominator} first-half rounds ({percent}%).",
         stats=("numbers.first_half_deaths", "numbers.rounds_played_first_half", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_half_deaths",),
@@ -1974,7 +2003,7 @@ TEMPLATES = (
         id="second-half-survival-v1",
         question="In the second half, this player dies in only {percent}% of rounds {scope}, the "
         "fewest in this group. Who tightens up after the swap?",
-        explanation="{name}: {numerator} deaths in {denominator} second-half rounds.",
+        explanation="{name}: {numerator} deaths in {denominator} second-half rounds ({percent}%).",
         stats=(
             "numbers.second_half_deaths",
             "numbers.rounds_played_second_half",
@@ -1991,7 +2020,8 @@ TEMPLATES = (
         id="first-half-kast-v1",
         question="This player makes an impact in {percent}% of first-half rounds {scope}, the "
         "highest in this group. Who's switched on from round one?",
-        explanation="{name}: an impact in {numerator} of {denominator} first-half rounds.",
+        explanation="{name}: an impact in {numerator} of {denominator} first-half rounds "
+        "({percent}%).",
         stats=(
             "numbers.first_half_kast_rounds",
             "numbers.rounds_played_first_half",
@@ -2007,7 +2037,8 @@ TEMPLATES = (
         id="second-half-kast-v1",
         question="Second half, this player has an impact in {percent}% of rounds {scope}, more "
         "than anyone else here. Who gets better as the match goes on?",
-        explanation="{name}: an impact in {numerator} of {denominator} second-half rounds.",
+        explanation="{name}: an impact in {numerator} of {denominator} second-half rounds "
+        "({percent}%).",
         stats=(
             "numbers.second_half_kast_rounds",
             "numbers.rounds_played_second_half",
@@ -2023,7 +2054,8 @@ TEMPLATES = (
         id="first-half-assists-v1",
         question="Early in a match, this player sets up {value} assists per round {scope}, the "
         "most in this group. Who supports from the start?",
-        explanation="{name}: {numerator} assists in {denominator} first-half rounds.",
+        explanation="{name}: {numerator} assists in {denominator} first-half rounds, {value} per "
+        "round.",
         stats=("numbers.first_half_assists", "numbers.rounds_played_first_half", "labels.queue_id"),
         rule="pooled_ratio",
         numerator=("numbers.first_half_assists",),
@@ -2035,7 +2067,8 @@ TEMPLATES = (
         id="second-half-assists-v1",
         question="This player picks up {value} assists per round in the second half {scope}, the "
         "most in this group. Who helps close matches out?",
-        explanation="{name}: {numerator} assists in {denominator} second-half rounds.",
+        explanation="{name}: {numerator} assists in {denominator} second-half rounds, {value} per "
+        "round.",
         stats=(
             "numbers.second_half_assists",
             "numbers.rounds_played_second_half",

@@ -326,7 +326,7 @@ def test_pooled_acs_uses_round_weighting_not_mean_of_match_acs() -> None:
     questions = QuestionGenerator([ACS]).generate(players(), stats, 1, 0)
     assert len(questions) == 1
     assert questions[0].correct_option_id == "b"
-    assert "20 total combat score / 10 rounds" in questions[0].explanation
+    assert "(20 combat score over 10 rounds)" in questions[0].explanation
 
 
 @pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), -1])

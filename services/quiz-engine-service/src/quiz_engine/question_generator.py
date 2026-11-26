@@ -356,6 +356,11 @@ def _plural(text: str, value: str) -> str:
     return _PLURAL.sub(lambda m: m[1] if value == "1" else m[2], text)
 
 
+def _join(names: list[str]) -> str:
+    """ "Bob", "Bob and Cara", "Bob, Cara and Dan"."""
+    return names[0] if len(names) == 1 else f"{', '.join(names[:-1])} and {names[-1]}"
+
+
 def _versions(template: QuestionTemplate) -> list[QuestionTemplate]:
     """The template once per window (QuestionTemplate.windows), or just as it is."""
     if not template.windows:
@@ -636,20 +641,37 @@ class QuestionGenerator:
                 [(uid, v.evidence) for uid, v in sorted(values.items())],
             )
         )
-        context = {
-            "name": names[winner],
-            "scope": _scope_text(template, scope),
-            "value": _display(value.score * scale),
-            "numerator": _display(value.numerator),
-            "denominator": _display(value.denominator),
-            "percent": _percent(value.score),
-            "parameter": shown,
-            "friend": shown if template.rule == "pair" else "",
-            "last_n": template.last_n,
-            f"{template.display_label}_name": value.label,
-        }
+
+        def context(uid: str) -> dict[str, object]:
+            mine = values[uid]
+            return {
+                "name": names[uid],
+                "scope": _scope_text(template, scope),
+                "value": _display(mine.score * scale),
+                "numerator": _display(mine.numerator),
+                "denominator": _display(mine.denominator),
+                "percent": _percent(mine.score),
+                "parameter": shown,
+                "friend": shown if template.rule == "pair" else "",
+                "last_n": template.last_n,
+                f"{template.display_label}_name": mine.label,
+            }
+
+        def explain(uid: str, sentence: str) -> str:
+            mine = _display(values[uid].score * scale)
+            return _plural(sentence, mine).format(**context(uid))
+
         shown_value = _display(value.score * scale)
-        text = _plural(template.question, shown_value).format(**context)
+        text = _plural(template.question, shown_value).format(**context(winner))
+        # Then the runner-up's own numbers, so players see how close it was.
+        seconds = sorted(uid for uid, score in scores.items() if score == runner_up)
+        closest = template.explanation
+        if closest.startswith("{name}: "):
+            closest = "{name}, " + closest.removeprefix("{name}: ")
+        explanation = f"{explain(winner, template.explanation)} Next closest: "
+        explanation += explain(seconds[0], closest)
+        if len(seconds) > 1:
+            explanation += f" {_join([names[uid] for uid in seconds[1:]])} tied."
         question = Question(
             # Follows the template and the visible question and answer, so it stays
             # the same after a match sync.
@@ -657,7 +679,7 @@ class QuestionGenerator:
             template_id=template.id,
             type=QUESTION_TYPE_PICK_THE_PLAYER,
             text=text,
-            explanation=_plural(template.explanation, shown_value).format(**context),
+            explanation=explanation,
             correct_option_id=winner,
             # For aggregates this is representative evidence, not the sole
             # source. fact_key fingerprints the full comparison evidence.
