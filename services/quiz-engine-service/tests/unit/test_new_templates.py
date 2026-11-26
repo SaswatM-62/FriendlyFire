@@ -272,7 +272,7 @@ def test_longest_kill_names_the_longest_shot_and_its_map() -> None:
         only(BY_ID["longest-kill-v1"], _longest_kill_stats()),
         BOB,
         f"One of you once landed a kill from 52.25 meters away {ALL}, the longest shot in "
-        "this group. Who has the sniper's eye?",
+        "this group. Who can hit a target from across the map?",
         "Bob, on Haven: a kill from 52.25 meters out.",
     )
 
@@ -377,7 +377,7 @@ def test_underdog_share_is_pooled_and_shown_as_a_percentage() -> None:
         only(BY_ID["underdog-kill-share-v1"], stats),
         ALICE,
         f"27.2% of this player's kills came against a better-equipped opponent {ALL}, the "
-        "highest share in this group. Who loves playing the underdog?",
+        "highest share in this group. Who wins the fights they shouldn't?",
         "Alice: 25 of 92 kills against a pricier loadout.",
     )
 

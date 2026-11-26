@@ -643,7 +643,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         (
             "average-performance-score-v1",
             "This player averages a Performance Score of 265.10 per match {scope}, the highest in "
-            "this group. Who set the pace?",
+            "this group. Who sets the pace?",
             "Alice, averaging 265.10 over 10 matches.",
         ),
         (
@@ -686,7 +686,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         (
             "pistol-round-kills-v1",
             "This player averages 2 pistol-round kills per match {scope}, the most in this group. "
-            "Who starts rounds with a bang?",
+            "Who starts each half with a bang?",
             "Alice: 20 pistol-round kills in 10 matches.",
         ),
     ],
@@ -716,6 +716,105 @@ def test_ff409_clutch_rate_needs_five_attempts() -> None:
     [question] = ask(rate, stats, ALICE, BOB, CARA)
     assert question.correct_option_id == BOB
     assert question.explanation == "Bob: 9 clutch wins out of 20 clutch attempts."
+
+
+def named(row: PlayerMatchStats, **names: str) -> PlayerMatchStats:
+    """The row with "name:<key>" labels, as Match Data writes for weapon and agent keys."""
+    for key, name in names.items():
+        row.labels[f"name:{key}"] = name
+    return row
+
+
+def test_keyed_asks_one_question_per_named_key_and_a_missing_key_is_zero() -> None:
+    guns = template(
+        rule="keyed",
+        stat="numbers.kills_with_weapon",
+        question="{value} kills with the {parameter}?",
+    )
+    stats = [
+        named(match(ALICE, "a1", **{"kills_with_weapon:vandal-id": 7}), **{"vandal-id": "Vandal"}),
+        named(
+            match(BOB, "b1", **{"kills_with_weapon:vandal-id": 3, "kills_with_weapon:op-id": 2}),
+            **{"vandal-id": "Vandal", "op-id": "Operator"},
+        ),
+    ]
+    found = {q.text: q.correct_option_id for q in ask(guns, stats, ALICE, BOB)}
+    # Alice has no Operator key: 0, so Bob's 2 wins it.
+    assert found == {"7 kills with the Vandal?": ALICE, "2 kills with the Operator?": BOB}
+
+
+def test_keyed_never_asks_a_key_without_exactly_one_name() -> None:
+    guns = template(rule="keyed", stat="numbers.kills_with_weapon", question="{value} {parameter}?")
+    unnamed = [
+        match(ALICE, "a1", **{"kills_with_weapon:x": 7}),
+        match(BOB, "b1", **{"kills_with_weapon:x": 3}),
+    ]
+    assert ask(guns, unnamed, ALICE, BOB) == []
+    two_names = [named(unnamed[0], x="Vandal"), named(unnamed[1], x="Phantom")]
+    assert ask(guns, two_names, ALICE, BOB) == []
+
+
+def test_range_is_the_gap_between_the_best_and_worst_match() -> None:
+    swing = template(
+        rule="range",
+        stat="kills",
+        question="Swung by {value}?",
+        explanation="{name}: {numerator} down to {denominator}",
+    )
+    stats = [
+        match(ALICE, "a1", kills=30),
+        match(ALICE, "a2", kills=10),
+        match(BOB, "b1", kills=20),
+        match(BOB, "b2", kills=15),
+    ]
+    [question] = ask(swing, stats, ALICE, BOB)
+    assert (question.text, question.explanation) == ("Swung by 20?", "Alice: 30 down to 10")
+    # One match has no range.
+    assert ask(swing, [*stats[:2], stats[2]], ALICE, BOB) == []
+
+
+def test_absent_is_zero_counts_a_missing_key_as_zero() -> None:
+    triples = template(rule="count", stat="numbers.rounds_with_kills:3", question="{value}?")
+    stats = [
+        match(ALICE, "a1", **{"rounds_with_kills:3": 2}),
+        match(ALICE, "a2"),
+        match(BOB, "b1"),
+    ]
+    assert ask(triples, stats, ALICE, BOB) == []  # missing is unknown
+    [question] = ask(replace(triples, absent_is_zero=True), stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("2?", ALICE)
+
+
+def test_absent_is_zero_works_in_a_ratio() -> None:
+    quiet = template(
+        rule="pooled_ratio",
+        numerator=("numbers.rounds_with_kills:0",),
+        denominator=("numbers.rounds_played",),
+        question="{percent}%?",
+        absent_is_zero=True,
+    )
+    stats = [
+        match(ALICE, "a1", rounds_played=20, **{"rounds_with_kills:0": 5}),
+        match(BOB, "b1", rounds_played=20),
+    ]
+    [question] = ask(quiet, stats, ALICE, BOB)
+    assert (question.text, question.correct_option_id) == ("25%?", ALICE)
+
+
+def test_value_scale_changes_the_shown_value_and_the_rounding_check() -> None:
+    plant = template(
+        rule="max_in_match",
+        stat="numbers.fastest_plant_ms",
+        direction="lowest",
+        question="{value} seconds?",
+        value_scale=0.001,
+    )
+    stats = [match(ALICE, "a1", fastest_plant_ms=15761), match(BOB, "b1", fastest_plant_ms=30000)]
+    [question] = ask(plant, stats, ALICE, BOB)
+    assert question.text == "15.76 seconds?"
+    # 15761 ms and 15764 ms both show as 15.76 seconds: that doesn't single out a winner.
+    stats[1].numbers["fastest_plant_ms"] = 15764
+    assert ask(plant, stats, ALICE, BOB) == []
 
 
 def test_windows_make_one_version_per_window_and_scope() -> None:
@@ -787,6 +886,11 @@ def test_a_quiz_asks_one_version_of_a_template_with_windows() -> None:
             {"rule": "count", "stat": "kills", "windows": (5,), "question": "{last_n}?"},
             "{last_n} can't be used",
         ),
+        ({"rule": "keyed", "stat": "kills", "question": "{parameter}?"}, "keyed needs"),
+        ({"rule": "keyed", "stat": "numbers.kills_with_weapon:x"}, "keyed needs"),
+        ({"rule": "keyed", "stat": "numbers.kills_with_weapon", "question": "?"}, "keyed needs"),
+        ({"rule": "count", "stat": "kills", "absent_is_zero": True}, "absent_is_zero"),
+        ({"rule": "count", "stat": "kills", "value_scale": 0}, "value_scale"),
         ({"rule": "count", "stat": "kills", "question": "Who has {rank}?"}, "{rank}"),
     ],
 )

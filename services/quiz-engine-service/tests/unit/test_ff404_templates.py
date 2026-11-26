@@ -149,7 +149,7 @@ CASES = [
     Case(
         "lowest-adr-v1",
         f"This player deals 50 damage per round {ALL}, the lowest in this group. "
-        "Who would rather forget this one?",
+        "Who's been going easy on the enemy?",
         "Alice: 5000 damage over 100 rounds.",
         {
             ALICE: five(damage_dealt=1000, rounds_played=20),

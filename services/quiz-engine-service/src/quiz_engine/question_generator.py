@@ -163,8 +163,10 @@ def _number(row: PlayerMatchStats, name: str) -> Fraction | None:
     return Fraction(str(value))
 
 
-def _stat(row: PlayerMatchStats, name: str) -> Fraction | None:
-    """One stat of one match, or None when it's missing or invalid."""
+def _stat(row: PlayerMatchStats, name: str, absent_is_zero: bool = False) -> Fraction | None:
+    """One stat of one match, or None when it's missing or invalid.
+
+    absent_is_zero: a numbers.<key> the row doesn't have is 0 (QuestionTemplate)."""
     if name in _SCALARS:
         # Proto3 scalars have no presence. The upstream contract must supply them;
         # a legitimate zero must not be mistaken for a missing value.
@@ -177,7 +179,10 @@ def _stat(row: PlayerMatchStats, name: str) -> Fraction | None:
         return Fraction(int(row.won))
     if name == "matches":
         return Fraction(1)
-    return _number(row, name.removeprefix("numbers."))
+    key = name.removeprefix("numbers.")
+    if absent_is_zero and key not in row.numbers:
+        return Fraction(0)
+    return _number(row, key)
 
 
 def _valid_stat(name: str) -> bool:
@@ -248,8 +253,9 @@ def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value
         numerator, denominator = Fraction(0), Fraction(0)
         evidence: list[tuple[str, ...]] = []
         for row in rows:
-            tops = [_stat(row, name) for name in template.numerator]
-            bottoms = [_stat(row, name) for name in template.denominator]
+            zero = template.absent_is_zero
+            tops = [_stat(row, name, zero) for name in template.numerator]
+            bottoms = [_stat(row, name, zero) for name in template.denominator]
             parts = [*tops, *bottoms]
             if any(part is None for part in parts):
                 return None
@@ -260,7 +266,7 @@ def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value
             return None
         source = rows[0].match_id
         return _Value(numerator / denominator, numerator, denominator, tuple(evidence), source)
-    values = [_stat(row, template.stat) for row in rows]
+    values = [_stat(row, template.stat, template.absent_is_zero) for row in rows]
     if template.skip_missing:
         # Only max_in_match (_check): a match without the stat can't be the best one.
         rows = [row for row, v in zip(rows, values, strict=True) if v is not None]
@@ -289,6 +295,12 @@ def _measure(template: QuestionTemplate, rows: list[PlayerMatchStats]) -> _Value
             if not label:
                 return None
         return _Value(best, best, Fraction(1), tuple(evidence), winner.match_id, label)
+    if template.rule == "range":
+        if len(rows) < 2:
+            return None
+        high, low = max(known), min(known)
+        source = rows[known.index(high)].match_id
+        return _Value(high - low, high, low, tuple(evidence), source)
     raise ValueError(f"Unsupported rule: {template.rule}")
 
 
@@ -350,6 +362,17 @@ def _check(template: QuestionTemplate) -> None:
         problem = "min_denominator needs a pooled_ratio with contenders_only"
     if template.skip_missing and template.rule != "max_in_match":
         problem = "skip_missing only works with max_in_match"
+    if template.rule == "keyed" and (
+        not template.stat.startswith("numbers.")
+        or ":" in template.stat
+        or template.parameter_label
+        or "parameter" not in {name for _, name, _, _ in Formatter().parse(template.question)}
+    ):
+        problem = "keyed needs a numbers.<family> stat, no parameter_label and a {parameter}"
+    if template.absent_is_zero and not all(name.startswith("numbers.") for name in stats):
+        problem = "absent_is_zero only works with numbers.<key> stats"
+    if not template.value_scale > 0:
+        problem = "value_scale must be above 0"
     if template.last_n is not None and template.last_n < 1:
         problem = "last_n must be at least 1"
     if template.windows and (
@@ -495,6 +518,8 @@ class QuestionGenerator:
                 for friend in sorted(groups)
                 if (pair := _pair_values(template, friend, windows, unique)) is not None
             ]
+        if template.rule == "keyed":
+            return _keyed_values(template, windows)
         parameters = [""]
         if template.parameter_label:
             parameters = sorted(
@@ -546,7 +571,8 @@ class QuestionGenerator:
         # A number in the question must single out the winner: if rounding shows the
         # runner-up's value the same way, the question is a tie as far as players see.
         in_question = {name for _, name, _, _ in Formatter().parse(template.question) if name}
-        if ("value" in in_question and _display(best) == _display(runner_up)) or (
+        scale = Fraction(str(template.value_scale))
+        if ("value" in in_question and _display(best * scale) == _display(runner_up * scale)) or (
             "percent" in in_question and _percent(best) == _percent(runner_up)
         ):
             return None
@@ -571,7 +597,7 @@ class QuestionGenerator:
         context = {
             "name": names[winner],
             "scope": _scope_text(template, scope),
-            "value": _display(value.score),
+            "value": _display(value.score * scale),
             "numerator": _display(value.numerator),
             "denominator": _display(value.denominator),
             "percent": _percent(value.score),
@@ -580,7 +606,7 @@ class QuestionGenerator:
             "last_n": template.last_n,
             f"{template.display_label}_name": value.label,
         }
-        shown_value = _display(value.score)
+        shown_value = _display(value.score * scale)
         text = _plural(template.question, shown_value).format(**context)
         question = Question(
             # Follows the template and the visible question and answer, so it stays
@@ -715,3 +741,45 @@ def _pair_values(
             return None
         values[uid] = value
     return values if len(values) >= 2 else None
+
+
+def _keyed_values(
+    template: QuestionTemplate, windows: dict[str, list[PlayerMatchStats]]
+) -> list[tuple[str, dict[str, _Value]]]:
+    """(the key's name, each compared player's count) for every named key of a family.
+
+    A match without the key counts as 0. A key without exactly one "name:<key>" label
+    in the compared players' matches is never asked, so an ID never shows."""
+    family = template.stat.removeprefix("numbers.") + ":"
+    keys = sorted(
+        {
+            key.removeprefix(family)
+            for window in windows.values()
+            for row in window
+            for key in row.numbers
+            if key.startswith(family) and key != family
+        }
+    )
+    result = []
+    for key in keys:
+        names = {
+            row.labels[f"name:{key}"]
+            for window in windows.values()
+            for row in window
+            if row.labels.get(f"name:{key}")
+        }
+        if len(names) != 1:
+            continue
+        counted = replace(
+            template, rule="count", stat=f"{template.stat}:{key}", absent_is_zero=True
+        )
+        values: dict[str, _Value] = {}
+        for uid, window in windows.items():
+            value = _measure(counted, window)
+            if value is None:
+                values = {}
+                break
+            values[uid] = value
+        if len(values) >= 2:
+            result.append((names.pop(), values))
+    return result

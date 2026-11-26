@@ -35,7 +35,7 @@ Every rule here was checked against real HenrikDev v4 data: 84 Competitive match
 - Played rounds only. Surrender placeholder rounds (`result == "Surrendered"`) are skipped everywhere.
 - A division by zero is unknown and omitted (a deathless K/D included), never infinity.
 - Keep full precision; round only for display. Numeric flags are `1` or `0`, omitted when unknown.
-- Keys ending in `:<parameter>` (for example `kills_with_weapon:<weapon_id>`) are prefixes with one key per value; never build a key from an empty parameter.
+- Keys ending in `:<parameter>` (for example `kills_with_weapon:<weapon_id>`) are prefixes with one key per value; never build a key from an empty parameter. They're written only when above zero, so a missing one means 0 (the quiz engine's `keyed` rule and `absent_is_zero`).
 
 ## How the scoreboard relates to the event data
 
@@ -90,6 +90,7 @@ These rules make the scoreboard and the events agree in all 840 sample rows. Der
 | `game_version` | Game build | `M.metadata.game_version` |
 | `result` | `win`, `loss` or `draw` | `T.won` true → win; false with equal `T.rounds.won` and `lost` → draw; false with fewer won → loss; otherwise unknown |
 | `starting_side` | Your team's side in round 1, `attack` or `defense`, and so for the whole first half | The attack-or-defense rule at `R.id` 0 |
+| `name:<id>` | The name of each weapon or agent ID in this record's `kills_with_weapon`, `rounds_with_loadout` and `kills_vs_agent` keys, so questions never show an ID | Weapon and agent tables; an ID they don't know gets no label |
 
 ## Direct numbers (`numbers` map)
 
@@ -106,7 +107,7 @@ These rules make the scoreboard and the events agree in all 840 sample rows. Der
 | `rounds_lost` | Rounds lost by the player's team | `T.rounds.lost` |
 | `rounds_played` | Played rounds | `T.rounds.won + T.rounds.lost`; equals the count of played rounds `R` |
 | `match_length_ms` | Match duration | `M.metadata.game_length_in_ms` |
-| `rank_tier` | Numeric Competitive tier at match time; for opponent stats, not own-rank questions | `P.tier.id`; Competitive only, omitted for tier 0 |
+| `rank_tier` | Numeric Competitive tier at match time; for opponent stats and the rank swing (Question rules), never a player's own rank | `P.tier.id`; Competitive only, omitted for tier 0 |
 | `account_level` | Account level at match time | `P.account_level` |
 | `team_number` | Numeric team identifier, not a position | `P.team_number` |
 | `session_playtime_ms` | Reported session time; not lifetime or match time | `P.session_playtime_in_ms` |
@@ -293,7 +294,7 @@ Null provider values stay unknown.
 - **Solo-scope questions:** most squads still have a few solo games each. Give solo templates `contenders_only` and a small or no `last_n`, so friends with no (or too few) solo games sit out instead of skipping the question.
 - **Sides and halves:** compare per round (a side or half stat ÷ the matching `rounds_played_*`), never as totals: sides and second halves vary in length, and overtime ran in 7 of 84 sample matches. Round wins by side or half are team-shared, so ask them in the solo scope. To ask about one starting side, use `starting_side` as the parameter label (the quiz engine's `ParameterLabel` has to list it first).
 - **Same-agent and same-role questions:** ability questions use each friend's last 30 days and are asked only when at least 2 friends played the agent that has the ability; they compare only those friends. Show ability names from the agent table, never keys: slot names don't match keys (Phoenix's Hot Hands is `Ability1`, pressed with E). Kill questions for a single ability work only for damage abilities. Role questions use `labels.role`. Cross-agent utility uses `performance_utility_usage`.
-- **Rank:** never ask about a player's own rank, which friends already know. Ranks feed opponent questions instead: giant killer, playground bully, kills on the highest- or lowest-ranked opponent. Competitive only; tier 0 is unknown. Riot's policy forbids alternatives to the official ranking and MMR or ELO calculators, so never score or rank players' skill ourselves.
+- **Rank:** never ask about a player's own rank, which friends already know. Ranks feed opponent questions instead: giant killer, playground bully, kills on the highest- or lowest-ranked opponent. The one exception is the rank swing (PM decision, 23 Nov 2026): the gap between a player's highest and lowest `rank_tier` in the window, in either direction, shown in divisions and never as a rank name. Competitive only; tier 0 is unknown. Riot's policy forbids alternatives to the official ranking and MMR or ELO calculators, so never score or rank players' skill ourselves.
 - **Difficulty:** the question generator rates each question easy, medium or hard from the winner's lead over the runner-up (`question_generator.difficulty`), so templates carry no difficulty.
 
 The [sample question bank](https://tamucs-my.sharepoint.com/:w:/r/personal/akhil_tamu_tamu_edu/Documents/FF%20Sample%20Trivia%20Questions.docx?d=wcf956a5805f44fe8ad8cd919daaeca92&csf=1&web=1&e=qwkXPA) can use agent, map and act filters over these records.

@@ -613,8 +613,10 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
     all three played on one team, then six solo matches each. Alice is ahead on every
     stat, Cara second, with three exceptions so that no comparison ties: denominator-only
     stats (rounds, attempts) are equal for all; deaths, and stats that are counted in one
-    template and a denominator in another (first deaths), put Alice last; and Alice always
-    plays Jett, Cara mostly and Bob every other match."""
+    template and a denominator in another (first deaths), put Alice last; Alice always
+    plays Jett, Cara mostly and Bob every other match; and Alice wins every match, Cara
+    every other one and Bob none. Each keyed family has one named key, and the stats a
+    range template reads double in every other match, so each player's swing differs."""
     room = [*players(), QuizPlayer(user_id="c", display_name="Cara")]
     keys = {
         name.removeprefix("numbers.")
@@ -623,6 +625,8 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
         if name.startswith("numbers.")
     }
     pair_keys = {t.stat.removeprefix("numbers.") for t in TEMPLATES if t.rule == "pair"}
+    keyed = {t.stat.removeprefix("numbers.") for t in TEMPLATES if t.rule == "keyed"}
+    swings = {t.stat.removeprefix("numbers.") for t in TEMPLATES if t.rule == "range"}
     flat = {k for t in TEMPLATES for k in t.denominator} - {
         k for t in TEMPLATES for k in (t.stat, *t.numerator)
     }
@@ -636,7 +640,7 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
     stats = []
     for uid in level:
         numbers: dict[str, float] = {}
-        for key in keys - pair_keys:
+        for key in keys - pair_keys - keyed:
             if f"numbers.{key}" in flat:
                 numbers[key] = 20
             elif f"numbers.{key}" in inverse:
@@ -645,25 +649,29 @@ def every_stat_history() -> tuple[list[QuizPlayer], list[PlayerMatchStats]]:
                 numbers[key] = level[uid]
         for key in pair_keys:
             numbers.update({f"{key}:{friend}": level[uid] for friend in level if friend != uid})
+        numbers.update({f"{family}:gun": level[uid] for family in keyed})
         for n in range(12):
+            swing = 2 if n % 2 else 1
+            won = uid == "a" or (uid == "c" and n % 2 == 0)
             match = PlayerMatchStats(
                 user_id=uid,
                 match_id=f"shared-{n}" if n < 6 else f"{uid}-{n}",
                 game="valorant",
                 # Not a multiple of the numerators, so kill shares don't tie.
-                kills=10 + level[uid],
+                kills=10 + level[uid] * (swing if "kills" in swings else 1),
                 deaths=20 - level[uid],
                 assists=level[uid],
-                won=uid == "a",
+                won=won,
                 labels={
                     "queue_id": "competitive",
-                    "result": "win" if uid == "a" else "loss",
+                    "result": "win" if won else "loss",
+                    "name:gun": "Vandal",
                     "team_id": "Red",
                     "agent": "Jett" if agent_pattern[uid](n) else "Sage",
                     "map": "Ascent",
                     "role": "Duelist",
                 },
-                numbers=numbers,
+                numbers={**numbers, **{k: numbers[k] * swing for k in swings if k in numbers}},
             )
             match.played_at.seconds = n + 1
             stats.append(match)
