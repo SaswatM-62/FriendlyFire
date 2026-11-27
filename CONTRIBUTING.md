@@ -512,6 +512,13 @@ services/match-data-service/
   the list or belongs to another email. A player without an email can't be linked (the
   service logs how many there are). The page says it's a mock; in production Riot's own
   sign-in and consent screen opens instead.
+  **PUUIDs are looked up for you:** leave out a player's `puuid` (and `region`) and, when
+  `HENRIKDEV_API_KEY` is set, the mock looks them up from `gameName` and `tagLine`
+  through HenrikDev at startup (`internal/lookup`), so a real tester only needs their
+  Riot ID and email. A `puuid` in the file always wins and is never looked up. A player
+  whose lookup fails (no key, a typo in the Riot ID, HenrikDev down) is left out and the
+  log says who and why; the rest still load. A PUUID that's wrong (say `"1"`) still loads,
+  but Match Data's sync fails with HTTP 400, so leave it out rather than guessing.
   **Playing a quiz on the fixtures:** the example players' `@example.com` emails can't sign
   in, so copy `testplayers.example.json` to `testplayers.json` and put each tester's sign-in
   email on one of the five players (keep the PUUIDs: they're who the fixture matches

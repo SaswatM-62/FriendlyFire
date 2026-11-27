@@ -21,6 +21,8 @@ func TestLoadUsesDefaultsWhenNothingIsSet(t *testing.T) {
 	assert.Equal(t, 8090, cfg.HTTPPort)
 	assert.Equal(t, []string{"http://localhost:3000/link/riot/callback"}, cfg.RedirectURIs)
 	assert.Equal(t, "testplayers.example.json", cfg.PlayersFile)
+	assert.Empty(t, cfg.HenrikDevAPIKey)
+	assert.Equal(t, "https://api.henrikdev.xyz", cfg.HenrikDevBaseURL)
 }
 
 func TestLoadReadsEverySetting(t *testing.T) {
@@ -28,12 +30,16 @@ func TestLoadReadsEverySetting(t *testing.T) {
 		"HTTP_PORT":              "9000",
 		"MOCK_RSO_REDIRECT_URIS": " https://app.example.com/cb , http://localhost:3000/cb?x=1,",
 		"MOCK_RSO_PLAYERS_FILE":  "/config/players.json",
+		"HENRIKDEV_API_KEY":      "HDEV-key",
+		"HENRIKDEV_BASE_URL":     "http://henrik.test",
 	}))
 
 	require.NoError(t, err)
 	assert.Equal(t, 9000, cfg.HTTPPort)
 	assert.Equal(t, []string{"https://app.example.com/cb", "http://localhost:3000/cb?x=1"}, cfg.RedirectURIs)
 	assert.Equal(t, "/config/players.json", cfg.PlayersFile)
+	assert.Equal(t, "HDEV-key", cfg.HenrikDevAPIKey)
+	assert.Equal(t, "http://henrik.test", cfg.HenrikDevBaseURL)
 }
 
 func TestLoadRejectsANonNumericPort(t *testing.T) {

@@ -41,7 +41,7 @@ compose.yaml, Makefile, mise.toml      local dev; mise.toml pins every tool vers
 | quiz-engine-service | matchdata (gRPC) |
 | scoring-service | postgres (`scoring`) |
 | match-data-service | postgres (`matchdata`); later HenrikDev / Riot over HTTPS |
-| mock-rso-service | nothing |
+| mock-rso-service | HenrikDev over HTTPS, only at startup to look up test players' PUUIDs |
 
 ## Commands
 
