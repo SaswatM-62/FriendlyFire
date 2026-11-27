@@ -128,4 +128,31 @@ public interface UserOrBuilder extends
    * <code>.google.protobuf.Timestamp onboarded_at = 6 [json_name = "onboardedAt"];</code>
    */
   com.google.protobuf.TimestampOrBuilder getOnboardedAtOrBuilder();
+
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   * @return Whether the look field is set.
+   */
+  boolean hasLook();
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   * @return The look.
+   */
+  com.friendlyfire.proto.friendlyfire.account.v1.Look getLook();
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder getLookOrBuilder();
 }

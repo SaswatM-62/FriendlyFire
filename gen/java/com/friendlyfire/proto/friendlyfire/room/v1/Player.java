@@ -54,6 +54,7 @@ private static final long serialVersionUID = 0L;
             com.friendlyfire.proto.friendlyfire.room.v1.Player.class, com.friendlyfire.proto.friendlyfire.room.v1.Player.Builder.class);
   }
 
+  private int bitField0_;
   public static final int USER_ID_FIELD_NUMBER = 1;
   @SuppressWarnings("serial")
   private volatile java.lang.Object userId_ = "";
@@ -292,6 +293,47 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int LOOK_FIELD_NUMBER = 11;
+  private com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook look_;
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   * @return Whether the look field is set.
+   */
+  @java.lang.Override
+  public boolean hasLook() {
+    return ((bitField0_ & 0x00000001) != 0);
+  }
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   * @return The look.
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook getLook() {
+    return look_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.getDefaultInstance() : look_;
+  }
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder getLookOrBuilder() {
+    return look_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.getDefaultInstance() : look_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -333,6 +375,9 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(riotTagLine_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 10, riotTagLine_);
     }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      output.writeMessage(11, getLook());
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -369,6 +414,10 @@ private static final long serialVersionUID = 0L;
     }
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(riotTagLine_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(10, riotTagLine_);
+    }
+    if (((bitField0_ & 0x00000001) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(11, getLook());
     }
     return size;
   }
@@ -409,6 +458,11 @@ private static final long serialVersionUID = 0L;
         != other.getNotEnoughMatches()) return false;
     if (!getRiotTagLine()
         .equals(other.getRiotTagLine())) return false;
+    if (hasLook() != other.hasLook()) return false;
+    if (hasLook()) {
+      if (!getLook()
+          .equals(other.getLook())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -440,6 +494,10 @@ private static final long serialVersionUID = 0L;
         getNotEnoughMatches());
     hash = (37 * hash) + RIOT_TAG_LINE_FIELD_NUMBER;
     hash = (53 * hash) + getRiotTagLine().hashCode();
+    if (hasLook()) {
+      hash = (37 * hash) + LOOK_FIELD_NUMBER;
+      hash = (53 * hash) + getLook().hashCode();
+    }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -559,13 +617,19 @@ private static final long serialVersionUID = 0L;
 
     // Construct using com.friendlyfire.proto.friendlyfire.room.v1.Player.newBuilder()
     private Builder() {
-
+      maybeForceBuilderInitialization();
     }
 
     private Builder(
         com.google.protobuf.GeneratedMessage.BuilderParent parent) {
       super(parent);
-
+      maybeForceBuilderInitialization();
+    }
+    private void maybeForceBuilderInitialization() {
+      if (com.google.protobuf.GeneratedMessage
+              .alwaysUseFieldBuilders) {
+        internalGetLookFieldBuilder();
+      }
     }
     @java.lang.Override
     public Builder clear() {
@@ -580,6 +644,11 @@ private static final long serialVersionUID = 0L;
       dataEstimatedSeconds_ = 0;
       notEnoughMatches_ = false;
       riotTagLine_ = "";
+      look_ = null;
+      if (lookBuilder_ != null) {
+        lookBuilder_.dispose();
+        lookBuilder_ = null;
+      }
       return this;
     }
 
@@ -640,6 +709,14 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000100) != 0)) {
         result.riotTagLine_ = riotTagLine_;
       }
+      int to_bitField0_ = 0;
+      if (((from_bitField0_ & 0x00000200) != 0)) {
+        result.look_ = lookBuilder_ == null
+            ? look_
+            : lookBuilder_.build();
+        to_bitField0_ |= 0x00000001;
+      }
+      result.bitField0_ |= to_bitField0_;
     }
 
     @java.lang.Override
@@ -686,6 +763,9 @@ private static final long serialVersionUID = 0L;
         riotTagLine_ = other.riotTagLine_;
         bitField0_ |= 0x00000100;
         onChanged();
+      }
+      if (other.hasLook()) {
+        mergeLook(other.getLook());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -756,6 +836,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000100;
               break;
             } // case 82
+            case 90: {
+              input.readMessage(
+                  internalGetLookFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000200;
+              break;
+            } // case 90
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1331,6 +1418,170 @@ private static final long serialVersionUID = 0L;
       bitField0_ |= 0x00000100;
       onChanged();
       return this;
+    }
+
+    private com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook look_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.Builder, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder> lookBuilder_;
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     * @return Whether the look field is set.
+     */
+    public boolean hasLook() {
+      return ((bitField0_ & 0x00000200) != 0);
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     * @return The look.
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook getLook() {
+      if (lookBuilder_ == null) {
+        return look_ == null ? com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.getDefaultInstance() : look_;
+      } else {
+        return lookBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public Builder setLook(com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook value) {
+      if (lookBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        look_ = value;
+      } else {
+        lookBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public Builder setLook(
+        com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.Builder builderForValue) {
+      if (lookBuilder_ == null) {
+        look_ = builderForValue.build();
+      } else {
+        lookBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public Builder mergeLook(com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook value) {
+      if (lookBuilder_ == null) {
+        if (((bitField0_ & 0x00000200) != 0) &&
+          look_ != null &&
+          look_ != com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.getDefaultInstance()) {
+          getLookBuilder().mergeFrom(value);
+        } else {
+          look_ = value;
+        }
+      } else {
+        lookBuilder_.mergeFrom(value);
+      }
+      if (look_ != null) {
+        bitField0_ |= 0x00000200;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public Builder clearLook() {
+      bitField0_ = (bitField0_ & ~0x00000200);
+      look_ = null;
+      if (lookBuilder_ != null) {
+        lookBuilder_.dispose();
+        lookBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.Builder getLookBuilder() {
+      bitField0_ |= 0x00000200;
+      onChanged();
+      return internalGetLookFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder getLookOrBuilder() {
+      if (lookBuilder_ != null) {
+        return lookBuilder_.getMessageOrBuilder();
+      } else {
+        return look_ == null ?
+            com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.getDefaultInstance() : look_;
+      }
+    }
+    /**
+     * <pre>
+     * Their character in this room (FF-519), handed out when they join and kept
+     * for the room. Always set.
+     * </pre>
+     *
+     * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.Builder, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder> 
+        internalGetLookFieldBuilder() {
+      if (lookBuilder_ == null) {
+        lookBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook.Builder, com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder>(
+                getLook(),
+                getParentForChildren(),
+                isClean());
+        look_ = null;
+      }
+      return lookBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.room.v1.Player)

@@ -110,7 +110,9 @@ type User struct {
 	// When they finished (or skipped the end of) the new-player tutorial. Not
 	// set until then. Accounts made before the tutorial existed count as done
 	// (set to created_at).
-	OnboardedAt   *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=onboarded_at,json=onboardedAt,proto3" json:"onboarded_at,omitempty"`
+	OnboardedAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=onboarded_at,json=onboardedAt,proto3" json:"onboarded_at,omitempty"`
+	// Their favourite look. Not set until they pick one on Profile.
+	Look          *Look `protobuf:"bytes,7,opt,name=look,proto3" json:"look,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -187,6 +189,79 @@ func (x *User) GetOnboardedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *User) GetLook() *Look {
+	if x != nil {
+		return x.Look
+	}
+	return nil
+}
+
+// A favourite character (FF-519), by the frontend's IDs. RoomService hands
+// out icons and colours first come, first served; the expression is always
+// kept, because faces can repeat.
+type Look struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// blob, ghost, boxy, onigiri, star, cloud, shield, flower, gem or drop.
+	Icon string `protobuf:"bytes,1,opt,name=icon,proto3" json:"icon,omitempty"`
+	// pink, cyan, mint, orange, violet, yellow, blue, lime, fuchsia or silver.
+	Colour string `protobuf:"bytes,2,opt,name=colour,proto3" json:"colour,omitempty"`
+	// happy, smirk, cocky, locked-in, fierce, wink, gloat or shades.
+	Expression    string `protobuf:"bytes,3,opt,name=expression,proto3" json:"expression,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Look) Reset() {
+	*x = Look{}
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Look) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Look) ProtoMessage() {}
+
+func (x *Look) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Look.ProtoReflect.Descriptor instead.
+func (*Look) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Look) GetIcon() string {
+	if x != nil {
+		return x.Icon
+	}
+	return ""
+}
+
+func (x *Look) GetColour() string {
+	if x != nil {
+		return x.Colour
+	}
+	return ""
+}
+
+func (x *Look) GetExpression() string {
+	if x != nil {
+		return x.Expression
+	}
+	return ""
+}
+
 // What the app may show about a linked Riot account. The PUUID is
 // deliberately left out: it stays inside AccountService and MatchDataService
 // and is never sent to browsers.
@@ -202,7 +277,7 @@ type RiotLink struct {
 
 func (x *RiotLink) Reset() {
 	*x = RiotLink{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[1]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -214,7 +289,7 @@ func (x *RiotLink) String() string {
 func (*RiotLink) ProtoMessage() {}
 
 func (x *RiotLink) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[1]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -227,7 +302,7 @@ func (x *RiotLink) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RiotLink.ProtoReflect.Descriptor instead.
 func (*RiotLink) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{1}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RiotLink) GetGameName() string {
@@ -271,7 +346,7 @@ type EnsureUserRequest struct {
 
 func (x *EnsureUserRequest) Reset() {
 	*x = EnsureUserRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[2]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -283,7 +358,7 @@ func (x *EnsureUserRequest) String() string {
 func (*EnsureUserRequest) ProtoMessage() {}
 
 func (x *EnsureUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[2]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -296,7 +371,7 @@ func (x *EnsureUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnsureUserRequest.ProtoReflect.Descriptor instead.
 func (*EnsureUserRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{2}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *EnsureUserRequest) GetAuthSubject() string {
@@ -331,7 +406,7 @@ type EnsureUserResponse struct {
 
 func (x *EnsureUserResponse) Reset() {
 	*x = EnsureUserResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[3]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -343,7 +418,7 @@ func (x *EnsureUserResponse) String() string {
 func (*EnsureUserResponse) ProtoMessage() {}
 
 func (x *EnsureUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[3]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -356,7 +431,7 @@ func (x *EnsureUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnsureUserResponse.ProtoReflect.Descriptor instead.
 func (*EnsureUserResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{3}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *EnsureUserResponse) GetUser() *User {
@@ -382,7 +457,7 @@ type GetUserRequest struct {
 
 func (x *GetUserRequest) Reset() {
 	*x = GetUserRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[4]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +469,7 @@ func (x *GetUserRequest) String() string {
 func (*GetUserRequest) ProtoMessage() {}
 
 func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[4]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +482,7 @@ func (x *GetUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserRequest.ProtoReflect.Descriptor instead.
 func (*GetUserRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{4}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetUserRequest) GetUserId() string {
@@ -426,7 +501,7 @@ type GetUserResponse struct {
 
 func (x *GetUserResponse) Reset() {
 	*x = GetUserResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[5]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -438,7 +513,7 @@ func (x *GetUserResponse) String() string {
 func (*GetUserResponse) ProtoMessage() {}
 
 func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[5]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,7 +526,7 @@ func (x *GetUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUserResponse.ProtoReflect.Descriptor instead.
 func (*GetUserResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{5}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetUserResponse) GetUser() *User {
@@ -471,7 +546,7 @@ type UpdateDisplayNameRequest struct {
 
 func (x *UpdateDisplayNameRequest) Reset() {
 	*x = UpdateDisplayNameRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[6]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +558,7 @@ func (x *UpdateDisplayNameRequest) String() string {
 func (*UpdateDisplayNameRequest) ProtoMessage() {}
 
 func (x *UpdateDisplayNameRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[6]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,7 +571,7 @@ func (x *UpdateDisplayNameRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDisplayNameRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDisplayNameRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{6}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateDisplayNameRequest) GetUserId() string {
@@ -522,7 +597,7 @@ type UpdateDisplayNameResponse struct {
 
 func (x *UpdateDisplayNameResponse) Reset() {
 	*x = UpdateDisplayNameResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[7]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -534,7 +609,7 @@ func (x *UpdateDisplayNameResponse) String() string {
 func (*UpdateDisplayNameResponse) ProtoMessage() {}
 
 func (x *UpdateDisplayNameResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[7]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -547,7 +622,7 @@ func (x *UpdateDisplayNameResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDisplayNameResponse.ProtoReflect.Descriptor instead.
 func (*UpdateDisplayNameResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{7}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateDisplayNameResponse) GetUser() *User {
@@ -571,7 +646,7 @@ type StartRiotLinkRequest struct {
 
 func (x *StartRiotLinkRequest) Reset() {
 	*x = StartRiotLinkRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[8]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -583,7 +658,7 @@ func (x *StartRiotLinkRequest) String() string {
 func (*StartRiotLinkRequest) ProtoMessage() {}
 
 func (x *StartRiotLinkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[8]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -596,7 +671,7 @@ func (x *StartRiotLinkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartRiotLinkRequest.ProtoReflect.Descriptor instead.
 func (*StartRiotLinkRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{8}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *StartRiotLinkRequest) GetUserId() string {
@@ -622,7 +697,7 @@ type StartRiotLinkResponse struct {
 
 func (x *StartRiotLinkResponse) Reset() {
 	*x = StartRiotLinkResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[9]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -634,7 +709,7 @@ func (x *StartRiotLinkResponse) String() string {
 func (*StartRiotLinkResponse) ProtoMessage() {}
 
 func (x *StartRiotLinkResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[9]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -647,7 +722,7 @@ func (x *StartRiotLinkResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartRiotLinkResponse.ProtoReflect.Descriptor instead.
 func (*StartRiotLinkResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{9}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *StartRiotLinkResponse) GetAuthorizeUrl() string {
@@ -670,7 +745,7 @@ type CompleteRiotLinkRequest struct {
 
 func (x *CompleteRiotLinkRequest) Reset() {
 	*x = CompleteRiotLinkRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[10]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -682,7 +757,7 @@ func (x *CompleteRiotLinkRequest) String() string {
 func (*CompleteRiotLinkRequest) ProtoMessage() {}
 
 func (x *CompleteRiotLinkRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[10]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -695,7 +770,7 @@ func (x *CompleteRiotLinkRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteRiotLinkRequest.ProtoReflect.Descriptor instead.
 func (*CompleteRiotLinkRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{10}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *CompleteRiotLinkRequest) GetUserId() string {
@@ -735,7 +810,7 @@ type CompleteRiotLinkResponse struct {
 
 func (x *CompleteRiotLinkResponse) Reset() {
 	*x = CompleteRiotLinkResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[11]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +822,7 @@ func (x *CompleteRiotLinkResponse) String() string {
 func (*CompleteRiotLinkResponse) ProtoMessage() {}
 
 func (x *CompleteRiotLinkResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[11]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +835,7 @@ func (x *CompleteRiotLinkResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CompleteRiotLinkResponse.ProtoReflect.Descriptor instead.
 func (*CompleteRiotLinkResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{11}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *CompleteRiotLinkResponse) GetRiotLink() *RiotLink {
@@ -779,7 +854,7 @@ type UnlinkRiotRequest struct {
 
 func (x *UnlinkRiotRequest) Reset() {
 	*x = UnlinkRiotRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[12]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -791,7 +866,7 @@ func (x *UnlinkRiotRequest) String() string {
 func (*UnlinkRiotRequest) ProtoMessage() {}
 
 func (x *UnlinkRiotRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[12]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -804,7 +879,7 @@ func (x *UnlinkRiotRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnlinkRiotRequest.ProtoReflect.Descriptor instead.
 func (*UnlinkRiotRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{12}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UnlinkRiotRequest) GetUserId() string {
@@ -822,7 +897,7 @@ type UnlinkRiotResponse struct {
 
 func (x *UnlinkRiotResponse) Reset() {
 	*x = UnlinkRiotResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[13]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -834,7 +909,7 @@ func (x *UnlinkRiotResponse) String() string {
 func (*UnlinkRiotResponse) ProtoMessage() {}
 
 func (x *UnlinkRiotResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[13]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -847,7 +922,7 @@ func (x *UnlinkRiotResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UnlinkRiotResponse.ProtoReflect.Descriptor instead.
 func (*UnlinkRiotResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{13}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{14}
 }
 
 type DeleteAccountRequest struct {
@@ -859,7 +934,7 @@ type DeleteAccountRequest struct {
 
 func (x *DeleteAccountRequest) Reset() {
 	*x = DeleteAccountRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[14]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -871,7 +946,7 @@ func (x *DeleteAccountRequest) String() string {
 func (*DeleteAccountRequest) ProtoMessage() {}
 
 func (x *DeleteAccountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[14]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -884,7 +959,7 @@ func (x *DeleteAccountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAccountRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAccountRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{14}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DeleteAccountRequest) GetUserId() string {
@@ -902,7 +977,7 @@ type DeleteAccountResponse struct {
 
 func (x *DeleteAccountResponse) Reset() {
 	*x = DeleteAccountResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[15]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -914,7 +989,7 @@ func (x *DeleteAccountResponse) String() string {
 func (*DeleteAccountResponse) ProtoMessage() {}
 
 func (x *DeleteAccountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[15]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -927,7 +1002,7 @@ func (x *DeleteAccountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAccountResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAccountResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{15}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{16}
 }
 
 type GetDataStatusRequest struct {
@@ -939,7 +1014,7 @@ type GetDataStatusRequest struct {
 
 func (x *GetDataStatusRequest) Reset() {
 	*x = GetDataStatusRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[16]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -951,7 +1026,7 @@ func (x *GetDataStatusRequest) String() string {
 func (*GetDataStatusRequest) ProtoMessage() {}
 
 func (x *GetDataStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[16]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -964,7 +1039,7 @@ func (x *GetDataStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataStatusRequest.ProtoReflect.Descriptor instead.
 func (*GetDataStatusRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{16}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *GetDataStatusRequest) GetUserIds() []string {
@@ -984,7 +1059,7 @@ type GetDataStatusResponse struct {
 
 func (x *GetDataStatusResponse) Reset() {
 	*x = GetDataStatusResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[17]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -996,7 +1071,7 @@ func (x *GetDataStatusResponse) String() string {
 func (*GetDataStatusResponse) ProtoMessage() {}
 
 func (x *GetDataStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[17]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1009,7 +1084,7 @@ func (x *GetDataStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataStatusResponse.ProtoReflect.Descriptor instead.
 func (*GetDataStatusResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{17}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *GetDataStatusResponse) GetStatuses() []*UserDataStatus {
@@ -1038,7 +1113,7 @@ type UserDataStatus struct {
 
 func (x *UserDataStatus) Reset() {
 	*x = UserDataStatus{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[18]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1050,7 +1125,7 @@ func (x *UserDataStatus) String() string {
 func (*UserDataStatus) ProtoMessage() {}
 
 func (x *UserDataStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[18]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1063,7 +1138,7 @@ func (x *UserDataStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserDataStatus.ProtoReflect.Descriptor instead.
 func (*UserDataStatus) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{18}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UserDataStatus) GetUserId() string {
@@ -1117,7 +1192,7 @@ type FinishOnboardingRequest struct {
 
 func (x *FinishOnboardingRequest) Reset() {
 	*x = FinishOnboardingRequest{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1129,7 +1204,7 @@ func (x *FinishOnboardingRequest) String() string {
 func (*FinishOnboardingRequest) ProtoMessage() {}
 
 func (x *FinishOnboardingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[19]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1142,7 +1217,7 @@ func (x *FinishOnboardingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FinishOnboardingRequest.ProtoReflect.Descriptor instead.
 func (*FinishOnboardingRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{19}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *FinishOnboardingRequest) GetUserId() string {
@@ -1161,7 +1236,7 @@ type FinishOnboardingResponse struct {
 
 func (x *FinishOnboardingResponse) Reset() {
 	*x = FinishOnboardingResponse{}
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1173,7 +1248,7 @@ func (x *FinishOnboardingResponse) String() string {
 func (*FinishOnboardingResponse) ProtoMessage() {}
 
 func (x *FinishOnboardingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[20]
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1186,10 +1261,106 @@ func (x *FinishOnboardingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FinishOnboardingResponse.ProtoReflect.Descriptor instead.
 func (*FinishOnboardingResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{20}
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *FinishOnboardingResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+type UpdateLookRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Look          *Look                  `protobuf:"bytes,2,opt,name=look,proto3" json:"look,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateLookRequest) Reset() {
+	*x = UpdateLookRequest{}
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateLookRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateLookRequest) ProtoMessage() {}
+
+func (x *UpdateLookRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateLookRequest.ProtoReflect.Descriptor instead.
+func (*UpdateLookRequest) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *UpdateLookRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateLookRequest) GetLook() *Look {
+	if x != nil {
+		return x.Look
+	}
+	return nil
+}
+
+type UpdateLookResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateLookResponse) Reset() {
+	*x = UpdateLookResponse{}
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateLookResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateLookResponse) ProtoMessage() {}
+
+func (x *UpdateLookResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_account_v1_account_service_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateLookResponse.ProtoReflect.Descriptor instead.
+func (*UpdateLookResponse) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_account_v1_account_service_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *UpdateLookResponse) GetUser() *User {
 	if x != nil {
 		return x.User
 	}
@@ -1200,7 +1371,7 @@ var File_friendlyfire_account_v1_account_service_proto protoreflect.FileDescript
 
 const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\n" +
-	"-friendlyfire/account/v1/account_service.proto\x12\x17friendlyfire.account.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\x02\n" +
+	"-friendlyfire/account/v1/account_service.proto\x12\x17friendlyfire.account.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x02\n" +
 	"\x04User\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x14\n" +
@@ -1208,7 +1379,14 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12>\n" +
 	"\triot_link\x18\x05 \x01(\v2!.friendlyfire.account.v1.RiotLinkR\briotLink\x12=\n" +
-	"\fonboarded_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\vonboardedAt\"\x93\x01\n" +
+	"\fonboarded_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\vonboardedAt\x121\n" +
+	"\x04look\x18\a \x01(\v2\x1d.friendlyfire.account.v1.LookR\x04look\"R\n" +
+	"\x04Look\x12\x12\n" +
+	"\x04icon\x18\x01 \x01(\tR\x04icon\x12\x16\n" +
+	"\x06colour\x18\x02 \x01(\tR\x06colour\x12\x1e\n" +
+	"\n" +
+	"expression\x18\x03 \x01(\tR\n" +
+	"expression\"\x93\x01\n" +
 	"\bRiotLink\x12\x1b\n" +
 	"\tgame_name\x18\x01 \x01(\tR\bgameName\x12\x19\n" +
 	"\btag_line\x18\x02 \x01(\tR\atagLine\x12\x16\n" +
@@ -1262,6 +1440,11 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\x17FinishOnboardingRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"M\n" +
 	"\x18FinishOnboardingResponse\x121\n" +
+	"\x04user\x18\x01 \x01(\v2\x1d.friendlyfire.account.v1.UserR\x04user\"_\n" +
+	"\x11UpdateLookRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x121\n" +
+	"\x04look\x18\x02 \x01(\v2\x1d.friendlyfire.account.v1.LookR\x04look\"G\n" +
+	"\x12UpdateLookResponse\x121\n" +
 	"\x04user\x18\x01 \x01(\v2\x1d.friendlyfire.account.v1.UserR\x04user*\xaa\x01\n" +
 	"\n" +
 	"DataStatus\x12\x1b\n" +
@@ -1270,7 +1453,7 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"\x13DATA_STATUS_SYNCING\x10\x02\x12\x1a\n" +
 	"\x16DATA_STATUS_NOT_SYNCED\x10\x03\x12\x1a\n" +
 	"\x16DATA_STATUS_NOT_LINKED\x10\x04\x12\x16\n" +
-	"\x12DATA_STATUS_FAILED\x10\x052\xfa\a\n" +
+	"\x12DATA_STATUS_FAILED\x10\x052\xe1\b\n" +
 	"\x0eAccountService\x12e\n" +
 	"\n" +
 	"EnsureUser\x12*.friendlyfire.account.v1.EnsureUserRequest\x1a+.friendlyfire.account.v1.EnsureUserResponse\x12\\\n" +
@@ -1282,7 +1465,9 @@ const file_friendlyfire_account_v1_account_service_proto_rawDesc = "" +
 	"UnlinkRiot\x12*.friendlyfire.account.v1.UnlinkRiotRequest\x1a+.friendlyfire.account.v1.UnlinkRiotResponse\x12n\n" +
 	"\rDeleteAccount\x12-.friendlyfire.account.v1.DeleteAccountRequest\x1a..friendlyfire.account.v1.DeleteAccountResponse\x12n\n" +
 	"\rGetDataStatus\x12-.friendlyfire.account.v1.GetDataStatusRequest\x1a..friendlyfire.account.v1.GetDataStatusResponse\x12w\n" +
-	"\x10FinishOnboarding\x120.friendlyfire.account.v1.FinishOnboardingRequest\x1a1.friendlyfire.account.v1.FinishOnboardingResponseB\x90\x02\n" +
+	"\x10FinishOnboarding\x120.friendlyfire.account.v1.FinishOnboardingRequest\x1a1.friendlyfire.account.v1.FinishOnboardingResponse\x12e\n" +
+	"\n" +
+	"UpdateLook\x12*.friendlyfire.account.v1.UpdateLookRequest\x1a+.friendlyfire.account.v1.UpdateLookResponseB\x90\x02\n" +
 	".com.friendlyfire.proto.friendlyfire.account.v1B\x13AccountServiceProtoP\x01ZKgithub.com/SaswatM-62/FriendlyFire/gen/go/friendlyfire/account/v1;accountv1\xa2\x02\x03FAX\xaa\x02\x17Friendlyfire.Account.V1\xca\x02\x17Friendlyfire\\Account\\V1\xe2\x02#Friendlyfire\\Account\\V1\\GPBMetadata\xea\x02\x19Friendlyfire::Account::V1b\x06proto3"
 
 var (
@@ -1298,68 +1483,76 @@ func file_friendlyfire_account_v1_account_service_proto_rawDescGZIP() []byte {
 }
 
 var file_friendlyfire_account_v1_account_service_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_friendlyfire_account_v1_account_service_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_friendlyfire_account_v1_account_service_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_friendlyfire_account_v1_account_service_proto_goTypes = []any{
 	(DataStatus)(0),                   // 0: friendlyfire.account.v1.DataStatus
 	(*User)(nil),                      // 1: friendlyfire.account.v1.User
-	(*RiotLink)(nil),                  // 2: friendlyfire.account.v1.RiotLink
-	(*EnsureUserRequest)(nil),         // 3: friendlyfire.account.v1.EnsureUserRequest
-	(*EnsureUserResponse)(nil),        // 4: friendlyfire.account.v1.EnsureUserResponse
-	(*GetUserRequest)(nil),            // 5: friendlyfire.account.v1.GetUserRequest
-	(*GetUserResponse)(nil),           // 6: friendlyfire.account.v1.GetUserResponse
-	(*UpdateDisplayNameRequest)(nil),  // 7: friendlyfire.account.v1.UpdateDisplayNameRequest
-	(*UpdateDisplayNameResponse)(nil), // 8: friendlyfire.account.v1.UpdateDisplayNameResponse
-	(*StartRiotLinkRequest)(nil),      // 9: friendlyfire.account.v1.StartRiotLinkRequest
-	(*StartRiotLinkResponse)(nil),     // 10: friendlyfire.account.v1.StartRiotLinkResponse
-	(*CompleteRiotLinkRequest)(nil),   // 11: friendlyfire.account.v1.CompleteRiotLinkRequest
-	(*CompleteRiotLinkResponse)(nil),  // 12: friendlyfire.account.v1.CompleteRiotLinkResponse
-	(*UnlinkRiotRequest)(nil),         // 13: friendlyfire.account.v1.UnlinkRiotRequest
-	(*UnlinkRiotResponse)(nil),        // 14: friendlyfire.account.v1.UnlinkRiotResponse
-	(*DeleteAccountRequest)(nil),      // 15: friendlyfire.account.v1.DeleteAccountRequest
-	(*DeleteAccountResponse)(nil),     // 16: friendlyfire.account.v1.DeleteAccountResponse
-	(*GetDataStatusRequest)(nil),      // 17: friendlyfire.account.v1.GetDataStatusRequest
-	(*GetDataStatusResponse)(nil),     // 18: friendlyfire.account.v1.GetDataStatusResponse
-	(*UserDataStatus)(nil),            // 19: friendlyfire.account.v1.UserDataStatus
-	(*FinishOnboardingRequest)(nil),   // 20: friendlyfire.account.v1.FinishOnboardingRequest
-	(*FinishOnboardingResponse)(nil),  // 21: friendlyfire.account.v1.FinishOnboardingResponse
-	(*timestamppb.Timestamp)(nil),     // 22: google.protobuf.Timestamp
+	(*Look)(nil),                      // 2: friendlyfire.account.v1.Look
+	(*RiotLink)(nil),                  // 3: friendlyfire.account.v1.RiotLink
+	(*EnsureUserRequest)(nil),         // 4: friendlyfire.account.v1.EnsureUserRequest
+	(*EnsureUserResponse)(nil),        // 5: friendlyfire.account.v1.EnsureUserResponse
+	(*GetUserRequest)(nil),            // 6: friendlyfire.account.v1.GetUserRequest
+	(*GetUserResponse)(nil),           // 7: friendlyfire.account.v1.GetUserResponse
+	(*UpdateDisplayNameRequest)(nil),  // 8: friendlyfire.account.v1.UpdateDisplayNameRequest
+	(*UpdateDisplayNameResponse)(nil), // 9: friendlyfire.account.v1.UpdateDisplayNameResponse
+	(*StartRiotLinkRequest)(nil),      // 10: friendlyfire.account.v1.StartRiotLinkRequest
+	(*StartRiotLinkResponse)(nil),     // 11: friendlyfire.account.v1.StartRiotLinkResponse
+	(*CompleteRiotLinkRequest)(nil),   // 12: friendlyfire.account.v1.CompleteRiotLinkRequest
+	(*CompleteRiotLinkResponse)(nil),  // 13: friendlyfire.account.v1.CompleteRiotLinkResponse
+	(*UnlinkRiotRequest)(nil),         // 14: friendlyfire.account.v1.UnlinkRiotRequest
+	(*UnlinkRiotResponse)(nil),        // 15: friendlyfire.account.v1.UnlinkRiotResponse
+	(*DeleteAccountRequest)(nil),      // 16: friendlyfire.account.v1.DeleteAccountRequest
+	(*DeleteAccountResponse)(nil),     // 17: friendlyfire.account.v1.DeleteAccountResponse
+	(*GetDataStatusRequest)(nil),      // 18: friendlyfire.account.v1.GetDataStatusRequest
+	(*GetDataStatusResponse)(nil),     // 19: friendlyfire.account.v1.GetDataStatusResponse
+	(*UserDataStatus)(nil),            // 20: friendlyfire.account.v1.UserDataStatus
+	(*FinishOnboardingRequest)(nil),   // 21: friendlyfire.account.v1.FinishOnboardingRequest
+	(*FinishOnboardingResponse)(nil),  // 22: friendlyfire.account.v1.FinishOnboardingResponse
+	(*UpdateLookRequest)(nil),         // 23: friendlyfire.account.v1.UpdateLookRequest
+	(*UpdateLookResponse)(nil),        // 24: friendlyfire.account.v1.UpdateLookResponse
+	(*timestamppb.Timestamp)(nil),     // 25: google.protobuf.Timestamp
 }
 var file_friendlyfire_account_v1_account_service_proto_depIdxs = []int32{
-	22, // 0: friendlyfire.account.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	2,  // 1: friendlyfire.account.v1.User.riot_link:type_name -> friendlyfire.account.v1.RiotLink
-	22, // 2: friendlyfire.account.v1.User.onboarded_at:type_name -> google.protobuf.Timestamp
-	22, // 3: friendlyfire.account.v1.RiotLink.linked_at:type_name -> google.protobuf.Timestamp
-	1,  // 4: friendlyfire.account.v1.EnsureUserResponse.user:type_name -> friendlyfire.account.v1.User
-	1,  // 5: friendlyfire.account.v1.GetUserResponse.user:type_name -> friendlyfire.account.v1.User
-	1,  // 6: friendlyfire.account.v1.UpdateDisplayNameResponse.user:type_name -> friendlyfire.account.v1.User
-	2,  // 7: friendlyfire.account.v1.CompleteRiotLinkResponse.riot_link:type_name -> friendlyfire.account.v1.RiotLink
-	19, // 8: friendlyfire.account.v1.GetDataStatusResponse.statuses:type_name -> friendlyfire.account.v1.UserDataStatus
-	0,  // 9: friendlyfire.account.v1.UserDataStatus.status:type_name -> friendlyfire.account.v1.DataStatus
-	22, // 10: friendlyfire.account.v1.UserDataStatus.last_synced_at:type_name -> google.protobuf.Timestamp
-	1,  // 11: friendlyfire.account.v1.FinishOnboardingResponse.user:type_name -> friendlyfire.account.v1.User
-	3,  // 12: friendlyfire.account.v1.AccountService.EnsureUser:input_type -> friendlyfire.account.v1.EnsureUserRequest
-	5,  // 13: friendlyfire.account.v1.AccountService.GetUser:input_type -> friendlyfire.account.v1.GetUserRequest
-	7,  // 14: friendlyfire.account.v1.AccountService.UpdateDisplayName:input_type -> friendlyfire.account.v1.UpdateDisplayNameRequest
-	9,  // 15: friendlyfire.account.v1.AccountService.StartRiotLink:input_type -> friendlyfire.account.v1.StartRiotLinkRequest
-	11, // 16: friendlyfire.account.v1.AccountService.CompleteRiotLink:input_type -> friendlyfire.account.v1.CompleteRiotLinkRequest
-	13, // 17: friendlyfire.account.v1.AccountService.UnlinkRiot:input_type -> friendlyfire.account.v1.UnlinkRiotRequest
-	15, // 18: friendlyfire.account.v1.AccountService.DeleteAccount:input_type -> friendlyfire.account.v1.DeleteAccountRequest
-	17, // 19: friendlyfire.account.v1.AccountService.GetDataStatus:input_type -> friendlyfire.account.v1.GetDataStatusRequest
-	20, // 20: friendlyfire.account.v1.AccountService.FinishOnboarding:input_type -> friendlyfire.account.v1.FinishOnboardingRequest
-	4,  // 21: friendlyfire.account.v1.AccountService.EnsureUser:output_type -> friendlyfire.account.v1.EnsureUserResponse
-	6,  // 22: friendlyfire.account.v1.AccountService.GetUser:output_type -> friendlyfire.account.v1.GetUserResponse
-	8,  // 23: friendlyfire.account.v1.AccountService.UpdateDisplayName:output_type -> friendlyfire.account.v1.UpdateDisplayNameResponse
-	10, // 24: friendlyfire.account.v1.AccountService.StartRiotLink:output_type -> friendlyfire.account.v1.StartRiotLinkResponse
-	12, // 25: friendlyfire.account.v1.AccountService.CompleteRiotLink:output_type -> friendlyfire.account.v1.CompleteRiotLinkResponse
-	14, // 26: friendlyfire.account.v1.AccountService.UnlinkRiot:output_type -> friendlyfire.account.v1.UnlinkRiotResponse
-	16, // 27: friendlyfire.account.v1.AccountService.DeleteAccount:output_type -> friendlyfire.account.v1.DeleteAccountResponse
-	18, // 28: friendlyfire.account.v1.AccountService.GetDataStatus:output_type -> friendlyfire.account.v1.GetDataStatusResponse
-	21, // 29: friendlyfire.account.v1.AccountService.FinishOnboarding:output_type -> friendlyfire.account.v1.FinishOnboardingResponse
-	21, // [21:30] is the sub-list for method output_type
-	12, // [12:21] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	25, // 0: friendlyfire.account.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	3,  // 1: friendlyfire.account.v1.User.riot_link:type_name -> friendlyfire.account.v1.RiotLink
+	25, // 2: friendlyfire.account.v1.User.onboarded_at:type_name -> google.protobuf.Timestamp
+	2,  // 3: friendlyfire.account.v1.User.look:type_name -> friendlyfire.account.v1.Look
+	25, // 4: friendlyfire.account.v1.RiotLink.linked_at:type_name -> google.protobuf.Timestamp
+	1,  // 5: friendlyfire.account.v1.EnsureUserResponse.user:type_name -> friendlyfire.account.v1.User
+	1,  // 6: friendlyfire.account.v1.GetUserResponse.user:type_name -> friendlyfire.account.v1.User
+	1,  // 7: friendlyfire.account.v1.UpdateDisplayNameResponse.user:type_name -> friendlyfire.account.v1.User
+	3,  // 8: friendlyfire.account.v1.CompleteRiotLinkResponse.riot_link:type_name -> friendlyfire.account.v1.RiotLink
+	20, // 9: friendlyfire.account.v1.GetDataStatusResponse.statuses:type_name -> friendlyfire.account.v1.UserDataStatus
+	0,  // 10: friendlyfire.account.v1.UserDataStatus.status:type_name -> friendlyfire.account.v1.DataStatus
+	25, // 11: friendlyfire.account.v1.UserDataStatus.last_synced_at:type_name -> google.protobuf.Timestamp
+	1,  // 12: friendlyfire.account.v1.FinishOnboardingResponse.user:type_name -> friendlyfire.account.v1.User
+	2,  // 13: friendlyfire.account.v1.UpdateLookRequest.look:type_name -> friendlyfire.account.v1.Look
+	1,  // 14: friendlyfire.account.v1.UpdateLookResponse.user:type_name -> friendlyfire.account.v1.User
+	4,  // 15: friendlyfire.account.v1.AccountService.EnsureUser:input_type -> friendlyfire.account.v1.EnsureUserRequest
+	6,  // 16: friendlyfire.account.v1.AccountService.GetUser:input_type -> friendlyfire.account.v1.GetUserRequest
+	8,  // 17: friendlyfire.account.v1.AccountService.UpdateDisplayName:input_type -> friendlyfire.account.v1.UpdateDisplayNameRequest
+	10, // 18: friendlyfire.account.v1.AccountService.StartRiotLink:input_type -> friendlyfire.account.v1.StartRiotLinkRequest
+	12, // 19: friendlyfire.account.v1.AccountService.CompleteRiotLink:input_type -> friendlyfire.account.v1.CompleteRiotLinkRequest
+	14, // 20: friendlyfire.account.v1.AccountService.UnlinkRiot:input_type -> friendlyfire.account.v1.UnlinkRiotRequest
+	16, // 21: friendlyfire.account.v1.AccountService.DeleteAccount:input_type -> friendlyfire.account.v1.DeleteAccountRequest
+	18, // 22: friendlyfire.account.v1.AccountService.GetDataStatus:input_type -> friendlyfire.account.v1.GetDataStatusRequest
+	21, // 23: friendlyfire.account.v1.AccountService.FinishOnboarding:input_type -> friendlyfire.account.v1.FinishOnboardingRequest
+	23, // 24: friendlyfire.account.v1.AccountService.UpdateLook:input_type -> friendlyfire.account.v1.UpdateLookRequest
+	5,  // 25: friendlyfire.account.v1.AccountService.EnsureUser:output_type -> friendlyfire.account.v1.EnsureUserResponse
+	7,  // 26: friendlyfire.account.v1.AccountService.GetUser:output_type -> friendlyfire.account.v1.GetUserResponse
+	9,  // 27: friendlyfire.account.v1.AccountService.UpdateDisplayName:output_type -> friendlyfire.account.v1.UpdateDisplayNameResponse
+	11, // 28: friendlyfire.account.v1.AccountService.StartRiotLink:output_type -> friendlyfire.account.v1.StartRiotLinkResponse
+	13, // 29: friendlyfire.account.v1.AccountService.CompleteRiotLink:output_type -> friendlyfire.account.v1.CompleteRiotLinkResponse
+	15, // 30: friendlyfire.account.v1.AccountService.UnlinkRiot:output_type -> friendlyfire.account.v1.UnlinkRiotResponse
+	17, // 31: friendlyfire.account.v1.AccountService.DeleteAccount:output_type -> friendlyfire.account.v1.DeleteAccountResponse
+	19, // 32: friendlyfire.account.v1.AccountService.GetDataStatus:output_type -> friendlyfire.account.v1.GetDataStatusResponse
+	22, // 33: friendlyfire.account.v1.AccountService.FinishOnboarding:output_type -> friendlyfire.account.v1.FinishOnboardingResponse
+	24, // 34: friendlyfire.account.v1.AccountService.UpdateLook:output_type -> friendlyfire.account.v1.UpdateLookResponse
+	25, // [25:35] is the sub-list for method output_type
+	15, // [15:25] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_friendlyfire_account_v1_account_service_proto_init() }
@@ -1373,7 +1566,7 @@ func file_friendlyfire_account_v1_account_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_friendlyfire_account_v1_account_service_proto_rawDesc), len(file_friendlyfire_account_v1_account_service_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   21,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

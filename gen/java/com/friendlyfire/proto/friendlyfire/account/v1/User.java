@@ -285,6 +285,44 @@ private static final long serialVersionUID = 0L;
     return onboardedAt_ == null ? com.google.protobuf.Timestamp.getDefaultInstance() : onboardedAt_;
   }
 
+  public static final int LOOK_FIELD_NUMBER = 7;
+  private com.friendlyfire.proto.friendlyfire.account.v1.Look look_;
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   * @return Whether the look field is set.
+   */
+  @java.lang.Override
+  public boolean hasLook() {
+    return ((bitField0_ & 0x00000008) != 0);
+  }
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   * @return The look.
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.account.v1.Look getLook() {
+    return look_ == null ? com.friendlyfire.proto.friendlyfire.account.v1.Look.getDefaultInstance() : look_;
+  }
+  /**
+   * <pre>
+   * Their favourite look. Not set until they pick one on Profile.
+   * </pre>
+   *
+   * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+   */
+  @java.lang.Override
+  public com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder getLookOrBuilder() {
+    return look_ == null ? com.friendlyfire.proto.friendlyfire.account.v1.Look.getDefaultInstance() : look_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -317,6 +355,9 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       output.writeMessage(6, getOnboardedAt());
     }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      output.writeMessage(7, getLook());
+    }
     getUnknownFields().writeTo(output);
   }
   private int computeSerializedSize_0() {
@@ -341,6 +382,10 @@ private static final long serialVersionUID = 0L;
     if (((bitField0_ & 0x00000004) != 0)) {
       size += com.google.protobuf.CodedOutputStream
         .computeMessageSize(6, getOnboardedAt());
+    }
+    if (((bitField0_ & 0x00000008) != 0)) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeMessageSize(7, getLook());
     }
     return size;
   }
@@ -387,6 +432,11 @@ private static final long serialVersionUID = 0L;
       if (!getOnboardedAt()
           .equals(other.getOnboardedAt())) return false;
     }
+    if (hasLook() != other.hasLook()) return false;
+    if (hasLook()) {
+      if (!getLook()
+          .equals(other.getLook())) return false;
+    }
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -415,6 +465,10 @@ private static final long serialVersionUID = 0L;
     if (hasOnboardedAt()) {
       hash = (37 * hash) + ONBOARDED_AT_FIELD_NUMBER;
       hash = (53 * hash) + getOnboardedAt().hashCode();
+    }
+    if (hasLook()) {
+      hash = (37 * hash) + LOOK_FIELD_NUMBER;
+      hash = (53 * hash) + getLook().hashCode();
     }
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
@@ -549,6 +603,7 @@ private static final long serialVersionUID = 0L;
         internalGetCreatedAtFieldBuilder();
         internalGetRiotLinkFieldBuilder();
         internalGetOnboardedAtFieldBuilder();
+        internalGetLookFieldBuilder();
       }
     }
     @java.lang.Override
@@ -572,6 +627,11 @@ private static final long serialVersionUID = 0L;
       if (onboardedAtBuilder_ != null) {
         onboardedAtBuilder_.dispose();
         onboardedAtBuilder_ = null;
+      }
+      look_ = null;
+      if (lookBuilder_ != null) {
+        lookBuilder_.dispose();
+        lookBuilder_ = null;
       }
       return this;
     }
@@ -634,6 +694,12 @@ private static final long serialVersionUID = 0L;
             : onboardedAtBuilder_.build();
         to_bitField0_ |= 0x00000004;
       }
+      if (((from_bitField0_ & 0x00000040) != 0)) {
+        result.look_ = lookBuilder_ == null
+            ? look_
+            : lookBuilder_.build();
+        to_bitField0_ |= 0x00000008;
+      }
       result.bitField0_ |= to_bitField0_;
     }
 
@@ -672,6 +738,9 @@ private static final long serialVersionUID = 0L;
       }
       if (other.hasOnboardedAt()) {
         mergeOnboardedAt(other.getOnboardedAt());
+      }
+      if (other.hasLook()) {
+        mergeLook(other.getLook());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -733,6 +802,13 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000020;
               break;
             } // case 50
+            case 58: {
+              input.readMessage(
+                  internalGetLookFieldBuilder().getBuilder(),
+                  extensionRegistry);
+              bitField0_ |= 0x00000040;
+              break;
+            } // case 58
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1431,6 +1507,161 @@ private static final long serialVersionUID = 0L;
         onboardedAt_ = null;
       }
       return onboardedAtBuilder_;
+    }
+
+    private com.friendlyfire.proto.friendlyfire.account.v1.Look look_;
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.account.v1.Look, com.friendlyfire.proto.friendlyfire.account.v1.Look.Builder, com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder> lookBuilder_;
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     * @return Whether the look field is set.
+     */
+    public boolean hasLook() {
+      return ((bitField0_ & 0x00000040) != 0);
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     * @return The look.
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.Look getLook() {
+      if (lookBuilder_ == null) {
+        return look_ == null ? com.friendlyfire.proto.friendlyfire.account.v1.Look.getDefaultInstance() : look_;
+      } else {
+        return lookBuilder_.getMessage();
+      }
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public Builder setLook(com.friendlyfire.proto.friendlyfire.account.v1.Look value) {
+      if (lookBuilder_ == null) {
+        java.util.Objects.requireNonNull(value);
+        look_ = value;
+      } else {
+        lookBuilder_.setMessage(value);
+      }
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public Builder setLook(
+        com.friendlyfire.proto.friendlyfire.account.v1.Look.Builder builderForValue) {
+      if (lookBuilder_ == null) {
+        look_ = builderForValue.build();
+      } else {
+        lookBuilder_.setMessage(builderForValue.build());
+      }
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public Builder mergeLook(com.friendlyfire.proto.friendlyfire.account.v1.Look value) {
+      if (lookBuilder_ == null) {
+        if (((bitField0_ & 0x00000040) != 0) &&
+          look_ != null &&
+          look_ != com.friendlyfire.proto.friendlyfire.account.v1.Look.getDefaultInstance()) {
+          getLookBuilder().mergeFrom(value);
+        } else {
+          look_ = value;
+        }
+      } else {
+        lookBuilder_.mergeFrom(value);
+      }
+      if (look_ != null) {
+        bitField0_ |= 0x00000040;
+        onChanged();
+      }
+      return this;
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public Builder clearLook() {
+      bitField0_ = (bitField0_ & ~0x00000040);
+      look_ = null;
+      if (lookBuilder_ != null) {
+        lookBuilder_.dispose();
+        lookBuilder_ = null;
+      }
+      onChanged();
+      return this;
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.Look.Builder getLookBuilder() {
+      bitField0_ |= 0x00000040;
+      onChanged();
+      return internalGetLookFieldBuilder().getBuilder();
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder getLookOrBuilder() {
+      if (lookBuilder_ != null) {
+        return lookBuilder_.getMessageOrBuilder();
+      } else {
+        return look_ == null ?
+            com.friendlyfire.proto.friendlyfire.account.v1.Look.getDefaultInstance() : look_;
+      }
+    }
+    /**
+     * <pre>
+     * Their favourite look. Not set until they pick one on Profile.
+     * </pre>
+     *
+     * <code>.friendlyfire.account.v1.Look look = 7 [json_name = "look"];</code>
+     */
+    private com.google.protobuf.SingleFieldBuilder<
+        com.friendlyfire.proto.friendlyfire.account.v1.Look, com.friendlyfire.proto.friendlyfire.account.v1.Look.Builder, com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder> 
+        internalGetLookFieldBuilder() {
+      if (lookBuilder_ == null) {
+        lookBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+            com.friendlyfire.proto.friendlyfire.account.v1.Look, com.friendlyfire.proto.friendlyfire.account.v1.Look.Builder, com.friendlyfire.proto.friendlyfire.account.v1.LookOrBuilder>(
+                getLook(),
+                getParentForChildren(),
+                isClean());
+        look_ = null;
+      }
+      return lookBuilder_;
     }
 
     // @@protoc_insertion_point(builder_scope:friendlyfire.account.v1.User)

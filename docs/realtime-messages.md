@@ -165,7 +165,7 @@ Chat is open in every phase, spectators included (FF-315).
 | `players[].dataEstimatedSeconds` | Only while `SYNCING` with an estimate |
 | `players[].riotTagLine` | Shown as "Sam (NA1)" when two players share a name; left out if not linked |
 | `players[].notEnoughMatches` | Synced, but fewer than 5 Competitive or Unrated matches in the last 30 days: they play, but no question is about them (FF-307). The frontend still reads the older `noRecentMatches` name |
-| `players[].look` | Proposed, needs a story: `{icon, colour, expression, random}`. Room hands out favourite icons and colours first come, first served (`random` when someone got a free one instead); `expression` is one of the 8 pickable faces and never changes. Without it the frontend uses the join order |
+| `players[].look` | `{icon, colour, expression, random}` (FF-519), handed out when they join and kept for the room. Favourite icons and colours come from the account (`PATCH /api/me` with `look`) and are first come, first served, each on its own; `random` when they got a free one instead. `expression` is one of the 8 pickable faces and is always theirs (`happy` if they haven't picked one). Someone without a favourite gets the first free icon and colour in the default order |
 | `currentQuestion.options[].optionId` | For "pick the player" questions, the player's `userId` |
 | `currentQuestion.reveal` | **Only during `REVEAL`**: `{correctOptionId, explanation, results: [{userId, chosenOptionId, correct, points}]}` |
 | `phaseDeadline` | When the countdown, question, reveal, vote or pause ends; during `PREPARING` the earliest the countdown can start (Start + 8 s); not set in `LOBBY` and `FINISHED` |

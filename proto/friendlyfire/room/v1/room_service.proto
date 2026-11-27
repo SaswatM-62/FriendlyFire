@@ -320,6 +320,25 @@ message Player {
   // "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
   // if they haven't linked a Riot account.
   string riot_tag_line = 10;
+  // Their character in this room (FF-519), handed out when they join and kept
+  // for the room. Always set.
+  PlayerLook look = 11;
+}
+
+// A player's character in a room. Favourite icons and colours (from
+// AccountService) are first come, first served, each on its own; someone who
+// can't have theirs gets a random free one. The expression is always their
+// favourite ("happy" if they haven't picked one).
+message PlayerLook {
+  // One of AccountService Look's icons.
+  string icon = 1;
+  // One of AccountService Look's colours.
+  string colour = 2;
+  // One of AccountService Look's expressions.
+  string expression = 3;
+  // True when their favourite icon or colour was taken, so they got a random
+  // free one instead.
+  bool random = 4;
 }
 
 // A question as browsers see it. During ROOM_PHASE_QUESTION the `reveal`
