@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApi } from "@/components/providers/ApiProvider";
 import { useMe } from "@/components/providers/MeProvider";
 import { useSession } from "@/components/providers/SessionProvider";
@@ -19,42 +19,43 @@ type Load =
   | { state: "error"; error: ApiError };
 
 /**
- * Loads the room: GET /api/rooms/{code}, joining first if you're not in it yet
- * (Architecture 3.1), or straight from the create/join call that brought you here.
+ * Loads the room, straight from the create/join call that brought you here, or by joining:
+ * POST /api/rooms/{code}/join adds someone new (an invite link) and marks someone already
+ * in it as back (a refresh), so the others don't keep seeing you as disconnected.
+ *
+ * Next.js keeps this page alive when you leave it (cacheComponents) and runs this again
+ * when you come back. Each load has its own `visit`, so the room under it starts fresh
+ * instead of showing what it saw before you left.
  */
-function useRoomLoad(code: string, enabled: boolean, userId: string | null): Load {
+function useRoomLoad(code: string, enabled: boolean, userId: string | null): { load: Load; visit: number } {
   const api = useApi();
-  const [result, setResult] = useState<{ key: string; load: Load } | null>(null);
+  const [result, setResult] = useState<{ key: string; visit: number; load: Load } | null>(null);
+  const visits = useRef(0);
   const key = enabled && userId ? `${code}:${userId}` : null;
 
   useEffect(() => {
     if (key === null) return;
     let cancelled = false;
+    const visit = ++visits.current;
     const done = (load: Load) => {
-      if (!cancelled) setResult({ key, load });
+      if (!cancelled) setResult({ key, visit, load });
     };
     const cached = takeCachedRoom(code);
     if (cached) {
       done({ state: "ready", snapshot: cached });
       return;
     }
-    api
-      .getRoom(code, { quiet: true })
-      .catch((e: unknown) => {
-        // Not in it yet (an invite link): join, which also handles a refresh after a drop.
-        if (e instanceof ApiError && (e.status === 403 || e.code === ERROR_CODES.notInRoom)) return api.joinRoom(code, { quiet: true });
-        throw e;
-      })
-      .then(
-        (snapshot) => done({ state: "ready", snapshot }),
-        (e: unknown) => done({ state: "error", error: e instanceof ApiError ? e : new ApiError(0, "INTERNAL", "Something went wrong.") }),
-      );
+    done({ state: "loading" });
+    api.joinRoom(code, { quiet: true }).then(
+      (snapshot) => done({ state: "ready", snapshot }),
+      (e: unknown) => done({ state: "error", error: e instanceof ApiError ? e : new ApiError(0, "INTERNAL", "Something went wrong.") }),
+    );
     return () => {
       cancelled = true;
     };
   }, [api, code, key]);
 
-  return result && result.key === key ? result.load : { state: "loading" };
+  return result && result.key === key ? { load: result.load, visit: result.visit } : { load: { state: "loading" }, visit: 0 };
 }
 
 /** /room/{code}: the whole room experience (FF-505 to FF-509). */
@@ -65,7 +66,7 @@ export function RoomPage({ rawCode }: { rawCode: string }) {
   const { me, status: meStatus, error: meError, reload } = useMe();
   // A new player finishes the tutorial first (OnboardingGate keeps this room as their invite), so don't join yet.
   const onboarding = me !== null && !me.onboardedAt;
-  const load = useRoomLoad(code, valid && session.status === "signedIn" && !onboarding, me?.userId ?? null);
+  const { load, visit } = useRoomLoad(code, valid && session.status === "signedIn" && !onboarding, me?.userId ?? null);
 
   // A signed-out player with an invite link: remember the room for after sign-in (FF-503).
   useEffect(() => {
@@ -153,5 +154,5 @@ export function RoomPage({ rawCode }: { rawCode: string }) {
     );
   }
 
-  return <RoomLive code={code} meId={me.userId} initial={load.snapshot} />;
+  return <RoomLive key={visit} code={code} meId={me.userId} initial={load.snapshot} />;
 }

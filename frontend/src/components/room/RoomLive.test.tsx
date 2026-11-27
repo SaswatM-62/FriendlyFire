@@ -136,4 +136,45 @@ describe("RoomLive", () => {
     expect(within(chat).getByText("brb, grabbing food")).toBeInTheDocument();
     expect(within(chat).getByText("Riley")).toBeInTheDocument();
   });
+
+  it("rejoins when it's connected but the room says it dropped (a refresh)", async () => {
+    // The old tab's drop was reported after this page loaded: the room still has us DISCONNECTED.
+    const room = hostedRoom();
+    room.snapshot.players[0].status = "DISCONNECTED";
+    transport = (_code, handlers) => room.connect(handlers);
+    const back = { ...room.snapshot, players: room.snapshot.players.map((pl) => ({ ...pl, status: "CONNECTED" as const })) };
+    const joins = vi.fn(() => HttpResponse.json(back));
+    server.use(http.post("*/api/rooms/:code/join", joins));
+    render(
+      <ToastProvider>
+        <ApiProvider>
+          <SoundProvider>
+            <RoomLive code="TEST22" meId={ME_ID} initial={room.snapshot} />
+          </SoundProvider>
+        </ApiProvider>
+      </ToastProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(300));
+
+    expect(joins).toHaveBeenCalledTimes(1);
+  });
+
+  it("doesn't rejoin when the room already has us connected", async () => {
+    const room = hostedRoom();
+    transport = (_code, handlers) => room.connect(handlers);
+    const joins = vi.fn(() => HttpResponse.json(room.snapshot));
+    server.use(http.post("*/api/rooms/:code/join", joins));
+    render(
+      <ToastProvider>
+        <ApiProvider>
+          <SoundProvider>
+            <RoomLive code="TEST22" meId={ME_ID} initial={room.snapshot} />
+          </SoundProvider>
+        </ApiProvider>
+      </ToastProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(300));
+
+    expect(joins).not.toHaveBeenCalled();
+  });
 });
