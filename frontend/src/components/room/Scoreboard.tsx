@@ -97,7 +97,7 @@ export function Standings({ entries, rounds }: { entries: ScoreEntry[]; rounds: 
             <Av look={look} size={32} />
             <span className="nm">
               <b>
-                {name}
+                <span className="st__name">{name}</span>
                 {you && <span className="tag tag--pink">You</span>}
               </b>
               {entry.correctAnswers !== undefined && (

@@ -33,6 +33,27 @@ describe("HomePage", () => {
     expect(screen.getByRole("link", { name: "Profile and history" })).toHaveAttribute("href", "/profile");
   });
 
+  // Next.js keeps the home page alive while you're in a room (cacheComponents), so its
+  // buttons must be ready again when you leave the room and come back.
+  it("Create room is ready again after the room opens", async () => {
+    renderWithApp(<HomePage />);
+
+    await userEvent.click(await screen.findByRole("button", { name: /Create room/ }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith(expect.stringMatching(/^\/room\/[A-Z0-9]{6}$/)));
+    await waitFor(() => expect(screen.getByRole("button", { name: /Create room/ })).toBeEnabled());
+  });
+
+  it("Join is ready again after the room opens", async () => {
+    renderWithApp(<HomePage />);
+
+    await userEvent.type(await screen.findByLabelText("Room code"), "K7QM2X");
+    await userEvent.click(screen.getByRole("button", { name: "Join" }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/room/K7QM2X"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Join" })).toBeEnabled());
+  });
+
   it("offers to link Riot to a new player", async () => {
     renderWithApp(<HomePage />, { gateway: new FakeGateway({ linked: false }) });
 

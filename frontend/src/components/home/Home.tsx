@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useId, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useFavouriteLook } from "@/components/chrome/useFavouriteLook";
 import { DataBadge } from "@/components/common/DataBadge";
@@ -17,6 +16,7 @@ import { ERROR_CODES } from "@/lib/errors";
 import { formatEstimate, formatPoints, regionName, relativeTime } from "@/lib/format";
 import { clearInvite, pendingInvite } from "@/lib/preferences";
 import { cacheRoom } from "@/lib/roomCache";
+import { useNavigation } from "@/lib/useNavigation";
 import { useGatewayData } from "@/lib/useGatewayData";
 import { useNow } from "@/lib/useNow";
 
@@ -54,20 +54,22 @@ function LiveStrip() {
 /** "Join room K7QM2X?" after a signed-out invite link (FF-503). */
 function PendingInvite({ code, onDone }: { code: string; onDone: () => void }) {
   const api = useApi();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { navigating, go } = useNavigation();
+  const [joining, setJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const busy = joining || navigating;
 
   const join = async () => {
-    setBusy(true);
+    setJoining(true);
     try {
       const snapshot = await api.joinRoom(code, { quiet: true });
       clearInvite();
       cacheRoom(snapshot);
-      router.push(`/room/${snapshot.roomCode}`);
+      go(`/room/${snapshot.roomCode}`);
     } catch (e) {
-      setBusy(false);
       setError(e instanceof ApiError ? joinError(e) : "Couldn't join. Try again.");
+    } finally {
+      setJoining(false);
     }
   };
 
@@ -133,11 +135,12 @@ function StartCard() {
 
 function JoinCard() {
   const api = useApi();
-  const router = useRouter();
+  const { navigating, go } = useNavigation();
   const errorId = useId();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const busy = joining || navigating;
 
   const join = async (event: FormEvent) => {
     event.preventDefault();
@@ -145,15 +148,16 @@ function JoinCard() {
       setError("Enter all 6 characters of the room code.");
       return;
     }
-    setBusy(true);
+    setJoining(true);
     setError(null);
     try {
       const snapshot = await api.joinRoom(code, { quiet: true });
       cacheRoom(snapshot);
-      router.push(`/room/${snapshot.roomCode}`);
+      go(`/room/${snapshot.roomCode}`);
     } catch (e) {
       setError(e instanceof ApiError ? joinError(e) : "Couldn't join. Try again.");
-      setBusy(false);
+    } finally {
+      setJoining(false);
     }
   };
 

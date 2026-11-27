@@ -68,6 +68,33 @@
   /* the landing page's sample question needs about 500 px for its answers to show names and
      tags side by side, so it sits under the intro until the page is wider than 1180 px */
   @media (min-width:601px) and (max-width:1180px){.c .land{grid-template-columns:minmax(0,1fr);gap:28px;flex:none}}
+  /* laptops: a 14-inch laptop's browser window is only about 600 to 730 px tall, but the
+     boards fill one screen and assumed at least 720 px. So the page scrolled as a whole with
+     the content area scrolling inside it, and boxes were squeezed below their content: a
+     full room's scoreboard and final standings ran out of their cards, and centred cards
+     (the question, "The quiz ended early", home) lost their top edge, where nothing can
+     scroll to. Now the frame always fits the window and only the content area scrolls, and
+     these boxes never get smaller than what's in them (wider than 900 px; narrower pages
+     already grow and scroll) */
+  @media (min-width:901px){
+    .c{min-height:0}
+    .c .stagecard,.c .mwrap,.c .home,.c .sb{flex:1 0 auto}
+    .c .players{flex:1 0 auto;grid-template-rows:repeat(2,minmax(min-content,1fr))}
+    .c .qcard{flex:none}
+  }
+  /* the final results keep the 540 px they're designed at (squeezed, the podium's blocks were
+     cut off); the standings list scrolls inside its card when a full room doesn't fit */
+  @media (min-width:1181px){
+    .c .podroom{height:540px;grid-template-rows:minmax(0,1fr)}
+  }
+  /* the final standings scroll inside their card, like the chat, when a full room has more
+     rows than fit */
+  .c .st ol{min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  .c .st__list,.c .st__list ol{flex:1}
+  .c .st__list{min-height:0}
+  /* a long name in the final standings stops with "…" before the points */
+  .c .st .nm b{min-width:0}
+  .c .st__name{min-width:0;overflow:hidden;text-overflow:ellipsis}
   /* small laptops and tablets in landscape (901 to 1180 px): next to the chat the room's main
      column would be under 740 px, too narrow for the lobby, the answer tiles and the final
      standings, so the room stacks as it does on tablets, with the chat underneath */
