@@ -16,7 +16,13 @@ export function isDeleted(entry: ScoreboardEntry): boolean {
   return entry.displayName === DELETED_PLAYER;
 }
 
-/** The character to show for someone in a past quiz: yours, or a steady one for them. */
+/**
+ * The character to show for someone in a past quiz: yours, or a steady one for them.
+ *
+ * TODO(ff): show past players with the look they had in that room (the rest of FF-519)
+ *   - Scoring keeps each player's look with the quiz's results (a contract change)
+ *   - the history endpoints return it, and this uses it instead of lookForUser
+ */
 export function usePastLook(meId: string): (userId: string) => PlayerLook {
   const mine = useFavouriteLook();
   return (userId) => (userId === meId ? mine : lookForUser(userId));

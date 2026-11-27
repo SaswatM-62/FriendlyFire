@@ -37,11 +37,21 @@ export interface Me {
   riotLink?: RiotLink | null;
   /** When they finished the new-player tutorial; absent until then (the app sends them to /welcome). */
   onboardedAt?: string;
+  /** Their favourite look (Profile "Your look", FF-519); absent until they pick one. */
+  look?: SavedLook;
 }
 
-/** PATCH /api/me body. 1–24 characters after trimming. */
-export interface UpdateDisplayNameRequest {
-  displayName: string;
+/** A favourite character as the account keeps it (FF-519). */
+export interface SavedLook {
+  icon: CharacterId;
+  colour: ColourId;
+  expression: PickableExpression;
+}
+
+/** PATCH /api/me body: a new name (1–24 characters after trimming), a new look, or both. */
+export interface UpdateMeRequest {
+  displayName?: string;
+  look?: SavedLook;
 }
 
 /**
@@ -136,9 +146,8 @@ export type ColourId =
   | "silver";
 
 /**
- * A player's character in this room. Proposed (Profile "Your look"); needs a story.
- * Room hands out favourite icons and colours first come, first served; expressions can
- * repeat, so everyone keeps theirs.
+ * A player's character in this room (FF-519). Room hands out favourite icons and colours
+ * first come, first served; expressions can repeat, so everyone keeps theirs.
  */
 export interface PlayerLook {
   icon: CharacterId;

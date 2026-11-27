@@ -1,6 +1,5 @@
 import type { PlayerLook } from "@/lib/api-types";
-import { isCharacterId, isColourId, isPickableExpression } from "@/lib/characters";
-import { readJson, readStorage, writeStorage } from "@/lib/storage";
+import { readStorage, writeStorage } from "@/lib/storage";
 
 // ---------- Theme ----------
 
@@ -42,7 +41,7 @@ export function clearInvite(): void {
 
 // ---------- Favourite look (Profile "Your look") ----------
 
-const LOOK_KEY = "ff-look";
+/** The look of someone who hasn't picked one: the pink Blob, happy. The account keeps the real one (FF-519). */
 export const DEFAULT_LOOK: Required<Pick<PlayerLook, "icon" | "colour" | "expression">> = {
   icon: "blob",
   colour: "pink",
@@ -50,20 +49,3 @@ export const DEFAULT_LOOK: Required<Pick<PlayerLook, "icon" | "colour" | "expres
 };
 
 export type FavouriteLook = typeof DEFAULT_LOOK;
-
-/**
- * TODO(ff): save the favourite look on the server so rooms can use it
- *   - needs a story and a contract change: a look on the Account user and on Room's
- *     Player; Room hands out icons and colours first come, first served, random
- *     otherwise; expressions are never changed
- *   - until then it's kept in this browser and only shown on your own screens
- */
-export function favouriteLook(): FavouriteLook {
-  const saved = readJson(LOOK_KEY, (v): v is Partial<FavouriteLook> => typeof v === "object" && v !== null);
-  if (!saved || !isCharacterId(saved.icon) || !isColourId(saved.colour)) return DEFAULT_LOOK;
-  return { icon: saved.icon, colour: saved.colour, expression: isPickableExpression(saved.expression) ? saved.expression : "happy" };
-}
-
-export function saveFavouriteLook(look: FavouriteLook): void {
-  writeStorage(LOOK_KEY, JSON.stringify(look));
-}

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RealtimeError, RoomEvent } from "@/lib/api-types";
 import { FAKE_PLAYERS, ME_ID } from "@/mocks/data";
-import { FAKE_TIMING, FakeRoom, fakePlayer } from "@/mocks/fakeRoom";
+import { FAKE_TIMING, FakeRoom, assignLook, fakePlayer } from "@/mocks/fakeRoom";
 
 const p = FAKE_PLAYERS;
 
@@ -243,5 +243,37 @@ describe("FakeRoom", () => {
       vi.advanceTimersByTime(FAKE_TIMING.pauseMs);
       expect(["STARTING", "QUESTION"]).toContain(room.snapshot.phase);
     });
+  });
+});
+
+describe("assignLook (FF-519, as Room does it)", () => {
+  it("keeps a free favourite and swaps a taken icon or colour for a free one, keeping the face", () => {
+    const first = assignLook({ icon: "ghost", colour: "cyan", expression: "wink" }, [], () => 0);
+    const second = assignLook({ icon: "ghost", colour: "cyan", expression: "gloat" }, [first], () => 0);
+
+    expect(first).toEqual({ icon: "ghost", colour: "cyan", expression: "wink", random: false });
+    expect(second.icon).not.toBe("ghost");
+    expect(second.colour).not.toBe("cyan");
+    expect(second).toMatchObject({ expression: "gloat", random: true });
+  });
+
+  it("gives someone without a favourite the first free default, Happy", () => {
+    const taken = [{ icon: "blob" as const, colour: "pink" as const, expression: "happy" as const }];
+
+    expect(assignLook(undefined, taken, () => 0)).toEqual({ icon: "ghost", colour: "cyan", expression: "happy", random: false });
+  });
+
+  it("hands everyone in a fake room their look when it opens", () => {
+    const room = new FakeRoom({
+      code: "LOOKS1",
+      hostUserId: ME_ID,
+      meId: ME_ID,
+      players: [fakePlayer(FAKE_PLAYERS.maya), fakePlayer({ ...FAKE_PLAYERS.sam, look: FAKE_PLAYERS.maya.look })],
+    });
+
+    const [maya, sam] = room.snapshot.players;
+    expect(maya.look).toEqual({ ...FAKE_PLAYERS.maya.look, random: false });
+    expect(sam.look?.icon).not.toBe(maya.look?.icon);
+    expect(sam.look?.random).toBe(true);
   });
 });

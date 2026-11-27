@@ -3,13 +3,10 @@ import { CHARACTER_ORDER, COLOUR_ORDER, FACE_ORDER } from "@/lib/characters";
 import { formatEstimate, formatPoints, ordinal } from "@/lib/format";
 
 /**
- * Each player's character in a room: the look the server gave them if it sent one,
- * otherwise the default for their place in the join order (player 1 is the pink Blob,
- * player 2 the cyan Ghost...). Join order never changes during a room, so nobody's
- * character jumps around.
- *
- * Expressions can repeat, so the room never changes yours: `mine` is your favourite face,
- * shown on your own character even before the server sends looks.
+ * Each player's character in a room: the look Room handed them (FF-519), the same on every
+ * screen. A server too old to send looks gets the default for their place in the join
+ * order (player 1 is the pink Blob, player 2 the cyan Ghost...), with `mine`, your
+ * favourite face, on your own character.
  */
 export function playerLooks(players: Player[], mine?: { userId: string; expression: PickableExpression }): Map<string, PlayerLook> {
   const looks = new Map<string, PlayerLook>();
@@ -18,7 +15,8 @@ export function playerLooks(players: Player[], mine?: { userId: string; expressi
       icon: CHARACTER_ORDER[index % CHARACTER_ORDER.length],
       colour: COLOUR_ORDER[index % COLOUR_ORDER.length],
     };
-    const expression = player.userId === mine?.userId ? mine.expression : (look.expression ?? FACE_ORDER[index % FACE_ORDER.length]);
+    const expression =
+      look.expression ?? (player.userId === mine?.userId ? mine.expression : FACE_ORDER[index % FACE_ORDER.length]);
     looks.set(player.userId, { ...look, expression });
   });
   return looks;

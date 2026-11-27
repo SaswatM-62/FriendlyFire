@@ -2,6 +2,7 @@ import type {
   ChatMessage,
   EndReason,
   Player,
+  PlayerLook,
   RealtimeError,
   RoomAction,
   RoomActions,
@@ -9,9 +10,11 @@ import type {
   RoomEventType,
   RoomSettings,
   RoomSnapshot,
+  SavedLook,
   ScoreEntry,
   VoteOption,
 } from "@/lib/api-types";
+import { CHARACTER_ORDER, COLOUR_ORDER } from "@/lib/characters";
 import type { RoomTransport, RoomTransportHandlers } from "@/lib/realtime";
 import { FAKE_BACKEND_MARKER, FAKE_QUESTIONS, type FakePlayer } from "@/mocks/data";
 
@@ -51,6 +54,7 @@ export type FakeScene =
   | "closed"
   | "chat";
 
+/** A fake player; `look` is their favourite until the room hands them one (assignLook). */
 export function fakePlayer(p: FakePlayer, over: Partial<Player> = {}): Player {
   return {
     userId: p.userId,
@@ -60,7 +64,29 @@ export function fakePlayer(p: FakePlayer, over: Partial<Player> = {}): Player {
     dataStatus: "SYNCED",
     connectionQuality: "GOOD",
     answeredCurrentQuestion: false,
+    look: p.look,
     ...over,
+  };
+}
+
+/**
+ * A look for someone joining, the way Room hands them out (FF-519): their favourite icon
+ * and colour, each if nobody has it yet, otherwise a random free one; their face always
+ * stays. Without a favourite, the first free icon and colour, and Happy.
+ */
+export function assignLook(favourite: SavedLook | PlayerLook | undefined, taken: PlayerLook[], random: () => number): PlayerLook {
+  const icons = new Set(taken.map((l) => l.icon));
+  const colours = new Set(taken.map((l) => l.colour));
+  const freeIcons = CHARACTER_ORDER.filter((id) => !icons.has(id));
+  const freeColours = COLOUR_ORDER.filter((id) => !colours.has(id));
+  if (!favourite) return { icon: freeIcons[0], colour: freeColours[0], expression: "happy", random: false };
+  const iconFree = !icons.has(favourite.icon);
+  const colourFree = !colours.has(favourite.colour);
+  return {
+    icon: iconFree ? favourite.icon : freeIcons[Math.floor(random() * freeIcons.length)],
+    colour: colourFree ? favourite.colour : freeColours[Math.floor(random() * freeColours.length)],
+    expression: favourite.expression ?? "happy",
+    random: !iconFree || !colourFree,
   };
 }
 
@@ -127,7 +153,7 @@ export class FakeRoom {
       hostUserId: options.hostUserId,
       phase: "LOBBY",
       settings: options.settings ?? { questionCount: 5, secondsPerQuestion: 15 },
-      players: options.players,
+      players: options.players.reduce<Player[]>((room, p) => [...room, { ...p, look: assignLook(p.look, room.map((r) => r.look!), this.random) }], []),
       roundNumber: 0,
       scoreboard: [],
     };
@@ -359,7 +385,8 @@ export class FakeRoom {
       return this.emit("PLAYER_RECONNECTED", player.userId);
     }
     // Joining while a quiz is preparing or running: watch it, play from the next one.
-    this.snapshot.players.push(this.betweenQuizzes() ? player : { ...player, status: "SPECTATING" });
+    const look = assignLook(player.look, this.snapshot.players.flatMap((p) => (p.look ? [p.look] : [])), this.random);
+    this.snapshot.players.push({ ...player, look, ...(this.betweenQuizzes() ? {} : { status: "SPECTATING" as const }) });
     this.emit("PLAYER_JOINED", player.userId);
     if (player.userId !== this.meId && this.snapshot.phase === "LOBBY") {
       this.after(1_200, () => this.say(player.userId, ["yo", "hey all", "what are we playing to", "ready when you are"][this.snapshot.players.length % 4]));
