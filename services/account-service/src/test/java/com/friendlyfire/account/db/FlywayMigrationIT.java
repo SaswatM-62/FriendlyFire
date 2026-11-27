@@ -40,7 +40,8 @@ class FlywayMigrationIT {
     @Test
     void createsTheUsersTable() {
         assertThat(columns("users"))
-                .containsExactly("user_id", "auth_subject", "email", "display_name", "created_at", "onboarded_at");
+                .containsExactly("user_id", "auth_subject", "email", "display_name", "created_at", "onboarded_at",
+                        "look_icon", "look_colour", "look_expression");
         assertThat(uniqueColumns("users")).containsExactlyInAnyOrder("user_id", "auth_subject");
     }
 

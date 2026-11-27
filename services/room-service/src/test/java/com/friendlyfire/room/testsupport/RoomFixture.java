@@ -29,6 +29,7 @@ public final class RoomFixture {
     public final ManualClock clock = new ManualClock(START);
     public final FakeScheduler scheduler = new FakeScheduler(clock);
     public final FakeDataStatusClient data = new FakeDataStatusClient();
+    public final FakeFavouriteLookClient looks = new FakeFavouriteLookClient();
     public final FakeQuizClient quiz = new FakeQuizClient();
     public final FakeScoringClient scoring = new FakeScoringClient();
     public final RoomTimings timings = RoomTimings.defaults();
@@ -42,8 +43,8 @@ public final class RoomFixture {
 
     public RoomFixture(Executor background) {
         QuizRunner runner = new QuizRunner(events, quiz, scoring, clock, scheduler, background, timings);
-        manager = new RoomManager(rooms, new RoomCodeGenerator(rooms, new Random(7)), events, runner, data, clock,
-                background, timings);
+        manager = new RoomManager(rooms, new RoomCodeGenerator(rooms, new Random(7)), events, runner, data, looks,
+                new Random(11), clock, background, timings);
         new RoomJobs(manager, scheduler, timings);
     }
 

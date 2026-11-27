@@ -26,20 +26,32 @@ DATA_STATUS_NOT_LINKED: DataStatus
 DATA_STATUS_FAILED: DataStatus
 
 class User(_message.Message):
-    __slots__ = ("user_id", "display_name", "email", "created_at", "riot_link", "onboarded_at")
+    __slots__ = ("user_id", "display_name", "email", "created_at", "riot_link", "onboarded_at", "look")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     EMAIL_FIELD_NUMBER: _ClassVar[int]
     CREATED_AT_FIELD_NUMBER: _ClassVar[int]
     RIOT_LINK_FIELD_NUMBER: _ClassVar[int]
     ONBOARDED_AT_FIELD_NUMBER: _ClassVar[int]
+    LOOK_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     display_name: str
     email: str
     created_at: _timestamp_pb2.Timestamp
     riot_link: RiotLink
     onboarded_at: _timestamp_pb2.Timestamp
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., email: _Optional[str] = ..., created_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., riot_link: _Optional[_Union[RiotLink, _Mapping]] = ..., onboarded_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    look: Look
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., email: _Optional[str] = ..., created_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., riot_link: _Optional[_Union[RiotLink, _Mapping]] = ..., onboarded_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., look: _Optional[_Union[Look, _Mapping]] = ...) -> None: ...
+
+class Look(_message.Message):
+    __slots__ = ("icon", "colour", "expression")
+    ICON_FIELD_NUMBER: _ClassVar[int]
+    COLOUR_FIELD_NUMBER: _ClassVar[int]
+    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    icon: str
+    colour: str
+    expression: str
+    def __init__(self, icon: _Optional[str] = ..., colour: _Optional[str] = ..., expression: _Optional[str] = ...) -> None: ...
 
 class RiotLink(_message.Message):
     __slots__ = ("game_name", "tag_line", "region", "linked_at")
@@ -184,6 +196,20 @@ class FinishOnboardingRequest(_message.Message):
     def __init__(self, user_id: _Optional[str] = ...) -> None: ...
 
 class FinishOnboardingResponse(_message.Message):
+    __slots__ = ("user",)
+    USER_FIELD_NUMBER: _ClassVar[int]
+    user: User
+    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ...) -> None: ...
+
+class UpdateLookRequest(_message.Message):
+    __slots__ = ("user_id", "look")
+    USER_ID_FIELD_NUMBER: _ClassVar[int]
+    LOOK_FIELD_NUMBER: _ClassVar[int]
+    user_id: str
+    look: Look
+    def __init__(self, user_id: _Optional[str] = ..., look: _Optional[_Union[Look, _Mapping]] = ...) -> None: ...
+
+class UpdateLookResponse(_message.Message):
     __slots__ = ("user",)
     USER_FIELD_NUMBER: _ClassVar[int]
     user: User

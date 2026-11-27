@@ -1,14 +1,4 @@
-import type {
-  ApiErrorBody,
-  ChatHistory,
-  HistoryPage,
-  LiveStats,
-  Me,
-  QuizSummary,
-  RoomSnapshot,
-  StartRiotLinkResponse,
-  SyncStatusResponse,
-} from "@/lib/api-types";
+import type { ApiErrorBody, ChatHistory, HistoryPage, LiveStats, Me, QuizSummary, RoomSnapshot, SavedLook, StartRiotLinkResponse, SyncStatusResponse } from "@/lib/api-types";
 import { codeForStatus, ERROR_CODES, messageFor } from "@/lib/errors";
 
 /** A failed Gateway call: the HTTP status (0 = no answer), a code and a message to show. */
@@ -113,6 +103,8 @@ export function createApiClient(options: ApiClientOptions) {
     getMe: (opts?: RequestOptions) => request<Me>("GET", "/api/me", opts),
     updateDisplayName: (displayName: string, opts?: RequestOptions) =>
       request<Me>("PATCH", "/api/me", { ...opts, body: { displayName } }),
+    /** Saves the favourite look on the account (FF-519); rooms use it from the next one you join. */
+    updateLook: (look: SavedLook, opts?: RequestOptions) => request<Me>("PATCH", "/api/me", { ...opts, body: { look } }),
     deleteAccount: (opts?: RequestOptions) => request<void>("DELETE", "/api/me", opts),
     /** Marks the new-player tutorial as done; returns the user with `onboardedAt`. */
     finishOnboarding: (opts?: RequestOptions) => request<Me>("POST", "/api/me/onboarding", opts),

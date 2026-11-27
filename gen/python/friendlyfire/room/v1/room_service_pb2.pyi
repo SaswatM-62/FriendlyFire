@@ -194,7 +194,7 @@ class RoomSettings(_message.Message):
     def __init__(self, question_count: _Optional[int] = ..., seconds_per_question: _Optional[int] = ...) -> None: ...
 
 class Player(_message.Message):
-    __slots__ = ("user_id", "display_name", "status", "connection_quality", "answered_current_question", "data_status", "data_estimated_seconds", "not_enough_matches", "riot_tag_line")
+    __slots__ = ("user_id", "display_name", "status", "connection_quality", "answered_current_question", "data_status", "data_estimated_seconds", "not_enough_matches", "riot_tag_line", "look")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
     DISPLAY_NAME_FIELD_NUMBER: _ClassVar[int]
     STATUS_FIELD_NUMBER: _ClassVar[int]
@@ -204,6 +204,7 @@ class Player(_message.Message):
     DATA_ESTIMATED_SECONDS_FIELD_NUMBER: _ClassVar[int]
     NOT_ENOUGH_MATCHES_FIELD_NUMBER: _ClassVar[int]
     RIOT_TAG_LINE_FIELD_NUMBER: _ClassVar[int]
+    LOOK_FIELD_NUMBER: _ClassVar[int]
     user_id: str
     display_name: str
     status: PlayerStatus
@@ -213,7 +214,20 @@ class Player(_message.Message):
     data_estimated_seconds: int
     not_enough_matches: bool
     riot_tag_line: str
-    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., status: _Optional[_Union[PlayerStatus, str]] = ..., connection_quality: _Optional[_Union[ConnectionQuality, str]] = ..., answered_current_question: _Optional[bool] = ..., data_status: _Optional[_Union[PlayerDataStatus, str]] = ..., data_estimated_seconds: _Optional[int] = ..., not_enough_matches: _Optional[bool] = ..., riot_tag_line: _Optional[str] = ...) -> None: ...
+    look: PlayerLook
+    def __init__(self, user_id: _Optional[str] = ..., display_name: _Optional[str] = ..., status: _Optional[_Union[PlayerStatus, str]] = ..., connection_quality: _Optional[_Union[ConnectionQuality, str]] = ..., answered_current_question: _Optional[bool] = ..., data_status: _Optional[_Union[PlayerDataStatus, str]] = ..., data_estimated_seconds: _Optional[int] = ..., not_enough_matches: _Optional[bool] = ..., riot_tag_line: _Optional[str] = ..., look: _Optional[_Union[PlayerLook, _Mapping]] = ...) -> None: ...
+
+class PlayerLook(_message.Message):
+    __slots__ = ("icon", "colour", "expression", "random")
+    ICON_FIELD_NUMBER: _ClassVar[int]
+    COLOUR_FIELD_NUMBER: _ClassVar[int]
+    EXPRESSION_FIELD_NUMBER: _ClassVar[int]
+    RANDOM_FIELD_NUMBER: _ClassVar[int]
+    icon: str
+    colour: str
+    expression: str
+    random: bool
+    def __init__(self, icon: _Optional[str] = ..., colour: _Optional[str] = ..., expression: _Optional[str] = ..., random: _Optional[bool] = ...) -> None: ...
 
 class QuestionView(_message.Message):
     __slots__ = ("question_id", "text", "options", "reveal")

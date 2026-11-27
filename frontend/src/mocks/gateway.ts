@@ -1,5 +1,5 @@
 import { ROOM_CODE_ALPHABET } from "@/lib/api";
-import type { Me, QuizSummary, RiotLink, SyncStatusResponse, LiveStats } from "@/lib/api-types";
+import type { Me, QuizSummary, RiotLink, SavedLook, SyncStatusResponse, LiveStats } from "@/lib/api-types";
 import { FAKE_ME, FAKE_PLAYERS, fakeHistory, ME_ID } from "@/mocks/data";
 import { FakeRoom, fakePlayer } from "@/mocks/fakeRoom";
 
@@ -15,6 +15,8 @@ interface Persisted {
   createdRooms: string[];
   /** False for a brand-new player who hasn't finished the tutorial (/welcome). */
   onboarded: boolean;
+  /** Profile "Your look" (FF-519); unset until picked. */
+  look?: SavedLook;
 }
 
 const STORAGE_KEY = "ff-fake-backend";
@@ -118,6 +120,7 @@ export class FakeGateway {
       displayName: this.state.displayName,
       riotLink: this.state.linked ? FAKE_ME.riotLink : null,
       onboardedAt: this.state.onboarded ? FAKE_ME.onboardedAt : undefined,
+      look: this.state.look,
     };
   }
 
@@ -134,6 +137,11 @@ export class FakeGateway {
 
   rename(displayName: string) {
     this.change({ displayName });
+  }
+
+  /** PATCH /api/me with a look (FF-519). */
+  saveLook(look: SavedLook) {
+    this.change({ look });
   }
 
   deleteAccount() {
@@ -210,7 +218,7 @@ export class FakeGateway {
   }
 
   private meAsPlayer() {
-    return fakePlayer({ ...FAKE_PLAYERS.alex, displayName: this.state.displayName }, {
+    return fakePlayer({ ...FAKE_PLAYERS.alex, displayName: this.state.displayName, look: this.state.look }, {
       dataStatus: this.state.linked ? (this.state.syncMode === "synced" ? "SYNCED" : "SYNCING") : "NOT_LINKED",
       dataEstimatedSeconds: this.state.syncMode === "syncing" ? SYNC_SECONDS : undefined,
     });

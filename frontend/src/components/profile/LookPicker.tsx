@@ -1,10 +1,12 @@
 "use client";
 
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
-import { announceLookChange, useFavouriteLook } from "@/components/chrome/useFavouriteLook";
+import { useFavouriteLook } from "@/components/chrome/useFavouriteLook";
+import { useApi } from "@/components/providers/ApiProvider";
+import { useMe } from "@/components/providers/MeProvider";
 import { Av, Character } from "@/components/ui/Character";
 import { CHARACTER_ORDER, CHARACTER_SHAPES, COLOUR_ORDER, EXPRESSION_LABELS, PICKABLE_EXPRESSIONS, colourIndex } from "@/lib/characters";
-import { saveFavouriteLook, type FavouriteLook } from "@/lib/preferences";
+import type { FavouriteLook } from "@/lib/preferences";
 
 /** Arrow keys move through a radio group, as in a native one. */
 function onArrows<T>(event: KeyboardEvent, items: T[], current: T, choose: (item: T) => void) {
@@ -68,13 +70,21 @@ function PickerGroup<T extends string>({
 
 const capitalise = (word: string) => word[0].toUpperCase() + word.slice(1);
 
-/** "Your look": a favourite icon, colour and expression (Profile board). */
+/**
+ * "Your look": a favourite icon, colour and expression (Profile board), saved on the account
+ * (FF-519). A pick shows straight away; if saving fails, it goes back and the error shows
+ * as a toast.
+ */
 export function LookPicker() {
   const look = useFavouriteLook();
+  const api = useApi();
+  const { me, setMe } = useMe();
 
   const choose = (change: Partial<FavouriteLook>) => {
-    saveFavouriteLook({ ...look, ...change });
-    announceLookChange();
+    if (!me) return;
+    const next = { ...look, ...change };
+    setMe({ ...me, look: next });
+    api.updateLook(next).then(setMe, () => setMe(me));
   };
 
   return (
@@ -130,7 +140,7 @@ export function LookPicker() {
       />
       <p className="small faint">
         If someone in the room already has your icon or colour, whoever joined first keeps it and you get a random free one for that game.
-        Saved in this browser for now: rooms use your icon and colour once FriendlyFire saves looks on your account.
+        Your face always stays yours. Saved on your account, so it follows you to other devices.
       </p>
     </section>
   );

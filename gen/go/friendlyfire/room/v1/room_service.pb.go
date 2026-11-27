@@ -838,7 +838,10 @@ type Player struct {
 	NotEnoughMatches bool `protobuf:"varint,9,opt,name=not_enough_matches,json=notEnoughMatches,proto3" json:"not_enough_matches,omitempty"`
 	// "NA1" in "Sam#NA1": tells two players with the same name apart. Empty
 	// if they haven't linked a Riot account.
-	RiotTagLine   string `protobuf:"bytes,10,opt,name=riot_tag_line,json=riotTagLine,proto3" json:"riot_tag_line,omitempty"`
+	RiotTagLine string `protobuf:"bytes,10,opt,name=riot_tag_line,json=riotTagLine,proto3" json:"riot_tag_line,omitempty"`
+	// Their character in this room (FF-519), handed out when they join and kept
+	// for the room. Always set.
+	Look          *PlayerLook `protobuf:"bytes,11,opt,name=look,proto3" json:"look,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -936,6 +939,90 @@ func (x *Player) GetRiotTagLine() string {
 	return ""
 }
 
+func (x *Player) GetLook() *PlayerLook {
+	if x != nil {
+		return x.Look
+	}
+	return nil
+}
+
+// A player's character in a room. Favourite icons and colours (from
+// AccountService) are first come, first served, each on its own; someone who
+// can't have theirs gets a random free one. The expression is always their
+// favourite ("happy" if they haven't picked one).
+type PlayerLook struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// One of AccountService Look's icons.
+	Icon string `protobuf:"bytes,1,opt,name=icon,proto3" json:"icon,omitempty"`
+	// One of AccountService Look's colours.
+	Colour string `protobuf:"bytes,2,opt,name=colour,proto3" json:"colour,omitempty"`
+	// One of AccountService Look's expressions.
+	Expression string `protobuf:"bytes,3,opt,name=expression,proto3" json:"expression,omitempty"`
+	// True when their favourite icon or colour was taken, so they got a random
+	// free one instead.
+	Random        bool `protobuf:"varint,4,opt,name=random,proto3" json:"random,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerLook) Reset() {
+	*x = PlayerLook{}
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerLook) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerLook) ProtoMessage() {}
+
+func (x *PlayerLook) ProtoReflect() protoreflect.Message {
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerLook.ProtoReflect.Descriptor instead.
+func (*PlayerLook) Descriptor() ([]byte, []int) {
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *PlayerLook) GetIcon() string {
+	if x != nil {
+		return x.Icon
+	}
+	return ""
+}
+
+func (x *PlayerLook) GetColour() string {
+	if x != nil {
+		return x.Colour
+	}
+	return ""
+}
+
+func (x *PlayerLook) GetExpression() string {
+	if x != nil {
+		return x.Expression
+	}
+	return ""
+}
+
+func (x *PlayerLook) GetRandom() bool {
+	if x != nil {
+		return x.Random
+	}
+	return false
+}
+
 // A question as browsers see it. During ROOM_PHASE_QUESTION the `reveal`
 // field is NOT set, so the correct answer never reaches a browser early.
 type QuestionView struct {
@@ -951,7 +1038,7 @@ type QuestionView struct {
 
 func (x *QuestionView) Reset() {
 	*x = QuestionView{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[4]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -963,7 +1050,7 @@ func (x *QuestionView) String() string {
 func (*QuestionView) ProtoMessage() {}
 
 func (x *QuestionView) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[4]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -976,7 +1063,7 @@ func (x *QuestionView) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuestionView.ProtoReflect.Descriptor instead.
 func (*QuestionView) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{4}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *QuestionView) GetQuestionId() string {
@@ -1017,7 +1104,7 @@ type QuestionOption struct {
 
 func (x *QuestionOption) Reset() {
 	*x = QuestionOption{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[5]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1029,7 +1116,7 @@ func (x *QuestionOption) String() string {
 func (*QuestionOption) ProtoMessage() {}
 
 func (x *QuestionOption) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[5]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1042,7 +1129,7 @@ func (x *QuestionOption) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QuestionOption.ProtoReflect.Descriptor instead.
 func (*QuestionOption) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{5}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *QuestionOption) GetOptionId() string {
@@ -1070,7 +1157,7 @@ type Reveal struct {
 
 func (x *Reveal) Reset() {
 	*x = Reveal{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[6]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1082,7 +1169,7 @@ func (x *Reveal) String() string {
 func (*Reveal) ProtoMessage() {}
 
 func (x *Reveal) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[6]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1095,7 +1182,7 @@ func (x *Reveal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Reveal.ProtoReflect.Descriptor instead.
 func (*Reveal) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{6}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Reveal) GetCorrectOptionId() string {
@@ -1132,7 +1219,7 @@ type PlayerResult struct {
 
 func (x *PlayerResult) Reset() {
 	*x = PlayerResult{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[7]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1144,7 +1231,7 @@ func (x *PlayerResult) String() string {
 func (*PlayerResult) ProtoMessage() {}
 
 func (x *PlayerResult) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[7]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1157,7 +1244,7 @@ func (x *PlayerResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlayerResult.ProtoReflect.Descriptor instead.
 func (*PlayerResult) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{7}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *PlayerResult) GetUserId() string {
@@ -1203,7 +1290,7 @@ type ScoreEntry struct {
 
 func (x *ScoreEntry) Reset() {
 	*x = ScoreEntry{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[8]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1215,7 +1302,7 @@ func (x *ScoreEntry) String() string {
 func (*ScoreEntry) ProtoMessage() {}
 
 func (x *ScoreEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[8]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1228,7 +1315,7 @@ func (x *ScoreEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ScoreEntry.ProtoReflect.Descriptor instead.
 func (*ScoreEntry) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{8}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ScoreEntry) GetUserId() string {
@@ -1292,7 +1379,7 @@ type Vote struct {
 
 func (x *Vote) Reset() {
 	*x = Vote{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[9]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1304,7 +1391,7 @@ func (x *Vote) String() string {
 func (*Vote) ProtoMessage() {}
 
 func (x *Vote) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[9]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1317,7 +1404,7 @@ func (x *Vote) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Vote.ProtoReflect.Descriptor instead.
 func (*Vote) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{9}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Vote) GetAboutUserId() string {
@@ -1389,7 +1476,7 @@ type RoomEvent struct {
 
 func (x *RoomEvent) Reset() {
 	*x = RoomEvent{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[10]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1401,7 +1488,7 @@ func (x *RoomEvent) String() string {
 func (*RoomEvent) ProtoMessage() {}
 
 func (x *RoomEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[10]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1414,7 +1501,7 @@ func (x *RoomEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RoomEvent.ProtoReflect.Descriptor instead.
 func (*RoomEvent) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{10}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RoomEvent) GetType() RoomEventType {
@@ -1475,7 +1562,7 @@ type ChatMessage struct {
 
 func (x *ChatMessage) Reset() {
 	*x = ChatMessage{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[11]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1487,7 +1574,7 @@ func (x *ChatMessage) String() string {
 func (*ChatMessage) ProtoMessage() {}
 
 func (x *ChatMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[11]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1500,7 +1587,7 @@ func (x *ChatMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChatMessage.ProtoReflect.Descriptor instead.
 func (*ChatMessage) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{11}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ChatMessage) GetMessageId() string {
@@ -1550,7 +1637,7 @@ type CreateRoomRequest struct {
 
 func (x *CreateRoomRequest) Reset() {
 	*x = CreateRoomRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[12]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1562,7 +1649,7 @@ func (x *CreateRoomRequest) String() string {
 func (*CreateRoomRequest) ProtoMessage() {}
 
 func (x *CreateRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[12]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1575,7 +1662,7 @@ func (x *CreateRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoomRequest.ProtoReflect.Descriptor instead.
 func (*CreateRoomRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{12}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateRoomRequest) GetHostUserId() string {
@@ -1608,7 +1695,7 @@ type CreateRoomResponse struct {
 
 func (x *CreateRoomResponse) Reset() {
 	*x = CreateRoomResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[13]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1620,7 +1707,7 @@ func (x *CreateRoomResponse) String() string {
 func (*CreateRoomResponse) ProtoMessage() {}
 
 func (x *CreateRoomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[13]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1633,7 +1720,7 @@ func (x *CreateRoomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoomResponse.ProtoReflect.Descriptor instead.
 func (*CreateRoomResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{13}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateRoomResponse) GetSnapshot() *RoomSnapshot {
@@ -1656,7 +1743,7 @@ type JoinRoomRequest struct {
 
 func (x *JoinRoomRequest) Reset() {
 	*x = JoinRoomRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[14]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1668,7 +1755,7 @@ func (x *JoinRoomRequest) String() string {
 func (*JoinRoomRequest) ProtoMessage() {}
 
 func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[14]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1681,7 +1768,7 @@ func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoomRequest.ProtoReflect.Descriptor instead.
 func (*JoinRoomRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{14}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *JoinRoomRequest) GetRoomCode() string {
@@ -1721,7 +1808,7 @@ type JoinRoomResponse struct {
 
 func (x *JoinRoomResponse) Reset() {
 	*x = JoinRoomResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[15]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1733,7 +1820,7 @@ func (x *JoinRoomResponse) String() string {
 func (*JoinRoomResponse) ProtoMessage() {}
 
 func (x *JoinRoomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[15]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1746,7 +1833,7 @@ func (x *JoinRoomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoomResponse.ProtoReflect.Descriptor instead.
 func (*JoinRoomResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{15}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *JoinRoomResponse) GetSnapshot() *RoomSnapshot {
@@ -1766,7 +1853,7 @@ type LeaveRoomRequest struct {
 
 func (x *LeaveRoomRequest) Reset() {
 	*x = LeaveRoomRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[16]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1778,7 +1865,7 @@ func (x *LeaveRoomRequest) String() string {
 func (*LeaveRoomRequest) ProtoMessage() {}
 
 func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[16]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1791,7 +1878,7 @@ func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoomRequest.ProtoReflect.Descriptor instead.
 func (*LeaveRoomRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{16}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *LeaveRoomRequest) GetRoomCode() string {
@@ -1816,7 +1903,7 @@ type LeaveRoomResponse struct {
 
 func (x *LeaveRoomResponse) Reset() {
 	*x = LeaveRoomResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[17]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1828,7 +1915,7 @@ func (x *LeaveRoomResponse) String() string {
 func (*LeaveRoomResponse) ProtoMessage() {}
 
 func (x *LeaveRoomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[17]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1841,7 +1928,7 @@ func (x *LeaveRoomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoomResponse.ProtoReflect.Descriptor instead.
 func (*LeaveRoomResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{17}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{18}
 }
 
 type KickPlayerRequest struct {
@@ -1856,7 +1943,7 @@ type KickPlayerRequest struct {
 
 func (x *KickPlayerRequest) Reset() {
 	*x = KickPlayerRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[18]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1868,7 +1955,7 @@ func (x *KickPlayerRequest) String() string {
 func (*KickPlayerRequest) ProtoMessage() {}
 
 func (x *KickPlayerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[18]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1881,7 +1968,7 @@ func (x *KickPlayerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KickPlayerRequest.ProtoReflect.Descriptor instead.
 func (*KickPlayerRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{18}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *KickPlayerRequest) GetRoomCode() string {
@@ -1914,7 +2001,7 @@ type KickPlayerResponse struct {
 
 func (x *KickPlayerResponse) Reset() {
 	*x = KickPlayerResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[19]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1926,7 +2013,7 @@ func (x *KickPlayerResponse) String() string {
 func (*KickPlayerResponse) ProtoMessage() {}
 
 func (x *KickPlayerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[19]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1939,7 +2026,7 @@ func (x *KickPlayerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KickPlayerResponse.ProtoReflect.Descriptor instead.
 func (*KickPlayerResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{19}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *KickPlayerResponse) GetSnapshot() *RoomSnapshot {
@@ -1961,7 +2048,7 @@ type UpdateSettingsRequest struct {
 
 func (x *UpdateSettingsRequest) Reset() {
 	*x = UpdateSettingsRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[20]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1973,7 +2060,7 @@ func (x *UpdateSettingsRequest) String() string {
 func (*UpdateSettingsRequest) ProtoMessage() {}
 
 func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[20]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1986,7 +2073,7 @@ func (x *UpdateSettingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{20}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *UpdateSettingsRequest) GetRoomCode() string {
@@ -2019,7 +2106,7 @@ type UpdateSettingsResponse struct {
 
 func (x *UpdateSettingsResponse) Reset() {
 	*x = UpdateSettingsResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[21]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2031,7 +2118,7 @@ func (x *UpdateSettingsResponse) String() string {
 func (*UpdateSettingsResponse) ProtoMessage() {}
 
 func (x *UpdateSettingsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[21]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2044,7 +2131,7 @@ func (x *UpdateSettingsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSettingsResponse.ProtoReflect.Descriptor instead.
 func (*UpdateSettingsResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{21}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *UpdateSettingsResponse) GetSnapshot() *RoomSnapshot {
@@ -2065,7 +2152,7 @@ type StartQuizRequest struct {
 
 func (x *StartQuizRequest) Reset() {
 	*x = StartQuizRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[22]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2077,7 +2164,7 @@ func (x *StartQuizRequest) String() string {
 func (*StartQuizRequest) ProtoMessage() {}
 
 func (x *StartQuizRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[22]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2090,7 +2177,7 @@ func (x *StartQuizRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartQuizRequest.ProtoReflect.Descriptor instead.
 func (*StartQuizRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{22}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *StartQuizRequest) GetRoomCode() string {
@@ -2116,7 +2203,7 @@ type StartQuizResponse struct {
 
 func (x *StartQuizResponse) Reset() {
 	*x = StartQuizResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[23]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2128,7 +2215,7 @@ func (x *StartQuizResponse) String() string {
 func (*StartQuizResponse) ProtoMessage() {}
 
 func (x *StartQuizResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[23]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2141,7 +2228,7 @@ func (x *StartQuizResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartQuizResponse.ProtoReflect.Descriptor instead.
 func (*StartQuizResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{23}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *StartQuizResponse) GetSnapshot() *RoomSnapshot {
@@ -2163,7 +2250,7 @@ type SubmitAnswerRequest struct {
 
 func (x *SubmitAnswerRequest) Reset() {
 	*x = SubmitAnswerRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[24]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2175,7 +2262,7 @@ func (x *SubmitAnswerRequest) String() string {
 func (*SubmitAnswerRequest) ProtoMessage() {}
 
 func (x *SubmitAnswerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[24]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2188,7 +2275,7 @@ func (x *SubmitAnswerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitAnswerRequest.ProtoReflect.Descriptor instead.
 func (*SubmitAnswerRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{24}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SubmitAnswerRequest) GetRoomCode() string {
@@ -2229,7 +2316,7 @@ type SubmitAnswerResponse struct {
 
 func (x *SubmitAnswerResponse) Reset() {
 	*x = SubmitAnswerResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[25]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2241,7 +2328,7 @@ func (x *SubmitAnswerResponse) String() string {
 func (*SubmitAnswerResponse) ProtoMessage() {}
 
 func (x *SubmitAnswerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[25]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2254,7 +2341,7 @@ func (x *SubmitAnswerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitAnswerResponse.ProtoReflect.Descriptor instead.
 func (*SubmitAnswerResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{25}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{26}
 }
 
 type ReportDisconnectedRequest struct {
@@ -2267,7 +2354,7 @@ type ReportDisconnectedRequest struct {
 
 func (x *ReportDisconnectedRequest) Reset() {
 	*x = ReportDisconnectedRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[26]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2279,7 +2366,7 @@ func (x *ReportDisconnectedRequest) String() string {
 func (*ReportDisconnectedRequest) ProtoMessage() {}
 
 func (x *ReportDisconnectedRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[26]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2292,7 +2379,7 @@ func (x *ReportDisconnectedRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportDisconnectedRequest.ProtoReflect.Descriptor instead.
 func (*ReportDisconnectedRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{26}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *ReportDisconnectedRequest) GetRoomCode() string {
@@ -2317,7 +2404,7 @@ type ReportDisconnectedResponse struct {
 
 func (x *ReportDisconnectedResponse) Reset() {
 	*x = ReportDisconnectedResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[27]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2329,7 +2416,7 @@ func (x *ReportDisconnectedResponse) String() string {
 func (*ReportDisconnectedResponse) ProtoMessage() {}
 
 func (x *ReportDisconnectedResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[27]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2342,7 +2429,7 @@ func (x *ReportDisconnectedResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportDisconnectedResponse.ProtoReflect.Descriptor instead.
 func (*ReportDisconnectedResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{27}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{28}
 }
 
 type ReportConnectionQualityRequest struct {
@@ -2356,7 +2443,7 @@ type ReportConnectionQualityRequest struct {
 
 func (x *ReportConnectionQualityRequest) Reset() {
 	*x = ReportConnectionQualityRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[28]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2368,7 +2455,7 @@ func (x *ReportConnectionQualityRequest) String() string {
 func (*ReportConnectionQualityRequest) ProtoMessage() {}
 
 func (x *ReportConnectionQualityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[28]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2381,7 +2468,7 @@ func (x *ReportConnectionQualityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportConnectionQualityRequest.ProtoReflect.Descriptor instead.
 func (*ReportConnectionQualityRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{28}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *ReportConnectionQualityRequest) GetRoomCode() string {
@@ -2413,7 +2500,7 @@ type ReportConnectionQualityResponse struct {
 
 func (x *ReportConnectionQualityResponse) Reset() {
 	*x = ReportConnectionQualityResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[29]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2425,7 +2512,7 @@ func (x *ReportConnectionQualityResponse) String() string {
 func (*ReportConnectionQualityResponse) ProtoMessage() {}
 
 func (x *ReportConnectionQualityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[29]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2438,7 +2525,7 @@ func (x *ReportConnectionQualityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReportConnectionQualityResponse.ProtoReflect.Descriptor instead.
 func (*ReportConnectionQualityResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{29}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{30}
 }
 
 type CastVoteRequest struct {
@@ -2452,7 +2539,7 @@ type CastVoteRequest struct {
 
 func (x *CastVoteRequest) Reset() {
 	*x = CastVoteRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[30]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2464,7 +2551,7 @@ func (x *CastVoteRequest) String() string {
 func (*CastVoteRequest) ProtoMessage() {}
 
 func (x *CastVoteRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[30]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2477,7 +2564,7 @@ func (x *CastVoteRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CastVoteRequest.ProtoReflect.Descriptor instead.
 func (*CastVoteRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{30}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *CastVoteRequest) GetRoomCode() string {
@@ -2509,7 +2596,7 @@ type CastVoteResponse struct {
 
 func (x *CastVoteResponse) Reset() {
 	*x = CastVoteResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[31]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2521,7 +2608,7 @@ func (x *CastVoteResponse) String() string {
 func (*CastVoteResponse) ProtoMessage() {}
 
 func (x *CastVoteResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[31]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2534,7 +2621,7 @@ func (x *CastVoteResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CastVoteResponse.ProtoReflect.Descriptor instead.
 func (*CastVoteResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{31}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{32}
 }
 
 type GetRoomSnapshotRequest struct {
@@ -2548,7 +2635,7 @@ type GetRoomSnapshotRequest struct {
 
 func (x *GetRoomSnapshotRequest) Reset() {
 	*x = GetRoomSnapshotRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[32]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2560,7 +2647,7 @@ func (x *GetRoomSnapshotRequest) String() string {
 func (*GetRoomSnapshotRequest) ProtoMessage() {}
 
 func (x *GetRoomSnapshotRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[32]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2573,7 +2660,7 @@ func (x *GetRoomSnapshotRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoomSnapshotRequest.ProtoReflect.Descriptor instead.
 func (*GetRoomSnapshotRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{32}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *GetRoomSnapshotRequest) GetRoomCode() string {
@@ -2599,7 +2686,7 @@ type GetRoomSnapshotResponse struct {
 
 func (x *GetRoomSnapshotResponse) Reset() {
 	*x = GetRoomSnapshotResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[33]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2611,7 +2698,7 @@ func (x *GetRoomSnapshotResponse) String() string {
 func (*GetRoomSnapshotResponse) ProtoMessage() {}
 
 func (x *GetRoomSnapshotResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[33]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2624,7 +2711,7 @@ func (x *GetRoomSnapshotResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoomSnapshotResponse.ProtoReflect.Descriptor instead.
 func (*GetRoomSnapshotResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{33}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *GetRoomSnapshotResponse) GetSnapshot() *RoomSnapshot {
@@ -2643,7 +2730,7 @@ type StreamRoomEventsRequest struct {
 
 func (x *StreamRoomEventsRequest) Reset() {
 	*x = StreamRoomEventsRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[34]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2655,7 +2742,7 @@ func (x *StreamRoomEventsRequest) String() string {
 func (*StreamRoomEventsRequest) ProtoMessage() {}
 
 func (x *StreamRoomEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[34]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2668,7 +2755,7 @@ func (x *StreamRoomEventsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamRoomEventsRequest.ProtoReflect.Descriptor instead.
 func (*StreamRoomEventsRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{34}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *StreamRoomEventsRequest) GetRoomCode() string {
@@ -2687,7 +2774,7 @@ type StreamRoomEventsResponse struct {
 
 func (x *StreamRoomEventsResponse) Reset() {
 	*x = StreamRoomEventsResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[35]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2699,7 +2786,7 @@ func (x *StreamRoomEventsResponse) String() string {
 func (*StreamRoomEventsResponse) ProtoMessage() {}
 
 func (x *StreamRoomEventsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[35]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2712,7 +2799,7 @@ func (x *StreamRoomEventsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamRoomEventsResponse.ProtoReflect.Descriptor instead.
 func (*StreamRoomEventsResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{35}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *StreamRoomEventsResponse) GetEvent() *RoomEvent {
@@ -2731,7 +2818,7 @@ type RemovePlayerRequest struct {
 
 func (x *RemovePlayerRequest) Reset() {
 	*x = RemovePlayerRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[36]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2743,7 +2830,7 @@ func (x *RemovePlayerRequest) String() string {
 func (*RemovePlayerRequest) ProtoMessage() {}
 
 func (x *RemovePlayerRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[36]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2756,7 +2843,7 @@ func (x *RemovePlayerRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePlayerRequest.ProtoReflect.Descriptor instead.
 func (*RemovePlayerRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{36}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *RemovePlayerRequest) GetUserId() string {
@@ -2774,7 +2861,7 @@ type RemovePlayerResponse struct {
 
 func (x *RemovePlayerResponse) Reset() {
 	*x = RemovePlayerResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[37]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2786,7 +2873,7 @@ func (x *RemovePlayerResponse) String() string {
 func (*RemovePlayerResponse) ProtoMessage() {}
 
 func (x *RemovePlayerResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[37]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2799,7 +2886,7 @@ func (x *RemovePlayerResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemovePlayerResponse.ProtoReflect.Descriptor instead.
 func (*RemovePlayerResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{37}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{38}
 }
 
 type SendChatMessageRequest struct {
@@ -2813,7 +2900,7 @@ type SendChatMessageRequest struct {
 
 func (x *SendChatMessageRequest) Reset() {
 	*x = SendChatMessageRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[38]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2825,7 +2912,7 @@ func (x *SendChatMessageRequest) String() string {
 func (*SendChatMessageRequest) ProtoMessage() {}
 
 func (x *SendChatMessageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[38]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2838,7 +2925,7 @@ func (x *SendChatMessageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendChatMessageRequest.ProtoReflect.Descriptor instead.
 func (*SendChatMessageRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{38}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *SendChatMessageRequest) GetRoomCode() string {
@@ -2871,7 +2958,7 @@ type SendChatMessageResponse struct {
 
 func (x *SendChatMessageResponse) Reset() {
 	*x = SendChatMessageResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[39]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2883,7 +2970,7 @@ func (x *SendChatMessageResponse) String() string {
 func (*SendChatMessageResponse) ProtoMessage() {}
 
 func (x *SendChatMessageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[39]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2896,7 +2983,7 @@ func (x *SendChatMessageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendChatMessageResponse.ProtoReflect.Descriptor instead.
 func (*SendChatMessageResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{39}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *SendChatMessageResponse) GetMessage() *ChatMessage {
@@ -2917,7 +3004,7 @@ type GetChatHistoryRequest struct {
 
 func (x *GetChatHistoryRequest) Reset() {
 	*x = GetChatHistoryRequest{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[40]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2929,7 +3016,7 @@ func (x *GetChatHistoryRequest) String() string {
 func (*GetChatHistoryRequest) ProtoMessage() {}
 
 func (x *GetChatHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[40]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2942,7 +3029,7 @@ func (x *GetChatHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetChatHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{40}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *GetChatHistoryRequest) GetRoomCode() string {
@@ -2969,7 +3056,7 @@ type GetChatHistoryResponse struct {
 
 func (x *GetChatHistoryResponse) Reset() {
 	*x = GetChatHistoryResponse{}
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[41]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2981,7 +3068,7 @@ func (x *GetChatHistoryResponse) String() string {
 func (*GetChatHistoryResponse) ProtoMessage() {}
 
 func (x *GetChatHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[41]
+	mi := &file_friendlyfire_room_v1_room_service_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2994,7 +3081,7 @@ func (x *GetChatHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChatHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetChatHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{41}
+	return file_friendlyfire_room_v1_room_service_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *GetChatHistoryResponse) GetMessages() []*ChatMessage {
@@ -3036,7 +3123,7 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x10response_time_ms\x18\x02 \x01(\x05R\x0eresponseTimeMs\"g\n" +
 	"\fRoomSettings\x12%\n" +
 	"\x0equestion_count\x18\x01 \x01(\x05R\rquestionCount\x120\n" +
-	"\x14seconds_per_question\x18\x02 \x01(\x05R\x12secondsPerQuestion\"\xfd\x03\n" +
+	"\x14seconds_per_question\x18\x02 \x01(\x05R\x12secondsPerQuestion\"\xb3\x04\n" +
 	"\x06Player\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12:\n" +
@@ -3048,7 +3135,16 @@ const file_friendlyfire_room_v1_room_service_proto_rawDesc = "" +
 	"\x16data_estimated_seconds\x18\b \x01(\x05R\x14dataEstimatedSeconds\x12,\n" +
 	"\x12not_enough_matches\x18\t \x01(\bR\x10notEnoughMatches\x12\"\n" +
 	"\rriot_tag_line\x18\n" +
-	" \x01(\tR\vriotTagLineJ\x04\b\x04\x10\x05R\x10match_data_ready\"\xb9\x01\n" +
+	" \x01(\tR\vriotTagLine\x124\n" +
+	"\x04look\x18\v \x01(\v2 .friendlyfire.room.v1.PlayerLookR\x04lookJ\x04\b\x04\x10\x05R\x10match_data_ready\"p\n" +
+	"\n" +
+	"PlayerLook\x12\x12\n" +
+	"\x04icon\x18\x01 \x01(\tR\x04icon\x12\x16\n" +
+	"\x06colour\x18\x02 \x01(\tR\x06colour\x12\x1e\n" +
+	"\n" +
+	"expression\x18\x03 \x01(\tR\n" +
+	"expression\x12\x16\n" +
+	"\x06random\x18\x04 \x01(\bR\x06random\"\xb9\x01\n" +
 	"\fQuestionView\x12\x1f\n" +
 	"\vquestion_id\x18\x01 \x01(\tR\n" +
 	"questionId\x12\x12\n" +
@@ -3276,7 +3372,7 @@ func file_friendlyfire_room_v1_room_service_proto_rawDescGZIP() []byte {
 }
 
 var file_friendlyfire_room_v1_room_service_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_friendlyfire_room_v1_room_service_proto_msgTypes = make([]protoimpl.MessageInfo, 42)
+var file_friendlyfire_room_v1_room_service_proto_msgTypes = make([]protoimpl.MessageInfo, 43)
 var file_friendlyfire_room_v1_room_service_proto_goTypes = []any{
 	(RoomPhase)(0),                          // 0: friendlyfire.room.v1.RoomPhase
 	(PlayerStatus)(0),                       // 1: friendlyfire.room.v1.PlayerStatus
@@ -3289,115 +3385,117 @@ var file_friendlyfire_room_v1_room_service_proto_goTypes = []any{
 	(*FastestAnswer)(nil),                   // 8: friendlyfire.room.v1.FastestAnswer
 	(*RoomSettings)(nil),                    // 9: friendlyfire.room.v1.RoomSettings
 	(*Player)(nil),                          // 10: friendlyfire.room.v1.Player
-	(*QuestionView)(nil),                    // 11: friendlyfire.room.v1.QuestionView
-	(*QuestionOption)(nil),                  // 12: friendlyfire.room.v1.QuestionOption
-	(*Reveal)(nil),                          // 13: friendlyfire.room.v1.Reveal
-	(*PlayerResult)(nil),                    // 14: friendlyfire.room.v1.PlayerResult
-	(*ScoreEntry)(nil),                      // 15: friendlyfire.room.v1.ScoreEntry
-	(*Vote)(nil),                            // 16: friendlyfire.room.v1.Vote
-	(*RoomEvent)(nil),                       // 17: friendlyfire.room.v1.RoomEvent
-	(*ChatMessage)(nil),                     // 18: friendlyfire.room.v1.ChatMessage
-	(*CreateRoomRequest)(nil),               // 19: friendlyfire.room.v1.CreateRoomRequest
-	(*CreateRoomResponse)(nil),              // 20: friendlyfire.room.v1.CreateRoomResponse
-	(*JoinRoomRequest)(nil),                 // 21: friendlyfire.room.v1.JoinRoomRequest
-	(*JoinRoomResponse)(nil),                // 22: friendlyfire.room.v1.JoinRoomResponse
-	(*LeaveRoomRequest)(nil),                // 23: friendlyfire.room.v1.LeaveRoomRequest
-	(*LeaveRoomResponse)(nil),               // 24: friendlyfire.room.v1.LeaveRoomResponse
-	(*KickPlayerRequest)(nil),               // 25: friendlyfire.room.v1.KickPlayerRequest
-	(*KickPlayerResponse)(nil),              // 26: friendlyfire.room.v1.KickPlayerResponse
-	(*UpdateSettingsRequest)(nil),           // 27: friendlyfire.room.v1.UpdateSettingsRequest
-	(*UpdateSettingsResponse)(nil),          // 28: friendlyfire.room.v1.UpdateSettingsResponse
-	(*StartQuizRequest)(nil),                // 29: friendlyfire.room.v1.StartQuizRequest
-	(*StartQuizResponse)(nil),               // 30: friendlyfire.room.v1.StartQuizResponse
-	(*SubmitAnswerRequest)(nil),             // 31: friendlyfire.room.v1.SubmitAnswerRequest
-	(*SubmitAnswerResponse)(nil),            // 32: friendlyfire.room.v1.SubmitAnswerResponse
-	(*ReportDisconnectedRequest)(nil),       // 33: friendlyfire.room.v1.ReportDisconnectedRequest
-	(*ReportDisconnectedResponse)(nil),      // 34: friendlyfire.room.v1.ReportDisconnectedResponse
-	(*ReportConnectionQualityRequest)(nil),  // 35: friendlyfire.room.v1.ReportConnectionQualityRequest
-	(*ReportConnectionQualityResponse)(nil), // 36: friendlyfire.room.v1.ReportConnectionQualityResponse
-	(*CastVoteRequest)(nil),                 // 37: friendlyfire.room.v1.CastVoteRequest
-	(*CastVoteResponse)(nil),                // 38: friendlyfire.room.v1.CastVoteResponse
-	(*GetRoomSnapshotRequest)(nil),          // 39: friendlyfire.room.v1.GetRoomSnapshotRequest
-	(*GetRoomSnapshotResponse)(nil),         // 40: friendlyfire.room.v1.GetRoomSnapshotResponse
-	(*StreamRoomEventsRequest)(nil),         // 41: friendlyfire.room.v1.StreamRoomEventsRequest
-	(*StreamRoomEventsResponse)(nil),        // 42: friendlyfire.room.v1.StreamRoomEventsResponse
-	(*RemovePlayerRequest)(nil),             // 43: friendlyfire.room.v1.RemovePlayerRequest
-	(*RemovePlayerResponse)(nil),            // 44: friendlyfire.room.v1.RemovePlayerResponse
-	(*SendChatMessageRequest)(nil),          // 45: friendlyfire.room.v1.SendChatMessageRequest
-	(*SendChatMessageResponse)(nil),         // 46: friendlyfire.room.v1.SendChatMessageResponse
-	(*GetChatHistoryRequest)(nil),           // 47: friendlyfire.room.v1.GetChatHistoryRequest
-	(*GetChatHistoryResponse)(nil),          // 48: friendlyfire.room.v1.GetChatHistoryResponse
-	(*timestamppb.Timestamp)(nil),           // 49: google.protobuf.Timestamp
+	(*PlayerLook)(nil),                      // 11: friendlyfire.room.v1.PlayerLook
+	(*QuestionView)(nil),                    // 12: friendlyfire.room.v1.QuestionView
+	(*QuestionOption)(nil),                  // 13: friendlyfire.room.v1.QuestionOption
+	(*Reveal)(nil),                          // 14: friendlyfire.room.v1.Reveal
+	(*PlayerResult)(nil),                    // 15: friendlyfire.room.v1.PlayerResult
+	(*ScoreEntry)(nil),                      // 16: friendlyfire.room.v1.ScoreEntry
+	(*Vote)(nil),                            // 17: friendlyfire.room.v1.Vote
+	(*RoomEvent)(nil),                       // 18: friendlyfire.room.v1.RoomEvent
+	(*ChatMessage)(nil),                     // 19: friendlyfire.room.v1.ChatMessage
+	(*CreateRoomRequest)(nil),               // 20: friendlyfire.room.v1.CreateRoomRequest
+	(*CreateRoomResponse)(nil),              // 21: friendlyfire.room.v1.CreateRoomResponse
+	(*JoinRoomRequest)(nil),                 // 22: friendlyfire.room.v1.JoinRoomRequest
+	(*JoinRoomResponse)(nil),                // 23: friendlyfire.room.v1.JoinRoomResponse
+	(*LeaveRoomRequest)(nil),                // 24: friendlyfire.room.v1.LeaveRoomRequest
+	(*LeaveRoomResponse)(nil),               // 25: friendlyfire.room.v1.LeaveRoomResponse
+	(*KickPlayerRequest)(nil),               // 26: friendlyfire.room.v1.KickPlayerRequest
+	(*KickPlayerResponse)(nil),              // 27: friendlyfire.room.v1.KickPlayerResponse
+	(*UpdateSettingsRequest)(nil),           // 28: friendlyfire.room.v1.UpdateSettingsRequest
+	(*UpdateSettingsResponse)(nil),          // 29: friendlyfire.room.v1.UpdateSettingsResponse
+	(*StartQuizRequest)(nil),                // 30: friendlyfire.room.v1.StartQuizRequest
+	(*StartQuizResponse)(nil),               // 31: friendlyfire.room.v1.StartQuizResponse
+	(*SubmitAnswerRequest)(nil),             // 32: friendlyfire.room.v1.SubmitAnswerRequest
+	(*SubmitAnswerResponse)(nil),            // 33: friendlyfire.room.v1.SubmitAnswerResponse
+	(*ReportDisconnectedRequest)(nil),       // 34: friendlyfire.room.v1.ReportDisconnectedRequest
+	(*ReportDisconnectedResponse)(nil),      // 35: friendlyfire.room.v1.ReportDisconnectedResponse
+	(*ReportConnectionQualityRequest)(nil),  // 36: friendlyfire.room.v1.ReportConnectionQualityRequest
+	(*ReportConnectionQualityResponse)(nil), // 37: friendlyfire.room.v1.ReportConnectionQualityResponse
+	(*CastVoteRequest)(nil),                 // 38: friendlyfire.room.v1.CastVoteRequest
+	(*CastVoteResponse)(nil),                // 39: friendlyfire.room.v1.CastVoteResponse
+	(*GetRoomSnapshotRequest)(nil),          // 40: friendlyfire.room.v1.GetRoomSnapshotRequest
+	(*GetRoomSnapshotResponse)(nil),         // 41: friendlyfire.room.v1.GetRoomSnapshotResponse
+	(*StreamRoomEventsRequest)(nil),         // 42: friendlyfire.room.v1.StreamRoomEventsRequest
+	(*StreamRoomEventsResponse)(nil),        // 43: friendlyfire.room.v1.StreamRoomEventsResponse
+	(*RemovePlayerRequest)(nil),             // 44: friendlyfire.room.v1.RemovePlayerRequest
+	(*RemovePlayerResponse)(nil),            // 45: friendlyfire.room.v1.RemovePlayerResponse
+	(*SendChatMessageRequest)(nil),          // 46: friendlyfire.room.v1.SendChatMessageRequest
+	(*SendChatMessageResponse)(nil),         // 47: friendlyfire.room.v1.SendChatMessageResponse
+	(*GetChatHistoryRequest)(nil),           // 48: friendlyfire.room.v1.GetChatHistoryRequest
+	(*GetChatHistoryResponse)(nil),          // 49: friendlyfire.room.v1.GetChatHistoryResponse
+	(*timestamppb.Timestamp)(nil),           // 50: google.protobuf.Timestamp
 }
 var file_friendlyfire_room_v1_room_service_proto_depIdxs = []int32{
 	0,  // 0: friendlyfire.room.v1.RoomSnapshot.phase:type_name -> friendlyfire.room.v1.RoomPhase
 	9,  // 1: friendlyfire.room.v1.RoomSnapshot.settings:type_name -> friendlyfire.room.v1.RoomSettings
 	10, // 2: friendlyfire.room.v1.RoomSnapshot.players:type_name -> friendlyfire.room.v1.Player
-	11, // 3: friendlyfire.room.v1.RoomSnapshot.current_question:type_name -> friendlyfire.room.v1.QuestionView
-	49, // 4: friendlyfire.room.v1.RoomSnapshot.phase_deadline:type_name -> google.protobuf.Timestamp
-	15, // 5: friendlyfire.room.v1.RoomSnapshot.scoreboard:type_name -> friendlyfire.room.v1.ScoreEntry
-	16, // 6: friendlyfire.room.v1.RoomSnapshot.active_vote:type_name -> friendlyfire.room.v1.Vote
+	12, // 3: friendlyfire.room.v1.RoomSnapshot.current_question:type_name -> friendlyfire.room.v1.QuestionView
+	50, // 4: friendlyfire.room.v1.RoomSnapshot.phase_deadline:type_name -> google.protobuf.Timestamp
+	16, // 5: friendlyfire.room.v1.RoomSnapshot.scoreboard:type_name -> friendlyfire.room.v1.ScoreEntry
+	17, // 6: friendlyfire.room.v1.RoomSnapshot.active_vote:type_name -> friendlyfire.room.v1.Vote
 	6,  // 7: friendlyfire.room.v1.RoomSnapshot.end_reason:type_name -> friendlyfire.room.v1.EndReason
 	8,  // 8: friendlyfire.room.v1.RoomSnapshot.fastest_answer:type_name -> friendlyfire.room.v1.FastestAnswer
 	1,  // 9: friendlyfire.room.v1.Player.status:type_name -> friendlyfire.room.v1.PlayerStatus
 	2,  // 10: friendlyfire.room.v1.Player.connection_quality:type_name -> friendlyfire.room.v1.ConnectionQuality
 	3,  // 11: friendlyfire.room.v1.Player.data_status:type_name -> friendlyfire.room.v1.PlayerDataStatus
-	12, // 12: friendlyfire.room.v1.QuestionView.options:type_name -> friendlyfire.room.v1.QuestionOption
-	13, // 13: friendlyfire.room.v1.QuestionView.reveal:type_name -> friendlyfire.room.v1.Reveal
-	14, // 14: friendlyfire.room.v1.Reveal.results:type_name -> friendlyfire.room.v1.PlayerResult
-	49, // 15: friendlyfire.room.v1.Vote.deadline:type_name -> google.protobuf.Timestamp
-	5,  // 16: friendlyfire.room.v1.RoomEvent.type:type_name -> friendlyfire.room.v1.RoomEventType
-	49, // 17: friendlyfire.room.v1.RoomEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	7,  // 18: friendlyfire.room.v1.RoomEvent.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	18, // 19: friendlyfire.room.v1.RoomEvent.chat:type_name -> friendlyfire.room.v1.ChatMessage
-	49, // 20: friendlyfire.room.v1.ChatMessage.sent_at:type_name -> google.protobuf.Timestamp
-	7,  // 21: friendlyfire.room.v1.CreateRoomResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	7,  // 22: friendlyfire.room.v1.JoinRoomResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	7,  // 23: friendlyfire.room.v1.KickPlayerResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	9,  // 24: friendlyfire.room.v1.UpdateSettingsRequest.settings:type_name -> friendlyfire.room.v1.RoomSettings
-	7,  // 25: friendlyfire.room.v1.UpdateSettingsResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	7,  // 26: friendlyfire.room.v1.StartQuizResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	2,  // 27: friendlyfire.room.v1.ReportConnectionQualityRequest.quality:type_name -> friendlyfire.room.v1.ConnectionQuality
-	4,  // 28: friendlyfire.room.v1.CastVoteRequest.option:type_name -> friendlyfire.room.v1.VoteOption
-	7,  // 29: friendlyfire.room.v1.GetRoomSnapshotResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
-	17, // 30: friendlyfire.room.v1.StreamRoomEventsResponse.event:type_name -> friendlyfire.room.v1.RoomEvent
-	18, // 31: friendlyfire.room.v1.SendChatMessageResponse.message:type_name -> friendlyfire.room.v1.ChatMessage
-	18, // 32: friendlyfire.room.v1.GetChatHistoryResponse.messages:type_name -> friendlyfire.room.v1.ChatMessage
-	19, // 33: friendlyfire.room.v1.RoomService.CreateRoom:input_type -> friendlyfire.room.v1.CreateRoomRequest
-	21, // 34: friendlyfire.room.v1.RoomService.JoinRoom:input_type -> friendlyfire.room.v1.JoinRoomRequest
-	23, // 35: friendlyfire.room.v1.RoomService.LeaveRoom:input_type -> friendlyfire.room.v1.LeaveRoomRequest
-	25, // 36: friendlyfire.room.v1.RoomService.KickPlayer:input_type -> friendlyfire.room.v1.KickPlayerRequest
-	27, // 37: friendlyfire.room.v1.RoomService.UpdateSettings:input_type -> friendlyfire.room.v1.UpdateSettingsRequest
-	29, // 38: friendlyfire.room.v1.RoomService.StartQuiz:input_type -> friendlyfire.room.v1.StartQuizRequest
-	31, // 39: friendlyfire.room.v1.RoomService.SubmitAnswer:input_type -> friendlyfire.room.v1.SubmitAnswerRequest
-	33, // 40: friendlyfire.room.v1.RoomService.ReportDisconnected:input_type -> friendlyfire.room.v1.ReportDisconnectedRequest
-	35, // 41: friendlyfire.room.v1.RoomService.ReportConnectionQuality:input_type -> friendlyfire.room.v1.ReportConnectionQualityRequest
-	37, // 42: friendlyfire.room.v1.RoomService.CastVote:input_type -> friendlyfire.room.v1.CastVoteRequest
-	39, // 43: friendlyfire.room.v1.RoomService.GetRoomSnapshot:input_type -> friendlyfire.room.v1.GetRoomSnapshotRequest
-	41, // 44: friendlyfire.room.v1.RoomService.StreamRoomEvents:input_type -> friendlyfire.room.v1.StreamRoomEventsRequest
-	43, // 45: friendlyfire.room.v1.RoomService.RemovePlayer:input_type -> friendlyfire.room.v1.RemovePlayerRequest
-	45, // 46: friendlyfire.room.v1.RoomService.SendChatMessage:input_type -> friendlyfire.room.v1.SendChatMessageRequest
-	47, // 47: friendlyfire.room.v1.RoomService.GetChatHistory:input_type -> friendlyfire.room.v1.GetChatHistoryRequest
-	20, // 48: friendlyfire.room.v1.RoomService.CreateRoom:output_type -> friendlyfire.room.v1.CreateRoomResponse
-	22, // 49: friendlyfire.room.v1.RoomService.JoinRoom:output_type -> friendlyfire.room.v1.JoinRoomResponse
-	24, // 50: friendlyfire.room.v1.RoomService.LeaveRoom:output_type -> friendlyfire.room.v1.LeaveRoomResponse
-	26, // 51: friendlyfire.room.v1.RoomService.KickPlayer:output_type -> friendlyfire.room.v1.KickPlayerResponse
-	28, // 52: friendlyfire.room.v1.RoomService.UpdateSettings:output_type -> friendlyfire.room.v1.UpdateSettingsResponse
-	30, // 53: friendlyfire.room.v1.RoomService.StartQuiz:output_type -> friendlyfire.room.v1.StartQuizResponse
-	32, // 54: friendlyfire.room.v1.RoomService.SubmitAnswer:output_type -> friendlyfire.room.v1.SubmitAnswerResponse
-	34, // 55: friendlyfire.room.v1.RoomService.ReportDisconnected:output_type -> friendlyfire.room.v1.ReportDisconnectedResponse
-	36, // 56: friendlyfire.room.v1.RoomService.ReportConnectionQuality:output_type -> friendlyfire.room.v1.ReportConnectionQualityResponse
-	38, // 57: friendlyfire.room.v1.RoomService.CastVote:output_type -> friendlyfire.room.v1.CastVoteResponse
-	40, // 58: friendlyfire.room.v1.RoomService.GetRoomSnapshot:output_type -> friendlyfire.room.v1.GetRoomSnapshotResponse
-	42, // 59: friendlyfire.room.v1.RoomService.StreamRoomEvents:output_type -> friendlyfire.room.v1.StreamRoomEventsResponse
-	44, // 60: friendlyfire.room.v1.RoomService.RemovePlayer:output_type -> friendlyfire.room.v1.RemovePlayerResponse
-	46, // 61: friendlyfire.room.v1.RoomService.SendChatMessage:output_type -> friendlyfire.room.v1.SendChatMessageResponse
-	48, // 62: friendlyfire.room.v1.RoomService.GetChatHistory:output_type -> friendlyfire.room.v1.GetChatHistoryResponse
-	48, // [48:63] is the sub-list for method output_type
-	33, // [33:48] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	11, // 12: friendlyfire.room.v1.Player.look:type_name -> friendlyfire.room.v1.PlayerLook
+	13, // 13: friendlyfire.room.v1.QuestionView.options:type_name -> friendlyfire.room.v1.QuestionOption
+	14, // 14: friendlyfire.room.v1.QuestionView.reveal:type_name -> friendlyfire.room.v1.Reveal
+	15, // 15: friendlyfire.room.v1.Reveal.results:type_name -> friendlyfire.room.v1.PlayerResult
+	50, // 16: friendlyfire.room.v1.Vote.deadline:type_name -> google.protobuf.Timestamp
+	5,  // 17: friendlyfire.room.v1.RoomEvent.type:type_name -> friendlyfire.room.v1.RoomEventType
+	50, // 18: friendlyfire.room.v1.RoomEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	7,  // 19: friendlyfire.room.v1.RoomEvent.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	19, // 20: friendlyfire.room.v1.RoomEvent.chat:type_name -> friendlyfire.room.v1.ChatMessage
+	50, // 21: friendlyfire.room.v1.ChatMessage.sent_at:type_name -> google.protobuf.Timestamp
+	7,  // 22: friendlyfire.room.v1.CreateRoomResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	7,  // 23: friendlyfire.room.v1.JoinRoomResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	7,  // 24: friendlyfire.room.v1.KickPlayerResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	9,  // 25: friendlyfire.room.v1.UpdateSettingsRequest.settings:type_name -> friendlyfire.room.v1.RoomSettings
+	7,  // 26: friendlyfire.room.v1.UpdateSettingsResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	7,  // 27: friendlyfire.room.v1.StartQuizResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	2,  // 28: friendlyfire.room.v1.ReportConnectionQualityRequest.quality:type_name -> friendlyfire.room.v1.ConnectionQuality
+	4,  // 29: friendlyfire.room.v1.CastVoteRequest.option:type_name -> friendlyfire.room.v1.VoteOption
+	7,  // 30: friendlyfire.room.v1.GetRoomSnapshotResponse.snapshot:type_name -> friendlyfire.room.v1.RoomSnapshot
+	18, // 31: friendlyfire.room.v1.StreamRoomEventsResponse.event:type_name -> friendlyfire.room.v1.RoomEvent
+	19, // 32: friendlyfire.room.v1.SendChatMessageResponse.message:type_name -> friendlyfire.room.v1.ChatMessage
+	19, // 33: friendlyfire.room.v1.GetChatHistoryResponse.messages:type_name -> friendlyfire.room.v1.ChatMessage
+	20, // 34: friendlyfire.room.v1.RoomService.CreateRoom:input_type -> friendlyfire.room.v1.CreateRoomRequest
+	22, // 35: friendlyfire.room.v1.RoomService.JoinRoom:input_type -> friendlyfire.room.v1.JoinRoomRequest
+	24, // 36: friendlyfire.room.v1.RoomService.LeaveRoom:input_type -> friendlyfire.room.v1.LeaveRoomRequest
+	26, // 37: friendlyfire.room.v1.RoomService.KickPlayer:input_type -> friendlyfire.room.v1.KickPlayerRequest
+	28, // 38: friendlyfire.room.v1.RoomService.UpdateSettings:input_type -> friendlyfire.room.v1.UpdateSettingsRequest
+	30, // 39: friendlyfire.room.v1.RoomService.StartQuiz:input_type -> friendlyfire.room.v1.StartQuizRequest
+	32, // 40: friendlyfire.room.v1.RoomService.SubmitAnswer:input_type -> friendlyfire.room.v1.SubmitAnswerRequest
+	34, // 41: friendlyfire.room.v1.RoomService.ReportDisconnected:input_type -> friendlyfire.room.v1.ReportDisconnectedRequest
+	36, // 42: friendlyfire.room.v1.RoomService.ReportConnectionQuality:input_type -> friendlyfire.room.v1.ReportConnectionQualityRequest
+	38, // 43: friendlyfire.room.v1.RoomService.CastVote:input_type -> friendlyfire.room.v1.CastVoteRequest
+	40, // 44: friendlyfire.room.v1.RoomService.GetRoomSnapshot:input_type -> friendlyfire.room.v1.GetRoomSnapshotRequest
+	42, // 45: friendlyfire.room.v1.RoomService.StreamRoomEvents:input_type -> friendlyfire.room.v1.StreamRoomEventsRequest
+	44, // 46: friendlyfire.room.v1.RoomService.RemovePlayer:input_type -> friendlyfire.room.v1.RemovePlayerRequest
+	46, // 47: friendlyfire.room.v1.RoomService.SendChatMessage:input_type -> friendlyfire.room.v1.SendChatMessageRequest
+	48, // 48: friendlyfire.room.v1.RoomService.GetChatHistory:input_type -> friendlyfire.room.v1.GetChatHistoryRequest
+	21, // 49: friendlyfire.room.v1.RoomService.CreateRoom:output_type -> friendlyfire.room.v1.CreateRoomResponse
+	23, // 50: friendlyfire.room.v1.RoomService.JoinRoom:output_type -> friendlyfire.room.v1.JoinRoomResponse
+	25, // 51: friendlyfire.room.v1.RoomService.LeaveRoom:output_type -> friendlyfire.room.v1.LeaveRoomResponse
+	27, // 52: friendlyfire.room.v1.RoomService.KickPlayer:output_type -> friendlyfire.room.v1.KickPlayerResponse
+	29, // 53: friendlyfire.room.v1.RoomService.UpdateSettings:output_type -> friendlyfire.room.v1.UpdateSettingsResponse
+	31, // 54: friendlyfire.room.v1.RoomService.StartQuiz:output_type -> friendlyfire.room.v1.StartQuizResponse
+	33, // 55: friendlyfire.room.v1.RoomService.SubmitAnswer:output_type -> friendlyfire.room.v1.SubmitAnswerResponse
+	35, // 56: friendlyfire.room.v1.RoomService.ReportDisconnected:output_type -> friendlyfire.room.v1.ReportDisconnectedResponse
+	37, // 57: friendlyfire.room.v1.RoomService.ReportConnectionQuality:output_type -> friendlyfire.room.v1.ReportConnectionQualityResponse
+	39, // 58: friendlyfire.room.v1.RoomService.CastVote:output_type -> friendlyfire.room.v1.CastVoteResponse
+	41, // 59: friendlyfire.room.v1.RoomService.GetRoomSnapshot:output_type -> friendlyfire.room.v1.GetRoomSnapshotResponse
+	43, // 60: friendlyfire.room.v1.RoomService.StreamRoomEvents:output_type -> friendlyfire.room.v1.StreamRoomEventsResponse
+	45, // 61: friendlyfire.room.v1.RoomService.RemovePlayer:output_type -> friendlyfire.room.v1.RemovePlayerResponse
+	47, // 62: friendlyfire.room.v1.RoomService.SendChatMessage:output_type -> friendlyfire.room.v1.SendChatMessageResponse
+	49, // 63: friendlyfire.room.v1.RoomService.GetChatHistory:output_type -> friendlyfire.room.v1.GetChatHistoryResponse
+	49, // [49:64] is the sub-list for method output_type
+	34, // [34:49] is the sub-list for method input_type
+	34, // [34:34] is the sub-list for extension type_name
+	34, // [34:34] is the sub-list for extension extendee
+	0,  // [0:34] is the sub-list for field type_name
 }
 
 func init() { file_friendlyfire_room_v1_room_service_proto_init() }
@@ -3411,7 +3509,7 @@ func file_friendlyfire_room_v1_room_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_friendlyfire_room_v1_room_service_proto_rawDesc), len(file_friendlyfire_room_v1_room_service_proto_rawDesc)),
 			NumEnums:      7,
-			NumMessages:   42,
+			NumMessages:   43,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -82,7 +82,9 @@ public record RoomSnapshotJson(
             Integer dataEstimatedSeconds,
             boolean notEnoughMatches,
             String connectionQuality,
-            boolean answeredCurrentQuestion) {
+            boolean answeredCurrentQuestion,
+            /** Their character in this room (FF-519). */
+            LookJson look) {
 
         static PlayerJson from(Player player) {
             return new PlayerJson(
@@ -94,7 +96,8 @@ public record RoomSnapshotJson(
                     player.getDataEstimatedSeconds() > 0 ? player.getDataEstimatedSeconds() : null,
                     player.getNotEnoughMatches(),
                     ProtoJson.enumName(player.getConnectionQuality(), "CONNECTION_QUALITY_"),
-                    player.getAnsweredCurrentQuestion());
+                    player.getAnsweredCurrentQuestion(),
+                    player.hasLook() && !player.getLook().getIcon().isEmpty() ? LookJson.from(player.getLook()) : null);
         }
     }
 

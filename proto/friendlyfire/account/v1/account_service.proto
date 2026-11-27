@@ -62,6 +62,11 @@ service AccountService {
   // the user. Safe to call again: the first time is kept.
   // NOT_FOUND if the user doesn't exist.
   rpc FinishOnboarding(FinishOnboardingRequest) returns (FinishOnboardingResponse);
+  // Saves the user's favourite look (Profile "Your look", FF-519) and returns
+  // the user. Rooms use it for the next room they join.
+  // INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+  // NOT_FOUND if the user doesn't exist.
+  rpc UpdateLook(UpdateLookRequest) returns (UpdateLookResponse);
 }
 
 enum DataStatus {
@@ -91,6 +96,20 @@ message User {
   // set until then. Accounts made before the tutorial existed count as done
   // (set to created_at).
   google.protobuf.Timestamp onboarded_at = 6;
+  // Their favourite look. Not set until they pick one on Profile.
+  Look look = 7;
+}
+
+// A favourite character (FF-519), by the frontend's IDs. RoomService hands
+// out icons and colours first come, first served; the expression is always
+// kept, because faces can repeat.
+message Look {
+  // blob, ghost, boxy, onigiri, star, cloud, shield, flower, gem or drop.
+  string icon = 1;
+  // pink, cyan, mint, orange, violet, yellow, blue, lime, fuchsia or silver.
+  string colour = 2;
+  // happy, smirk, cocky, locked-in, fierce, wink, gloat or shades.
+  string expression = 3;
 }
 
 // What the app may show about a linked Riot account. The PUUID is
@@ -199,5 +218,14 @@ message FinishOnboardingRequest {
 }
 
 message FinishOnboardingResponse {
+  User user = 1;
+}
+
+message UpdateLookRequest {
+  string user_id = 1;
+  Look look = 2;
+}
+
+message UpdateLookResponse {
   User user = 1;
 }

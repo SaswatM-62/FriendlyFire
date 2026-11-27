@@ -1,4 +1,4 @@
-import type { Me, QuizSummary, ScoreboardEntry } from "@/lib/api-types";
+import type { Me, QuizSummary, SavedLook, ScoreboardEntry } from "@/lib/api-types";
 
 /**
  * Test data for the fake backend (FF-513) and the Vitest tests. Made-up players and
@@ -23,15 +23,17 @@ export interface FakePlayer {
   userId: string;
   displayName: string;
   riotTagLine: string;
+  /** Their favourite look (FF-519); the fake room hands out looks the way Room does. */
+  look?: SavedLook;
 }
 
 export const FAKE_PLAYERS: Record<string, FakePlayer> = {
   alex: { userId: ME_ID, displayName: "Alex", riotTagLine: "NA1" },
-  maya: { userId: "u-maya", displayName: "Maya", riotTagLine: "NA1" },
-  sam: { userId: "u-sam", displayName: "Sam", riotTagLine: "EUW" },
-  jordan: { userId: "u-jordan", displayName: "Jordan", riotTagLine: "7777" },
-  riley: { userId: "u-riley", displayName: "Riley", riotTagLine: "RLY" },
-  casey: { userId: "u-casey", displayName: "Casey", riotTagLine: "CSY" },
+  maya: { userId: "u-maya", displayName: "Maya", riotTagLine: "NA1", look: { icon: "ghost", colour: "cyan", expression: "cocky" } },
+  sam: { userId: "u-sam", displayName: "Sam", riotTagLine: "EUW", look: { icon: "boxy", colour: "mint", expression: "smirk" } },
+  jordan: { userId: "u-jordan", displayName: "Jordan", riotTagLine: "7777", look: { icon: "onigiri", colour: "orange", expression: "locked-in" } },
+  riley: { userId: "u-riley", displayName: "Riley", riotTagLine: "RLY", look: { icon: "star", colour: "violet", expression: "gloat" } },
+  casey: { userId: "u-casey", displayName: "Casey", riotTagLine: "CSY", look: { icon: "cloud", colour: "yellow", expression: "wink" } },
 };
 
 export interface FakeQuestion {

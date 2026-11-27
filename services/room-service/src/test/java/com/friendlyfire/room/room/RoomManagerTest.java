@@ -44,6 +44,65 @@ class RoomManagerTest {
     // ---------- Create and join (FF-303) ----------
 
     @Test
+    void favouriteLooksAreFirstComeFirstServedAndEveryoneKeepsTheirFace() {
+        // FF-519: two players with the same favourite icon and colour.
+        f.looks.set("alice", "ghost", "cyan", "smirk");
+        f.looks.set("bob", "ghost", "cyan", "wink");
+        String code = f.create("alice");
+
+        RoomSnapshot room = f.join(code, "bob");
+
+        Player alice = player(room, "alice");
+        Player bob = player(room, "bob");
+        assertThat(alice.getLook().getIcon()).isEqualTo("ghost");
+        assertThat(alice.getLook().getColour()).isEqualTo("cyan");
+        assertThat(alice.getLook().getExpression()).isEqualTo("smirk");
+        assertThat(alice.getLook().getRandom()).isFalse();
+        assertThat(bob.getLook().getIcon()).isNotEqualTo("ghost");
+        assertThat(bob.getLook().getColour()).isNotEqualTo("cyan");
+        assertThat(bob.getLook().getExpression()).isEqualTo("wink");
+        assertThat(bob.getLook().getRandom()).isTrue();
+    }
+
+    @Test
+    void aPlayerWithoutAFavouriteGetsTheNextDefaultLook() {
+        f.looks.set("alice", "ghost", "cyan", "smirk");
+        String code = f.create("alice");
+
+        Player carol = player(f.join(code, "carol"), "carol");
+
+        assertThat(carol.getLook().getIcon()).isEqualTo("blob");
+        assertThat(carol.getLook().getColour()).isEqualTo("pink");
+        assertThat(carol.getLook().getExpression()).isEqualTo("happy");
+    }
+
+    @Test
+    void aPlayersLookStaysTheSameForTheWholeRoom() {
+        f.looks.set("bob", "star", "lime", "gloat");
+        String code = f.create("alice");
+        Player first = player(f.join(code, "bob"), "bob");
+
+        // Picking a new look mid-room, then coming back after a refresh, doesn't change it.
+        f.looks.set("bob", "gem", "silver", "shades");
+        Player again = player(f.join(code, "bob"), "bob");
+
+        assertThat(again.getLook()).isEqualTo(first.getLook());
+        assertThat(player(f.snapshot(code), "bob").getLook()).isEqualTo(first.getLook());
+    }
+
+    @Test
+    void whenAccountCantSayTheFavouriteThePlayerStillJoinsWithADefaultLook() {
+        String code = f.create("alice");
+        f.looks.down(true);
+
+        Player bob = player(f.join(code, "bob"), "bob");
+
+        assertThat(bob.getLook().getIcon()).isEqualTo("ghost");
+        assertThat(bob.getLook().getColour()).isEqualTo("cyan");
+    }
+
+
+    @Test
     void aNewRoomIsALobbyWithTheDefaultsAndTheHostsDataStatus() {
         f.data.set("alice", FakeDataStatusClient.syncing(120));
 

@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import { maskEmail } from "@/components/common/GatePages";
 import { HistoryList } from "@/components/history/HistoryList";
@@ -8,10 +9,12 @@ import { HomePage } from "@/components/home/HomePage";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { ProfileView, linkErrorMessage } from "@/components/profile/ProfileView";
 import { RiotCallback } from "@/components/profile/RiotCallback";
+import { config } from "@/lib/config";
 import { FAKE_ME } from "@/mocks/data";
 import { FakeGateway } from "@/mocks/gateway";
 import { location, router } from "@/test/navigation";
 import { renderWithApp, signedInSession } from "@/test/render";
+import { server } from "@/test/server";
 
 describe("HomePage", () => {
   it("signed out: says what FriendlyFire is and offers sign-in", async () => {
@@ -156,8 +159,10 @@ describe("ProfileView", () => {
     expect(linkErrorMessage("access_denied")).toBe("You cancelled on Riot's page, so nothing was linked.");
   });
 
-  it("picks a favourite icon, colour and expression", async () => {
-    renderWithApp(<ProfileView me={FAKE_ME} />);
+  it("picks a favourite icon, colour and expression and saves it on the account", async () => {
+    const { gateway } = renderWithApp(<ProfileView me={FAKE_ME} />);
+    // The picker saves through the signed-in user, so wait until they've loaded.
+    await waitFor(() => expect(screen.getByText("Blob · pink · Happy")).toBeInTheDocument());
 
     await userEvent.click(screen.getByRole("radio", { name: /Shield/ }));
     await userEvent.click(screen.getByRole("radio", { name: "Blue" }));
@@ -165,7 +170,19 @@ describe("ProfileView", () => {
 
     expect(screen.getByText("Shield · blue · Cocky")).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: /Cocky/ })).toHaveAttribute("aria-checked", "true");
-    expect(JSON.parse(window.localStorage.getItem("ff-look")!)).toEqual({ icon: "shield", colour: "blue", expression: "cocky" });
+    await waitFor(() => expect(gateway.me().look).toEqual({ icon: "shield", colour: "blue", expression: "cocky" }));
+    expect(window.localStorage.getItem("ff-look")).toBeNull();
+  });
+
+  it("puts the look back if the account can't save it", async () => {
+    const { gateway } = renderWithApp(<ProfileView me={FAKE_ME} />);
+    await waitFor(() => expect(screen.getByText("Blob · pink · Happy")).toBeInTheDocument());
+    server.use(http.patch(`${config.gatewayUrl}/api/me`, () => HttpResponse.json({ error: { code: "UNAVAILABLE", message: "Try again." } }, { status: 503 })));
+
+    await userEvent.click(screen.getByRole("radio", { name: /Shield/ }));
+
+    await waitFor(() => expect(screen.getByText("Blob · pink · Happy")).toBeInTheDocument());
+    expect(gateway.me().look).toBeUndefined();
   });
 
   it("offers the Link button, with what we use and the Privacy Policy", async () => {

@@ -95,8 +95,8 @@ describe("players", () => {
     expect([...names.values()]).toEqual(["Sam (EUW)", "Sam (NA1)", "Jordan"]);
   });
 
-  it("gives player N the Nth default character and face, so nobody's changes mid-room", () => {
-    const looks = playerLooks([fakePlayer(p.alex), fakePlayer(p.maya)]);
+  it("without looks from the server, gives player N the Nth default character and face", () => {
+    const looks = playerLooks([fakePlayer(p.alex), fakePlayer(p.maya, { look: undefined })]);
     expect(looks.get(p.alex.userId)).toEqual({ icon: "blob", colour: "pink", expression: "cocky" });
     expect(looks.get(p.maya.userId)).toEqual({ icon: "ghost", colour: "cyan", expression: "smirk" });
   });
@@ -108,6 +108,16 @@ describe("players", () => {
     );
     expect(looks.get(p.alex.userId)).toEqual({ icon: "blob", colour: "pink", expression: "wink" });
     expect(looks.get(p.maya.userId)).toEqual({ icon: "gem", colour: "lime", expression: "shades", random: true });
+  });
+
+  it("uses Room's looks as they are, so everyone's screen shows the same faces", () => {
+    // FF-519: your favourite face is already in the look Room handed you.
+    const looks = playerLooks(
+      [fakePlayer(p.alex, { look: { icon: "star", colour: "lime", expression: "gloat" } }), fakePlayer(p.maya)],
+      { userId: p.alex.userId, expression: "wink" },
+    );
+    expect(looks.get(p.alex.userId)).toEqual({ icon: "star", colour: "lime", expression: "gloat" });
+    expect(looks.get(p.maya.userId)).toEqual({ icon: "ghost", colour: "cyan", expression: "cocky" });
   });
 
   it("shows people from past quizzes with a steady character and a Happy face", () => {

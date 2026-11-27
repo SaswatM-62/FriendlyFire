@@ -130,4 +130,34 @@ public interface PlayerOrBuilder extends
    */
   com.google.protobuf.ByteString
       getRiotTagLineBytes();
+
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   * @return Whether the look field is set.
+   */
+  boolean hasLook();
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   * @return The look.
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook getLook();
+  /**
+   * <pre>
+   * Their character in this room (FF-519), handed out when they join and kept
+   * for the room. Always set.
+   * </pre>
+   *
+   * <code>.friendlyfire.room.v1.PlayerLook look = 11 [json_name = "look"];</code>
+   */
+  com.friendlyfire.proto.friendlyfire.room.v1.PlayerLookOrBuilder getLookOrBuilder();
 }

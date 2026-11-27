@@ -21,6 +21,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.EnsureUserResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
@@ -149,6 +150,48 @@ class MeControllerTest extends GatewayTestBase {
         UpdateDisplayNameRequest request = ACCOUNT.calls.last(UpdateDisplayNameRequest.class);
         assertThat(request.getUserId()).isEqualTo("user-maya");
         assertThat(request.getDisplayName()).isEqualTo("Maya B");
+    }
+
+    @Test
+    void savesTheFavouriteLook() throws Exception {
+        mvc.perform(patch("/api/me")
+                        .header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"look\": {\"icon\": \"ghost\", \"colour\": \"cyan\", \"expression\": \"locked-in\"}}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.look.icon").value("ghost"))
+                .andExpect(jsonPath("$.look.colour").value("cyan"))
+                .andExpect(jsonPath("$.look.expression").value("locked-in"))
+                .andExpect(jsonPath("$.look.random").doesNotExist());
+
+        UpdateLookRequest request = ACCOUNT.calls.last(UpdateLookRequest.class);
+        assertThat(request.getUserId()).isEqualTo("user-maya");
+        assertThat(request.getLook().getIcon()).isEqualTo("ghost");
+        assertThat(request.getLook().getExpression()).isEqualTo("locked-in");
+    }
+
+    @Test
+    void aLookThatIsntOnOfferIs400WithAccountsMessage() throws Exception {
+        ACCOUNT.calls.fail(UpdateLookRequest.class,
+                Status.INVALID_ARGUMENT.withDescription("Pick one of the characters, colours and faces on offer."));
+
+        mvc.perform(patch("/api/me")
+                        .header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"look\": {\"icon\": \"dragon\", \"colour\": \"cyan\", \"expression\": \"happy\"}}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_ARGUMENT"))
+                .andExpect(jsonPath("$.error.message").value("Pick one of the characters, colours and faces on offer."));
+    }
+
+    @Test
+    void aChangeWithNeitherANameNorALookIs400() throws Exception {
+        mvc.perform(patch("/api/me")
+                        .header(HttpHeaders.AUTHORIZATION, FakeTokens.bearer(FakeTokens.token("maya")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("INVALID_ARGUMENT"));
     }
 
     @Test

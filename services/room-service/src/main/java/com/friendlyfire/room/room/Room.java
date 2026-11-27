@@ -6,6 +6,7 @@ import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
 import com.friendlyfire.proto.friendlyfire.room.v1.EndReason;
 import com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
+import com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.QuestionOption;
@@ -174,6 +175,8 @@ public class Room {
         ConnectionQuality quality = ConnectionQuality.CONNECTION_QUALITY_UNSPECIFIED;
         boolean answered;
         PlayerData data = PlayerData.UNKNOWN;
+        /** Their character in this room, handed out when they join (Looks) and kept. */
+        PlayerLook look = PlayerLook.getDefaultInstance();
         /** Set while DISCONNECTED or SITTING_OUT. */
         Instant disconnectedAt;
 
@@ -198,6 +201,7 @@ public class Room {
                     .setDataEstimatedSeconds(data.estimatedSeconds())
                     .setNotEnoughMatches(data.notEnoughMatches())
                     .setRiotTagLine(riotTagLine)
+                    .setLook(look)
                     .build();
         }
     }

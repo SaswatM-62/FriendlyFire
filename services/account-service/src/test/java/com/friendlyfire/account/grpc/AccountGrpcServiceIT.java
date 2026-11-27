@@ -22,7 +22,9 @@ import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.Look;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
 import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
 import com.friendlyfire.proto.friendlyfire.matchdata.v1.PlayerSyncStatus;
@@ -309,6 +311,39 @@ class AccountGrpcServiceIT {
                 Status.Code.NOT_FOUND);
     }
 
+    // ---------- UpdateLook (FF-519) ----------
+
+    @Test
+    void aSavedLookComesBackWithTheUser() {
+        User user = newUser("Sam");
+        assertThat(user.hasLook()).as("no look until they pick one").isFalse();
+
+        User updated = accounts.updateLook(lookOf(user.getUserId(), "ghost", "cyan", "locked-in")).getUser();
+
+        assertThat(updated.getLook()).isEqualTo(Look.newBuilder()
+                .setIcon("ghost").setColour("cyan").setExpression("locked-in").build());
+        assertThat(accounts.getUser(GetUserRequest.newBuilder().setUserId(user.getUserId()).build())
+                .getUser().getLook().getIcon()).isEqualTo("ghost");
+    }
+
+    @Test
+    void aLookThatIsNotOnOfferIsRefused() {
+        User user = newUser("Sam");
+
+        assertStatus(() -> accounts.updateLook(lookOf(user.getUserId(), "dragon", "cyan", "happy")),
+                Status.Code.INVALID_ARGUMENT);
+        assertStatus(() -> accounts.updateLook(lookOf(user.getUserId(), "ghost", "teal", "happy")),
+                Status.Code.INVALID_ARGUMENT);
+        assertStatus(() -> accounts.updateLook(lookOf(user.getUserId(), "ghost", "cyan", "wow")),
+                Status.Code.INVALID_ARGUMENT);
+        assertStatus(() -> accounts.updateLook(UpdateLookRequest.newBuilder().setUserId(user.getUserId()).build()),
+                Status.Code.INVALID_ARGUMENT);
+        assertStatus(() -> accounts.updateLook(lookOf(UUID.randomUUID().toString(), "ghost", "cyan", "happy")),
+                Status.Code.NOT_FOUND);
+        assertStatus(() -> accounts.updateLook(lookOf("not-a-uuid", "ghost", "cyan", "happy")),
+                Status.Code.NOT_FOUND);
+    }
+
     @Test
     void aNewNameKeepsTheRiotLink() {
         User user = linkedUser("Sam", "puuid-sam");
@@ -546,6 +581,13 @@ class AccountGrpcServiceIT {
     private static CompleteRiotLinkRequest complete(User user, String code, String state) {
         return CompleteRiotLinkRequest.newBuilder()
                 .setUserId(user.getUserId()).setCode(code).setState(state).setRedirectUri(CALLBACK).build();
+    }
+
+    private static UpdateLookRequest lookOf(String userId, String icon, String colour, String expression) {
+        return UpdateLookRequest.newBuilder()
+                .setUserId(userId)
+                .setLook(Look.newBuilder().setIcon(icon).setColour(colour).setExpression(expression))
+                .build();
     }
 
     private static UpdateDisplayNameRequest rename(String userId, String name) {

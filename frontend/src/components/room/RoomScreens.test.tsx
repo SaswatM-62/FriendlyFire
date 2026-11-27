@@ -135,8 +135,8 @@ describe("QuestionScreen", () => {
 
     expect(screen.getByText("1 of 4 locked in")).toBeInTheDocument();
     const strip = [...container.querySelectorAll(".faces .nf-char")].map((c) => c.getAttribute("data-face"));
-    // Alex (cocky), Maya answered (smirk), Sam and Jordan still thinking.
-    expect(strip).toEqual(["thinking", "smirk", "thinking", "thinking"]);
+    // Maya answered and shows her own face (Cocky, from her look); the rest are still thinking.
+    expect(strip).toEqual(["thinking", "cocky", "thinking", "thinking"]);
   });
 
   it("dims the other tiles once you lock in", async () => {

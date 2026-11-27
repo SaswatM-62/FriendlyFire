@@ -7,6 +7,7 @@ import com.friendlyfire.proto.friendlyfire.room.v1.ConnectionQuality;
 import com.friendlyfire.proto.friendlyfire.room.v1.EndReason;
 import com.friendlyfire.proto.friendlyfire.room.v1.FastestAnswer;
 import com.friendlyfire.proto.friendlyfire.room.v1.Player;
+import com.friendlyfire.proto.friendlyfire.room.v1.PlayerLook;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerDataStatus;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerResult;
 import com.friendlyfire.proto.friendlyfire.room.v1.PlayerStatus;
@@ -54,6 +55,19 @@ class RoomSnapshotJsonTest {
                 "status", "CONNECTED",
                 "notEnoughMatches", false,
                 "answeredCurrentQuestion", false)));
+    }
+
+    @Test
+    void aPlayerCarriesTheirLook() {
+        Map<String, Object> json = json(RoomSnapshot.newBuilder()
+                .addPlayers(Player.newBuilder()
+                        .setUserId("user-maya")
+                        .setLook(PlayerLook.newBuilder().setIcon("ghost").setColour("cyan").setExpression("wink").setRandom(true)))
+                .build());
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> player = ((List<Map<String, Object>>) json.get("players")).getFirst();
+        assertThat(player.get("look")).isEqualTo(Map.of("icon", "ghost", "colour", "cyan", "expression", "wink", "random", true));
     }
 
     @Test

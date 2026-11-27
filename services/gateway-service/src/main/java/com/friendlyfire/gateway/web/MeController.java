@@ -1,5 +1,6 @@
 package com.friendlyfire.gateway.web;
 
+import com.friendlyfire.gateway.json.LookJson;
 import com.friendlyfire.gateway.json.MeJson;
 import com.friendlyfire.gateway.realtime.SessionCloser;
 import com.friendlyfire.gateway.security.SignedInUser;
@@ -7,7 +8,9 @@ import com.friendlyfire.gateway.security.UserResolver;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.AccountServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.account.v1.DeleteAccountRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.Look;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
 import com.friendlyfire.proto.friendlyfire.room.v1.RemovePlayerRequest;
 import com.friendlyfire.proto.friendlyfire.room.v1.RoomServiceGrpc.RoomServiceBlockingStub;
@@ -52,16 +55,41 @@ public class MeController {
         return MeJson.from(users.refresh(token));
     }
 
-    /** Changes the name other players see (FF-106). 400 INVALID_ARGUMENT for an empty or too long name. */
+    /**
+     * Changes the name other players see (FF-106), the favourite look (FF-519), or both.
+     * 400 INVALID_ARGUMENT for an empty or too long name, a look that isn't on offer, or a
+     * body with neither.
+     */
     @PatchMapping
-    public MeJson updateDisplayName(SignedInUser me, @RequestBody NewDisplayName body) {
-        User user = accounts.updateDisplayName(UpdateDisplayNameRequest.newBuilder()
-                        .setUserId(me.userId())
-                        .setDisplayName(body.displayName() == null ? "" : body.displayName())
-                        .build())
-                .getUser();
+    public MeJson update(SignedInUser me, @RequestBody MeChanges body) {
+        if (body.displayName() == null && body.look() == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_ARGUMENT", "Send a displayName or a look.");
+        }
+        User user = null;
+        if (body.displayName() != null) {
+            user = accounts.updateDisplayName(UpdateDisplayNameRequest.newBuilder()
+                            .setUserId(me.userId())
+                            .setDisplayName(body.displayName())
+                            .build())
+                    .getUser();
+        }
+        if (body.look() != null) {
+            LookJson look = body.look();
+            user = accounts.updateLook(UpdateLookRequest.newBuilder()
+                            .setUserId(me.userId())
+                            .setLook(Look.newBuilder()
+                                    .setIcon(text(look.icon()))
+                                    .setColour(text(look.colour()))
+                                    .setExpression(text(look.expression())))
+                            .build())
+                    .getUser();
+        }
         users.update(me.subject(), user);
         return MeJson.from(user);
+    }
+
+    private static String text(String value) {
+        return value == null ? "" : value;
     }
 
     /**
@@ -93,7 +121,10 @@ public class MeController {
         sockets.closeUser(me.userId(), ErrorCodes.ACCOUNT_DELETED, "Your FriendlyFire account was deleted.");
     }
 
-    /** PATCH /api/me body: 1–24 characters (Account checks). */
-    public record NewDisplayName(String displayName) {
+    /**
+     * PATCH /api/me body: either or both. {@code displayName} 1–24 characters; {@code look}
+     * one of the characters, colours and faces on offer (Account checks both).
+     */
+    public record MeChanges(String displayName, LookJson look) {
     }
 }

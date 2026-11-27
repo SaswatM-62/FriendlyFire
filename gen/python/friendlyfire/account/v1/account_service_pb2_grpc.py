@@ -59,6 +59,11 @@ class AccountServiceStub:
                 request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
                 response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
                 _registered_method=True)
+        self.UpdateLook = channel.unary_unary(
+                '/friendlyfire.account.v1.AccountService/UpdateLook',
+                request_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookRequest.SerializeToString,
+                response_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookResponse.FromString,
+                _registered_method=True)
 
 
 class AccountServiceServicer:
@@ -147,6 +152,16 @@ class AccountServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateLook(self, request, context):
+        """Saves the user's favourite look (Profile "Your look", FF-519) and returns
+        the user. Rooms use it for the next room they join.
+        INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+        NOT_FOUND if the user doesn't exist.
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_AccountServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -194,6 +209,11 @@ def add_AccountServiceServicer_to_server(servicer, server):
                     servicer.FinishOnboarding,
                     request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.FromString,
                     response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.SerializeToString,
+            ),
+            'UpdateLook': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateLook,
+                    request_deserializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookRequest.FromString,
+                    response_serializer=friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -439,6 +459,33 @@ class AccountService:
             '/friendlyfire.account.v1.AccountService/FinishOnboarding',
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingRequest.SerializeToString,
             friendlyfire_dot_account_dot_v1_dot_account__service__pb2.FinishOnboardingResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def UpdateLook(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/friendlyfire.account.v1.AccountService/UpdateLook',
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookRequest.SerializeToString,
+            friendlyfire_dot_account_dot_v1_dot_account__service__pb2.UpdateLookResponse.FromString,
             options,
             channel_credentials,
             insecure,

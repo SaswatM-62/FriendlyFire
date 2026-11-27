@@ -291,6 +291,37 @@ public final class AccountServiceGrpc {
     return getFinishOnboardingMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> getUpdateLookMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "UpdateLook",
+      requestType = com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest.class,
+      responseType = com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest,
+      com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> getUpdateLookMethod() {
+    io.grpc.MethodDescriptor<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest, com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> getUpdateLookMethod;
+    if ((getUpdateLookMethod = AccountServiceGrpc.getUpdateLookMethod) == null) {
+      synchronized (AccountServiceGrpc.class) {
+        if ((getUpdateLookMethod = AccountServiceGrpc.getUpdateLookMethod) == null) {
+          AccountServiceGrpc.getUpdateLookMethod = getUpdateLookMethod =
+              io.grpc.MethodDescriptor.<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest, com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "UpdateLook"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse.getDefaultInstance()))
+              .setSchemaDescriptor(new AccountServiceMethodDescriptorSupplier("UpdateLook"))
+              .build();
+        }
+      }
+    }
+    return getUpdateLookMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -463,6 +494,19 @@ public final class AccountServiceGrpc {
         io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getFinishOnboardingMethod(), responseObserver);
     }
+
+    /**
+     * <pre>
+     * Saves the user's favourite look (Profile "Your look", FF-519) and returns
+     * the user. Rooms use it for the next room they join.
+     * INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    default void updateLook(com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> responseObserver) {
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getUpdateLookMethod(), responseObserver);
+    }
   }
 
   /**
@@ -610,6 +654,20 @@ public final class AccountServiceGrpc {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getFinishOnboardingMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     * <pre>
+     * Saves the user's favourite look (Profile "Your look", FF-519) and returns
+     * the user. Rooms use it for the next room they join.
+     * INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public void updateLook(com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest request,
+        io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> responseObserver) {
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
+          getChannel().newCall(getUpdateLookMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -737,6 +795,19 @@ public final class AccountServiceGrpc {
       return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
           getChannel(), getFinishOnboardingMethod(), getCallOptions(), request);
     }
+
+    /**
+     * <pre>
+     * Saves the user's favourite look (Profile "Your look", FF-519) and returns
+     * the user. Rooms use it for the next room they join.
+     * INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse updateLook(com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest request) throws io.grpc.StatusException {
+      return io.grpc.stub.ClientCalls.blockingV2UnaryCall(
+          getChannel(), getUpdateLookMethod(), getCallOptions(), request);
+    }
   }
 
   /**
@@ -863,6 +934,19 @@ public final class AccountServiceGrpc {
     public com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse finishOnboarding(com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getFinishOnboardingMethod(), getCallOptions(), request);
+    }
+
+    /**
+     * <pre>
+     * Saves the user's favourite look (Profile "Your look", FF-519) and returns
+     * the user. Rooms use it for the next room they join.
+     * INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse updateLook(com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest request) {
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
+          getChannel(), getUpdateLookMethod(), getCallOptions(), request);
     }
   }
 
@@ -1000,6 +1084,20 @@ public final class AccountServiceGrpc {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getFinishOnboardingMethod(), getCallOptions()), request);
     }
+
+    /**
+     * <pre>
+     * Saves the user's favourite look (Profile "Your look", FF-519) and returns
+     * the user. Rooms use it for the next room they join.
+     * INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+     * NOT_FOUND if the user doesn't exist.
+     * </pre>
+     */
+    public com.google.common.util.concurrent.ListenableFuture<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse> updateLook(
+        com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest request) {
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
+          getChannel().newCall(getUpdateLookMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_ENSURE_USER = 0;
@@ -1011,6 +1109,7 @@ public final class AccountServiceGrpc {
   private static final int METHODID_DELETE_ACCOUNT = 6;
   private static final int METHODID_GET_DATA_STATUS = 7;
   private static final int METHODID_FINISH_ONBOARDING = 8;
+  private static final int METHODID_UPDATE_LOOK = 9;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -1064,6 +1163,10 @@ public final class AccountServiceGrpc {
         case METHODID_FINISH_ONBOARDING:
           serviceImpl.finishOnboarding((com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest) request,
               (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse>) responseObserver);
+          break;
+        case METHODID_UPDATE_LOOK:
+          serviceImpl.updateLook((com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest) request,
+              (io.grpc.stub.StreamObserver<com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -1146,6 +1249,13 @@ public final class AccountServiceGrpc {
               com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingRequest,
               com.friendlyfire.proto.friendlyfire.account.v1.FinishOnboardingResponse>(
                 service, METHODID_FINISH_ONBOARDING)))
+        .addMethod(
+          getUpdateLookMethod(),
+          io.grpc.stub.ServerCalls.asyncUnaryCall(
+            new MethodHandlers<
+              com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest,
+              com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse>(
+                service, METHODID_UPDATE_LOOK)))
         .build();
   }
 
@@ -1203,6 +1313,7 @@ public final class AccountServiceGrpc {
               .addMethod(getDeleteAccountMethod())
               .addMethod(getGetDataStatusMethod())
               .addMethod(getFinishOnboardingMethod())
+              .addMethod(getUpdateLookMethod())
               .build();
         }
       }

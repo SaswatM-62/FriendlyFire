@@ -1,5 +1,6 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
-import type { ApiErrorBody, ChatHistory, HistoryPage, LiveStats } from "@/lib/api-types";
+import type { ApiErrorBody, ChatHistory, HistoryPage, LiveStats, SavedLook } from "@/lib/api-types";
+import { isCharacterId, isColourId, isPickableExpression } from "@/lib/characters";
 import { config } from "@/lib/config";
 import { ME_ID } from "@/mocks/data";
 import { FULL_ROOM, type FakeGateway } from "@/mocks/gateway";
@@ -23,12 +24,19 @@ export function createHandlers(gateway: FakeGateway, baseUrl: string = config.ga
 
     http.patch(url("/api/me"), async ({ request }) => {
       if (!gateway.signedIn) return signedOut();
-      const { displayName } = (await request.json()) as { displayName?: string };
-      const name = (displayName ?? "").trim();
-      if (name.length < 1 || name.length > 24) {
-        return fail(400, "INVALID_ARGUMENT", "Your name needs 1 to 24 characters.");
+      const { displayName, look } = (await request.json()) as { displayName?: string; look?: SavedLook };
+      if (displayName === undefined && look === undefined) return fail(400, "INVALID_ARGUMENT", "Send a displayName or a look.");
+      if (displayName !== undefined) {
+        const name = displayName.trim();
+        if (name.length < 1 || name.length > 24) return fail(400, "INVALID_ARGUMENT", "Your name needs 1 to 24 characters.");
+        gateway.rename(name);
       }
-      gateway.rename(name);
+      if (look !== undefined) {
+        if (!isCharacterId(look.icon) || !isColourId(look.colour) || !isPickableExpression(look.expression)) {
+          return fail(400, "INVALID_ARGUMENT", "Pick one of the characters, colours and faces on offer.");
+        }
+        gateway.saveLook(look);
+      }
       return HttpResponse.json(gateway.me());
     }),
 

@@ -40,6 +40,7 @@ const (
 	AccountService_DeleteAccount_FullMethodName     = "/friendlyfire.account.v1.AccountService/DeleteAccount"
 	AccountService_GetDataStatus_FullMethodName     = "/friendlyfire.account.v1.AccountService/GetDataStatus"
 	AccountService_FinishOnboarding_FullMethodName  = "/friendlyfire.account.v1.AccountService/FinishOnboarding"
+	AccountService_UpdateLook_FullMethodName        = "/friendlyfire.account.v1.AccountService/UpdateLook"
 )
 
 // AccountServiceClient is the client API for AccountService service.
@@ -85,6 +86,11 @@ type AccountServiceClient interface {
 	// the user. Safe to call again: the first time is kept.
 	// NOT_FOUND if the user doesn't exist.
 	FinishOnboarding(ctx context.Context, in *FinishOnboardingRequest, opts ...grpc.CallOption) (*FinishOnboardingResponse, error)
+	// Saves the user's favourite look (Profile "Your look", FF-519) and returns
+	// the user. Rooms use it for the next room they join.
+	// INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+	// NOT_FOUND if the user doesn't exist.
+	UpdateLook(ctx context.Context, in *UpdateLookRequest, opts ...grpc.CallOption) (*UpdateLookResponse, error)
 }
 
 type accountServiceClient struct {
@@ -185,6 +191,16 @@ func (c *accountServiceClient) FinishOnboarding(ctx context.Context, in *FinishO
 	return out, nil
 }
 
+func (c *accountServiceClient) UpdateLook(ctx context.Context, in *UpdateLookRequest, opts ...grpc.CallOption) (*UpdateLookResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateLookResponse)
+	err := c.cc.Invoke(ctx, AccountService_UpdateLook_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServiceServer is the server API for AccountService service.
 // All implementations must embed UnimplementedAccountServiceServer
 // for forward compatibility.
@@ -228,6 +244,11 @@ type AccountServiceServer interface {
 	// the user. Safe to call again: the first time is kept.
 	// NOT_FOUND if the user doesn't exist.
 	FinishOnboarding(context.Context, *FinishOnboardingRequest) (*FinishOnboardingResponse, error)
+	// Saves the user's favourite look (Profile "Your look", FF-519) and returns
+	// the user. Rooms use it for the next room they join.
+	// INVALID_ARGUMENT if the icon, colour or expression isn't one of Look's.
+	// NOT_FOUND if the user doesn't exist.
+	UpdateLook(context.Context, *UpdateLookRequest) (*UpdateLookResponse, error)
 	mustEmbedUnimplementedAccountServiceServer()
 }
 
@@ -264,6 +285,9 @@ func (UnimplementedAccountServiceServer) GetDataStatus(context.Context, *GetData
 }
 func (UnimplementedAccountServiceServer) FinishOnboarding(context.Context, *FinishOnboardingRequest) (*FinishOnboardingResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method FinishOnboarding not implemented")
+}
+func (UnimplementedAccountServiceServer) UpdateLook(context.Context, *UpdateLookRequest) (*UpdateLookResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateLook not implemented")
 }
 func (UnimplementedAccountServiceServer) mustEmbedUnimplementedAccountServiceServer() {}
 func (UnimplementedAccountServiceServer) testEmbeddedByValue()                        {}
@@ -448,6 +472,24 @@ func _AccountService_FinishOnboarding_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AccountService_UpdateLook_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateLookRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServiceServer).UpdateLook(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AccountService_UpdateLook_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServiceServer).UpdateLook(ctx, req.(*UpdateLookRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AccountService_ServiceDesc is the grpc.ServiceDesc for AccountService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -490,6 +532,10 @@ var AccountService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FinishOnboarding",
 			Handler:    _AccountService_FinishOnboarding_Handler,
+		},
+		{
+			MethodName: "UpdateLook",
+			Handler:    _AccountService_UpdateLook_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
