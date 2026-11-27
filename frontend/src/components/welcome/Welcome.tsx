@@ -15,6 +15,7 @@ import type { Me } from "@/lib/api-types";
 import { formatEstimate } from "@/lib/format";
 import { isPlaceholderName } from "@/lib/onboarding";
 import { clearInvite, pendingInvite } from "@/lib/preferences";
+import { useNavigation } from "@/lib/useNavigation";
 
 type Step = "welcome" | "name" | "riot" | "finish";
 
@@ -227,20 +228,23 @@ function RiotStep({
   onLater: () => void;
 }) {
   const api = useApi();
-  const router = useRouter();
   const { setMe } = useMe();
   const { start, busy } = useStartRiotLink();
-  const [skipping, setSkipping] = useState(false);
+  const { navigating, go } = useNavigation();
+  const [finishing, setFinishing] = useState(false);
+  const skipping = finishing || navigating;
   const link = me.riotLink;
 
   // "Skip tutorial" ends it here, the same as Later, but goes straight home.
   const skip = async () => {
-    setSkipping(true);
+    setFinishing(true);
     try {
       if (!replay) setMe(await api.finishOnboarding());
-      router.push("/");
+      go("/");
     } catch {
-      setSkipping(false);
+      // The API client has already shown the error as a toast.
+    } finally {
+      setFinishing(false);
     }
   };
 

@@ -1,24 +1,29 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useApi } from "@/components/providers/ApiProvider";
 import { cacheRoom } from "@/lib/roomCache";
+import { useNavigation } from "@/lib/useNavigation";
 
-/** Creates a room and goes to it; `busy` while the Gateway answers. Errors show as a toast. */
+/**
+ * Creates a room and goes to it; `busy` while the Gateway answers and the room opens.
+ * Errors show as a toast. Coming back to this page later finds the button ready again.
+ */
 export function useCreateRoom(): { create: () => Promise<void>; busy: boolean } {
   const api = useApi();
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const { navigating, go } = useNavigation();
+  const [creating, setCreating] = useState(false);
   const create = async () => {
-    setBusy(true);
+    setCreating(true);
     try {
       const snapshot = await api.createRoom();
       cacheRoom(snapshot);
-      router.push(`/room/${snapshot.roomCode}`);
+      go(`/room/${snapshot.roomCode}`);
     } catch {
-      setBusy(false);
+      // The API client has already shown the error as a toast.
+    } finally {
+      setCreating(false);
     }
   };
-  return { create, busy };
+  return { create, busy: creating || navigating };
 }
