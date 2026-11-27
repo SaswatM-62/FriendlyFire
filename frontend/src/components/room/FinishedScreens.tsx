@@ -77,7 +77,7 @@ export function PodiumScreen({ chat, onBackToLobby }: { chat: ReactNode; onBackT
   return (
     <div className="podroom">
       <section className="card st nf-phase" aria-labelledby="h-st">
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div className="st__list" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <h2 id="h-st" className="label">
             Final standings
           </h2>
