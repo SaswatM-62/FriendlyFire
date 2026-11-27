@@ -20,6 +20,8 @@ const (
 
 	// The frontend's callback page, which finishes the link through the Gateway (ADR-007).
 	defaultRedirectURIs = "http://localhost:3000/link/riot/callback"
+
+	defaultHenrikDevBaseURL = "https://api.henrikdev.xyz"
 )
 
 // Config is everything mock-rso-service reads from the environment.
@@ -28,6 +30,10 @@ type Config struct {
 	// RedirectURIs are the only places /authorize may send the browser back to.
 	RedirectURIs []string
 	PlayersFile  string
+	// HenrikDevAPIKey looks up the PUUID of a test player who has none in the file
+	// (match-data-service uses the same key). Empty: no lookups.
+	HenrikDevAPIKey  string
+	HenrikDevBaseURL string
 }
 
 // Load reads the config; getenv is os.Getenv outside tests.
@@ -47,7 +53,17 @@ func Load(getenv func(string) string) (Config, error) {
 	if err != nil {
 		return Config{}, fmt.Errorf("MOCK_RSO_REDIRECT_URIS: %w", err)
 	}
-	return Config{HTTPPort: port, RedirectURIs: redirectURIs, PlayersFile: playersFile(getenv)}, nil
+	baseURL := getenv("HENRIKDEV_BASE_URL")
+	if baseURL == "" {
+		baseURL = defaultHenrikDevBaseURL
+	}
+	return Config{
+		HTTPPort:         port,
+		RedirectURIs:     redirectURIs,
+		PlayersFile:      playersFile(getenv),
+		HenrikDevAPIKey:  getenv("HENRIKDEV_API_KEY"),
+		HenrikDevBaseURL: baseURL,
+	}, nil
 }
 
 // parseRedirectURIs reads a comma-separated list of absolute http(s) URLs.

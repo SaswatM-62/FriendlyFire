@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/SaswatM-62/FriendlyFire/services/mock-rso-service/internal/config"
+	"github.com/SaswatM-62/FriendlyFire/services/mock-rso-service/internal/lookup"
 	"github.com/SaswatM-62/FriendlyFire/services/mock-rso-service/internal/rso"
 )
 
@@ -31,11 +32,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	players, err := rso.LoadPlayers(cfg.PlayersFile)
+	players, err := loadPlayers(cfg)
 	if err != nil {
 		return err
 	}
-	slog.Info("test players loaded", "file", cfg.PlayersFile, "count", len(players))
 	if missing := rso.WithoutEmail(players); missing > 0 {
 		slog.Warn("some test players have no email, so nobody can link them", "count", missing)
 	}
@@ -61,4 +61,24 @@ func run() error {
 		return err
 	}
 	return nil
+}
+
+// loadPlayers reads the test players, looking up missing PUUIDs through HenrikDev when
+// HENRIKDEV_API_KEY is set. A player whose lookup fails is left out and logged.
+func loadPlayers(cfg config.Config) ([]rso.Player, error) {
+	var accounts rso.AccountLookup
+	if cfg.HenrikDevAPIKey != "" {
+		accounts = lookup.NewHenrikDev(cfg.HenrikDevBaseURL, cfg.HenrikDevAPIKey, &http.Client{Timeout: 10 * time.Second})
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	loaded, err := rso.LoadPlayers(ctx, cfg.PlayersFile, accounts)
+	if err != nil {
+		return nil, err
+	}
+	for _, left := range loaded.LeftOut {
+		slog.Warn("test player left out: couldn't look up their puuid", "player", left.Position, "riot_id", left.RiotID, "reason", left.Reason)
+	}
+	slog.Info("test players loaded", "file", cfg.PlayersFile, "count", len(loaded.Players), "puuids_looked_up", loaded.LookedUp)
+	return loaded.Players, nil
 }
