@@ -13,7 +13,9 @@ public record MeJson(
         /** Left out until the player links a Riot account. */
         RiotLinkJson riotLink,
         /** When they finished the new-player tutorial; left out until then (the frontend shows /welcome). */
-        String onboardedAt) {
+        String onboardedAt,
+        /** Their favourite look (FF-519); left out until they pick one. */
+        LookJson look) {
 
     public static MeJson from(User user) {
         return new MeJson(
@@ -22,6 +24,7 @@ public record MeJson(
                 user.getEmail(),
                 ProtoJson.timestamp(user.hasCreatedAt(), user.getCreatedAt()),
                 user.hasRiotLink() ? RiotLinkJson.from(user.getRiotLink()) : null,
-                ProtoJson.timestamp(user.hasOnboardedAt(), user.getOnboardedAt()));
+                ProtoJson.timestamp(user.hasOnboardedAt(), user.getOnboardedAt()),
+                user.hasLook() ? LookJson.from(user.getLook()) : null);
     }
 }

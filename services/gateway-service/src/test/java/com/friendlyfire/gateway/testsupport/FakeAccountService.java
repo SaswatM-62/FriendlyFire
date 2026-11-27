@@ -19,6 +19,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
 import com.friendlyfire.proto.friendlyfire.account.v1.UserDataStatus;
 import com.google.protobuf.Timestamp;
@@ -62,6 +64,16 @@ public final class FakeAccountService extends AccountServiceGrpc.AccountServiceI
         String name = request.getUserId().replaceFirst("^user-", "");
         calls.handle(request, UpdateDisplayNameResponse.newBuilder()
                 .setUser(user(name, request.getDisplayName()))
+                .build(), observer);
+    }
+
+    /** Saving a look returns the fake user with it (FF-519). */
+    @Override
+    public void updateLook(UpdateLookRequest request, StreamObserver<UpdateLookResponse> observer) {
+        String name = request.getUserId().replaceFirst("^user-", "");
+        String displayName = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        calls.handle(request, UpdateLookResponse.newBuilder()
+                .setUser(user(name, displayName).toBuilder().setLook(request.getLook()))
                 .build(), observer);
     }
 
