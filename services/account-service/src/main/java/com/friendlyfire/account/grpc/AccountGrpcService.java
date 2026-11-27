@@ -8,6 +8,7 @@ import com.friendlyfire.account.user.AccountDeletion;
 import com.friendlyfire.account.user.AccountUser;
 import com.friendlyfire.account.user.DisplayNames;
 import com.friendlyfire.account.user.EnsuredUser;
+import com.friendlyfire.account.user.FavouriteLook;
 import com.friendlyfire.account.user.NewUserNames;
 import com.friendlyfire.account.user.UserRepository;
 import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc;
@@ -23,6 +24,7 @@ import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetDataStatusResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.GetUserResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.Look;
 import com.friendlyfire.proto.friendlyfire.account.v1.RiotLink;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.StartRiotLinkResponse;
@@ -30,6 +32,8 @@ import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UnlinkRiotResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameRequest;
 import com.friendlyfire.proto.friendlyfire.account.v1.UpdateDisplayNameResponse;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookRequest;
+import com.friendlyfire.proto.friendlyfire.account.v1.UpdateLookResponse;
 import com.friendlyfire.proto.friendlyfire.account.v1.User;
 import com.google.protobuf.Timestamp;
 import io.grpc.Status;
@@ -114,6 +118,23 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
                     .flatMap(id -> users.changeDisplayName(id, name))
                     .orElseThrow(AccountGrpcService::notFound);
             return UpdateDisplayNameResponse.newBuilder()
+                    .setUser(toProto(user, riotLinks.findByUserId(user.userId())))
+                    .build();
+        });
+    }
+
+    @Override
+    public void updateLook(UpdateLookRequest request, StreamObserver<UpdateLookResponse> responseObserver) {
+        respond(responseObserver, () -> {
+            Look look = request.getLook();
+            FavouriteLook favourite = FavouriteLook.valid(look.getIcon(), look.getColour(), look.getExpression())
+                    .orElseThrow(() -> Status.INVALID_ARGUMENT
+                            .withDescription("Pick one of the characters, colours and faces on offer.")
+                            .asRuntimeException());
+            AccountUser user = userId(request.getUserId())
+                    .flatMap(id -> users.changeLook(id, favourite))
+                    .orElseThrow(AccountGrpcService::notFound);
+            return UpdateLookResponse.newBuilder()
                     .setUser(toProto(user, riotLinks.findByUserId(user.userId())))
                     .build();
         });
@@ -223,6 +244,12 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
                 .setCreatedAt(timestamp(user.createdAt()));
         if (user.onboardedAt() != null) {
             builder.setOnboardedAt(timestamp(user.onboardedAt()));
+        }
+        if (user.look() != null) {
+            builder.setLook(Look.newBuilder()
+                    .setIcon(user.look().icon())
+                    .setColour(user.look().colour())
+                    .setExpression(user.look().expression()));
         }
         riotLink.ifPresent(link -> builder.setRiotLink(toProto(link)));
         return builder.build();

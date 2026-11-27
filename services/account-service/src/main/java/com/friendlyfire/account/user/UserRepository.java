@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRepository {
 
-    private static final String USER_COLUMNS = "user_id, auth_subject, email, display_name, created_at, onboarded_at";
+    private static final String USER_COLUMNS =
+            "user_id, auth_subject, email, display_name, created_at, onboarded_at, look_icon, look_colour, look_expression";
 
     private static final RowMapper<AccountUser> USER_ROW_MAPPER = UserRepository::mapUser;
 
@@ -100,6 +101,22 @@ public class UserRepository {
                 .optional();
     }
 
+    /** Saves the favourite look (FF-519); empty if the user doesn't exist. */
+    public Optional<AccountUser> changeLook(UUID userId, FavouriteLook look) {
+        return jdbcClient.sql("""
+                        UPDATE account.users
+                        SET look_icon = :icon, look_colour = :colour, look_expression = :expression
+                        WHERE user_id = :userId
+                        RETURNING %s
+                        """.formatted(USER_COLUMNS))
+                .param("userId", userId)
+                .param("icon", look.icon())
+                .param("colour", look.colour())
+                .param("expression", look.expression())
+                .query(USER_ROW_MAPPER)
+                .optional();
+    }
+
     public boolean delete(UUID userId) {
         return jdbcClient.sql("DELETE FROM account.users WHERE user_id = :userId")
                         .param("userId", userId)
@@ -114,7 +131,15 @@ public class UserRepository {
                 resultSet.getString("email"),
                 resultSet.getString("display_name"),
                 resultSet.getTimestamp("created_at").toInstant(),
-                instantOrNull(resultSet.getTimestamp("onboarded_at")));
+                instantOrNull(resultSet.getTimestamp("onboarded_at")),
+                lookOrNull(resultSet));
+    }
+
+    private static FavouriteLook lookOrNull(ResultSet resultSet) throws SQLException {
+        String icon = resultSet.getString("look_icon");
+        return icon == null
+                ? null
+                : new FavouriteLook(icon, resultSet.getString("look_colour"), resultSet.getString("look_expression"));
     }
 
     private static Instant instantOrNull(Timestamp timestamp) {

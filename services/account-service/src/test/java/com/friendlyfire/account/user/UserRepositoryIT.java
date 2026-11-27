@@ -61,6 +61,20 @@ class UserRepositoryIT {
     }
 
     @Test
+    void aNewUserHasNoLookUntilTheyPickOne() {
+        AccountUser created = users.create("test|" + UUID.randomUUID(), "look@example.test", "Looker");
+        assertThat(created.look()).isNull();
+
+        FavouriteLook look = new FavouriteLook("ghost", "cyan", "locked-in");
+        AccountUser updated = users.changeLook(created.userId(), look).orElseThrow();
+
+        assertThat(updated.look()).isEqualTo(look);
+        assertThat(users.findById(created.userId()).orElseThrow().look()).isEqualTo(look);
+        assertThat(updated.displayName()).isEqualTo("Looker");
+        assertThat(users.changeLook(UUID.randomUUID(), look)).isEmpty();
+    }
+
+    @Test
     void updateOfMissingUserReturnsEmpty() {
         assertThat(users.changeDisplayName(UUID.randomUUID(), "Nobody")).isEmpty();
     }
