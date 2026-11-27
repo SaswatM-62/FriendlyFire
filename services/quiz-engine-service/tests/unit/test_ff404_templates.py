@@ -82,7 +82,8 @@ CASES = [
         "highest-kd-v1",
         f"For every death {ALL}, this player gets 1.20 kills, the best ratio in this group. "
         "Who comes out on top in their fights?",
-        "Alice: 60 kills and 50 deaths.",
+        "Alice: 60 kills and 50 deaths, 1.20 per death. Next closest: Bob, 50 kills and 50 deaths, "
+        "1 per death.",
         {ALICE: five(kills=12), BOB: five(kills=10), CARA: five(kills=8)},
         ("labels", "queue_id"),
     ),
@@ -90,7 +91,8 @@ CASES = [
         "headshot-percentage-v1",
         "In their last 5 matches, 25% of this player's hits landed on the head, the best aim "
         "in this group. Who keeps clicking heads?",
-        "Alice: 25 headshots out of 100 hits.",
+        "Alice: 25 headshots out of 100 hits (25%). Next closest: Bob, 15 headshots out of 100 "
+        "hits (15%).",
         {
             ALICE: five(headshots=5, bodyshots=10, legshots=5),
             BOB: five(headshots=3, bodyshots=12, legshots=5),
@@ -102,7 +104,8 @@ CASES = [
         "most-headshots-in-a-match-v1",
         f"One of you landed 9 headshots in a single match {ALL}, more than anyone else here "
         "has managed. Who was seeing heads that day?",
-        "Alice, playing Reyna: 9 headshots in one match.",
+        "Alice, playing Reyna: 9 headshots in one match. Next closest: Bob, playing Jett: 7 "
+        "headshots in one match.",
         {
             ALICE: [*five(headshots=4)[:4], {"headshots": 9, "agent": "Reyna"}],
             BOB: five(headshots=7),
@@ -114,7 +117,8 @@ CASES = [
         "most-agent-games-v1",
         "This player picked Omen in 4 of their last 5 matches, more than anyone else here. "
         "Who is the group's Omen main?",
-        "Alice played Omen in 4 of their last 5 matches.",
+        "Alice played Omen in 4 of their last 5 matches. Next closest: Bob played Omen in 2 of "
+        "their last 5 matches.",
         {
             ALICE: [*five(agent="Omen")[:4], {"agent": "Jett"}],
             BOB: [*five(agent="Omen")[:2], *five(agent="Jett")[:3]],
@@ -126,7 +130,8 @@ CASES = [
         "map-win-rate-v1",
         "On Ascent, this player wins 75% of their matches, the best record of anyone here who "
         "has played it. Who owns Ascent?",
-        "Alice won 3 of 4 matches on Ascent.",
+        "Alice won 3 of 4 matches on Ascent (75%). Next closest: Bob won 1 of 5 matches on Ascent "
+        "(20%).",
         {
             ALICE: [*five(won=True)[:3], {"won": False}, {"map": "Bind"}],
             BOB: [{"won": True}, *five(won=False)[:4]],
@@ -138,7 +143,8 @@ CASES = [
         "agent-kills-per-round-v1",
         "As Jett, this player averages 0.90 kills per round, the most of anyone here who has "
         "played Jett. Who is the deadliest Jett?",
-        "Alice: 90 kills in 100 rounds as Jett.",
+        "Alice: 90 kills in 100 rounds as Jett, 0.90 per round. Next closest: Bob, 75 kills in 100 "
+        "rounds as Jett, 0.75 per round.",
         {
             ALICE: five(kills=18, rounds_played=20),
             BOB: five(kills=15, rounds_played=20),
@@ -150,7 +156,8 @@ CASES = [
         "lowest-adr-v1",
         f"This player deals 50 damage per round {ALL}, the lowest in this group. "
         "Who's been going easy on the enemy?",
-        "Alice: 5000 damage over 100 rounds.",
+        "Alice: 5000 damage over 100 rounds, 50 per round. Next closest: Bob, 10000 damage over "
+        "100 rounds, 100 per round.",
         {
             ALICE: five(damage_dealt=1000, rounds_played=20),
             BOB: five(damage_dealt=2000, rounds_played=20),
@@ -162,7 +169,8 @@ CASES = [
         "highest-adr-v1",
         f"Nobody here hits harder: this player deals 150 damage per round {ALL}. "
         "Who brings the pain?",
-        "Alice: 15000 damage over 100 rounds.",
+        "Alice: 15000 damage over 100 rounds, 150 per round. Next closest: Bob, 10000 damage over "
+        "100 rounds, 100 per round.",
         {
             ALICE: five(damage_dealt=3000, rounds_played=20),
             BOB: five(damage_dealt=2000, rounds_played=20),
@@ -174,7 +182,8 @@ CASES = [
         "kast-v1",
         "Kill, assist, survive or get traded: this player did one of those in 80% of their "
         f"rounds {ALL}, the most consistent in this group. Who always pulls their weight?",
-        "Alice made an impact in 80 of 100 rounds.",
+        "Alice made an impact in 80 of 100 rounds (80%). Next closest: Bob made an impact in 70 of "
+        "100 rounds (70%).",
         {
             ALICE: five(kast_rounds=16, rounds_played=20),
             BOB: five(kast_rounds=14, rounds_played=20),
@@ -186,7 +195,8 @@ CASES = [
         "round-winning-kills-v1",
         "When a round ends with the last enemy down, this player is often the one who did it: "
         "15 times in their last 5 matches, the most in this group. Who closes rounds out?",
-        "Alice got the final kill of 15 won rounds in their last 5 matches.",
+        "Alice got the final kill of 15 won rounds in their last 5 matches. Next closest: Bob got "
+        "the final kill of 10 won rounds in their last 5 matches.",
         {
             ALICE: five(round_winning_kills=3),
             BOB: five(round_winning_kills=2),

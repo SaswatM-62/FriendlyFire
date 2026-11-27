@@ -83,7 +83,7 @@ CASES = [
         "most-recent-kills-v1",
         "Across their last 5 matches, this player piled up 100 kills, more than anyone else "
         "here. Who's been on a tear lately?",
-        "Alice: 100 kills in 5 matches.",
+        "Alice: 100 kills in 5 matches. Next closest: Bob, 75 kills in 5 matches.",
         {ALICE: five(kills=20), BOB: five(kills=15), CARA: five(kills=10)},
         ("labels", "queue_id"),
     ),
@@ -91,7 +91,7 @@ CASES = [
         "most-recent-assists-v1",
         "Nobody here has helped out more lately: this player picked up 40 assists in their "
         "last 5 matches. Who is the ultimate teammate?",
-        "Alice: 40 assists in 5 matches.",
+        "Alice: 40 assists in 5 matches. Next closest: Bob, 30 assists in 5 matches.",
         {ALICE: five(assists=8), BOB: five(assists=6), CARA: five(assists=4)},
         ("labels", "queue_id"),
     ),
@@ -99,7 +99,7 @@ CASES = [
         "most-recent-deaths-v1",
         "Over their last 5 matches, this player died 90 times, more than anyone else here. "
         "Who's spent the most time spectating?",
-        "Alice: 90 deaths in 5 matches.",
+        "Alice: 90 deaths in 5 matches. Next closest: Bob, 75 deaths in 5 matches.",
         {ALICE: five(deaths=18), BOB: five(deaths=15), CARA: five(deaths=12)},
         ("labels", "queue_id"),
     ),
@@ -107,7 +107,7 @@ CASES = [
         "most-recent-plants-v1",
         "Someone here planted the spike 15 times in their last 5 matches, the most in this "
         "group. Who keeps the spike moving?",
-        "Alice: 15 plants in 5 matches.",
+        "Alice: 15 plants in 5 matches. Next closest: Bob, 10 plants in 5 matches.",
         {ALICE: five(plants=3), BOB: five(plants=2), CARA: five(plants=1)},
         ("numbers", "plants"),
     ),
@@ -115,7 +115,7 @@ CASES = [
         "most-defuses-v1",
         f"This player has defused the spike 10 times {ALL}, more than anyone else here. "
         "Who does the team trust with the defuse?",
-        "Alice: 10 defuses.",
+        "Alice: 10 defuses. Next closest: Bob, 5 defuses.",
         {ALICE: five(defuses=2), BOB: five(defuses=1), CARA: five(defuses=0)},
         ("numbers", "defuses"),
     ),
@@ -123,7 +123,8 @@ CASES = [
         "highest-recent-kda-v1",
         "Counting assists as well as kills, this player gets 2 for every death in their last "
         "5 matches, the best in this group. Who makes every life count?",
-        "Alice: 100 kills and assists against 50 deaths.",
+        "Alice: 100 kills and assists against 50 deaths, 2 per death. Next closest: Bob, 75 kills "
+        "and assists against 50 deaths, 1.50 per death.",
         {
             ALICE: five(kills=15, assists=5),
             BOB: five(kills=10, assists=5),
@@ -135,7 +136,8 @@ CASES = [
         "most-recent-first-deaths-v1",
         "Rounds keep starting badly for this player: they were the first one down 20 times in "
         "their last 5 matches, more than anyone else here. Who needs to stop peeking first?",
-        "Alice was the first player killed in 20 rounds over 5 matches.",
+        "Alice was the first player killed in 20 rounds over 5 matches. Next closest: Bob was the "
+        "first player killed in 15 rounds over 5 matches.",
         {ALICE: five(first_deaths=4), BOB: five(first_deaths=3), CARA: five(first_deaths=2)},
         ("numbers", "first_deaths"),
     ),
@@ -143,7 +145,8 @@ CASES = [
         "most-recent-isolated-deaths-v1",
         "With no teammate within 20 meters, this player went down alone 25 times in their last "
         "5 matches, the most in this group. Who keeps wandering off by themselves?",
-        "Alice: 25 deaths with no teammate nearby in 5 matches.",
+        "Alice: 25 deaths with no teammate nearby in 5 matches. Next closest: Bob, 20 deaths with "
+        "no teammate nearby in 5 matches.",
         {
             ALICE: five(isolated_deaths=5),
             BOB: five(isolated_deaths=4),
@@ -155,7 +158,7 @@ CASES = [
         "most-recent-deathless-rounds-v1",
         "This player made it through 40 rounds without dying in their last 5 matches, the most "
         "in this group. Who has the best survival instincts?",
-        "Alice survived 40 rounds in 5 matches.",
+        "Alice survived 40 rounds in 5 matches. Next closest: Bob survived 30 rounds in 5 matches.",
         {
             ALICE: five(deathless_rounds=8),
             BOB: five(deathless_rounds=6),
@@ -167,7 +170,7 @@ CASES = [
         "most-sniper-kills-v1",
         f"Behind a scope, this player has picked up 15 kills {ALL}, more than anyone else "
         "here. Who's the group's sniper?",
-        "Alice: 15 kills with sniper rifles.",
+        "Alice: 15 kills with sniper rifles. Next closest: Bob, 5 kills with sniper rifles.",
         {ALICE: five(sniper_kills=3), BOB: five(sniper_kills=1), CARA: five(sniper_kills=0)},
         ("numbers", "sniper_kills"),
     ),
@@ -262,14 +265,15 @@ def test_a_missing_stat_skips_the_question(case: Case) -> None:
             "defuses",
             f"This player has defused the spike 1 time {ALL}, more than anyone else here. "
             "Who does the team trust with the defuse?",
-            "Alice: 1 defuse.",
+            "Alice: 1 defuse. Next closest: Bob, 0 defuses. Cara tied.",
         ),
         (
             "most-sniper-kills-v1",
             "sniper_kills",
             f"Behind a scope, this player has picked up 1 kill {ALL}, more than anyone else "
             "here. Who's the group's sniper?",
-            "Alice: 1 kill with sniper rifles.",
+            "Alice: 1 kill with sniper rifles. Next closest: Bob, 0 kills with sniper rifles. Cara "
+            "tied.",
         ),
     ],
 )
