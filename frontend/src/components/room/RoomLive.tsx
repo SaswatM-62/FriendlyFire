@@ -183,6 +183,21 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
 
   const socket = useRoomSocket(code, { enabled: !left, transport, initialSnapshot: base, onEvent, onError, onReconnected });
   const snapshot = socket.snapshot ?? base;
+
+  // Connected, but the room says we dropped (a refresh, where the old tab's drop can be
+  // reported after this page already rejoined): rejoin once, so the others see us back.
+  const myStatus = snapshot.players.find((p) => p.userId === meId)?.status;
+  const rejoining = useRef(false);
+  useEffect(() => {
+    if (left || socket.connection !== "open" || myStatus !== "DISCONNECTED" || rejoining.current) return;
+    rejoining.current = true;
+    api
+      .joinRoom(code, { quiet: true })
+      .then(setBase, () => {})
+      .finally(() => {
+        rejoining.current = false;
+      });
+  }, [api, code, left, myStatus, socket.connection]);
   const now = useNow(250);
 
   const view = useMemo<RoomView>(
