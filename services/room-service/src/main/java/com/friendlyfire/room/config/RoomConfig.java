@@ -4,7 +4,9 @@ import com.friendlyfire.proto.friendlyfire.account.v1.AccountServiceGrpc.Account
 import com.friendlyfire.proto.friendlyfire.quiz.v1.QuizServiceGrpc.QuizServiceBlockingStub;
 import com.friendlyfire.proto.friendlyfire.scoring.v1.ScoringServiceGrpc.ScoringServiceBlockingStub;
 import com.friendlyfire.room.clients.DataStatusClient;
+import com.friendlyfire.room.clients.FavouriteLookClient;
 import com.friendlyfire.room.clients.GrpcDataStatusClient;
+import com.friendlyfire.room.clients.GrpcFavouriteLookClient;
 import com.friendlyfire.room.clients.GrpcQuizClient;
 import com.friendlyfire.room.clients.GrpcScoringClient;
 import com.friendlyfire.room.clients.QuizClient;
@@ -84,10 +86,17 @@ public class RoomConfig {
     }
 
     @Bean
+    FavouriteLookClient favouriteLookClient(AccountServiceBlockingStub accountService) {
+        return new GrpcFavouriteLookClient(accountService);
+    }
+
+    @Bean
     RoomManager roomManager(
             RoomRepository rooms, RoomCodeGenerator codes, RoomEventPublisher events, QuizRunner runner,
-            DataStatusClient dataStatuses, Clock clock, ExecutorService roomWorkers, RoomTimings timings) {
-        return new RoomManager(rooms, codes, events, runner, dataStatuses, clock, roomWorkers, timings);
+            DataStatusClient dataStatuses, FavouriteLookClient favourites, RandomGenerator random, Clock clock,
+            ExecutorService roomWorkers, RoomTimings timings) {
+        return new RoomManager(rooms, codes, events, runner, dataStatuses, favourites, random, clock, roomWorkers,
+                timings);
     }
 
     @Bean

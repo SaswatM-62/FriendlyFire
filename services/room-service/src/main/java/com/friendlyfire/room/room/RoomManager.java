@@ -12,6 +12,8 @@ import com.friendlyfire.proto.friendlyfire.room.v1.EndReason;
 import com.friendlyfire.proto.friendlyfire.room.v1.StreamRoomEventsResponse;
 import com.friendlyfire.proto.friendlyfire.room.v1.VoteOption;
 import com.friendlyfire.room.clients.DataStatusClient;
+import com.friendlyfire.room.clients.FavouriteLook;
+import com.friendlyfire.room.clients.FavouriteLookClient;
 import com.friendlyfire.room.clients.PlayerData;
 import com.friendlyfire.room.room.Room.Member;
 import com.friendlyfire.room.timing.RoomTimings;
@@ -27,6 +29,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.random.RandomGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,8 @@ public class RoomManager {
     private final RoomEventPublisher events;
     private final QuizRunner runner;
     private final DataStatusClient dataStatuses;
+    private final FavouriteLookClient favourites;
+    private final RandomGenerator random;
     private final Clock clock;
     private final Executor background;
     private final RoomTimings timings;
@@ -63,6 +68,8 @@ public class RoomManager {
             RoomEventPublisher events,
             QuizRunner runner,
             DataStatusClient dataStatuses,
+            FavouriteLookClient favourites,
+            RandomGenerator random,
             Clock clock,
             Executor background,
             RoomTimings timings) {
@@ -71,6 +78,8 @@ public class RoomManager {
         this.events = events;
         this.runner = runner;
         this.dataStatuses = dataStatuses;
+        this.favourites = favourites;
+        this.random = random;
         this.clock = clock;
         this.background = background;
         this.timings = timings;
@@ -82,10 +91,12 @@ public class RoomManager {
         requireUser(userId);
         leaveCurrentRoom(userId, null);
         PlayerData data = fetchData(userId);
+        FavouriteLook favourite = fetchFavourite(userId);
         while (true) {
             Room room = new Room(codes.generateCode(), clock.instant());
             Member host = new Member(userId, name(displayName), tag(riotTagLine));
             host.data = data;
+            host.look = Looks.assign(favourite, List.of(), random);
             synchronized (room) {
                 room.members.put(userId, host);
                 room.hostUserId = userId;
@@ -115,6 +126,7 @@ public class RoomManager {
         // Checked first, so a full room doesn't take them out of the room they're in.
         leaveCurrentRoom(userId, code);
         PlayerData data = returning ? null : fetchData(userId);
+        FavouriteLook favourite = returning ? null : fetchFavourite(userId);
         synchronized (room) {
             if (room.closed) {
                 throw RoomErrors.notFound();
@@ -128,6 +140,7 @@ public class RoomManager {
             }
             member = new Member(userId, name(displayName), tag(riotTagLine));
             member.data = data;
+            member.look = Looks.assign(favourite, room.members.values().stream().map(m -> m.look).toList(), random);
             if (room.quizRunning()) {
                 member.status = PlayerStatus.PLAYER_STATUS_SPECTATING;
             }
@@ -588,6 +601,16 @@ public class RoomManager {
         } catch (StatusRuntimeException e) {
             log.warn("couldn't get data status for a joining player: {}", e.getStatus());
             return PlayerData.UNKNOWN;
+        }
+    }
+
+    /** The player's favourite look; none if they haven't picked one or Account can't answer. */
+    private FavouriteLook fetchFavourite(String userId) {
+        try {
+            return favourites.favourite(userId).orElse(null);
+        } catch (StatusRuntimeException e) {
+            log.warn("couldn't get the favourite look of a joining player: {}", e.getStatus());
+            return null;
         }
     }
 
