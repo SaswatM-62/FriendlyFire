@@ -66,11 +66,12 @@ export function PodiumScreen({ chat, onBackToLobby }: { chat: ReactNode; onBackT
   const info = usePlayerInfo();
   const board = snapshot.scoreboard;
   const { title, line } = useHeadline(board);
-  const podium: { entry: ScoreEntry | undefined; place: 1 | 2 | 3 }[] = [
-    { entry: board[1], place: 2 },
-    { entry: board[0], place: 1 },
-    { entry: board[2], place: 3 },
-  ];
+  // The top three as 2nd, 1st, 3rd from the left; only the places someone took, so two
+  // players stand side by side. Each block shows the player's rank, so a tie shows twice.
+  const podium = [board[1], board[0], board[2]]
+    .filter((entry): entry is ScoreEntry => entry !== undefined)
+    .map((entry) => ({ entry, place: Math.min(3, Math.max(1, entry.rank)) as 1 | 2 | 3 }));
+  const columns = podium.length < 3 ? { gridTemplateColumns: `repeat(${podium.length}, minmax(0, 1fr))`, maxWidth: podium.length * 160 } : undefined;
   const heights = { 1: 170, 2: 120, 3: 86 };
   const fastest = snapshot.fastestAnswer;
 
@@ -100,27 +101,23 @@ export function PodiumScreen({ chat, onBackToLobby }: { chat: ReactNode; onBackT
           </h1>
           <p className="muted">{line}</p>
         </div>
-        <div className="steps3">
-          {podium.map(({ entry, place }) =>
-            entry ? (
-              <div key={entry.userId} className="col">
-                <Av look={info(entry.userId).look} size={place === 1 ? 80 : 60} face={place === 1 ? "wow" : undefined} />
-                <span className="nm">{info(entry.userId).name}</span>
-                <span className="num small" style={place === 1 ? { color: "var(--orange-text)" } : { color: "var(--text-muted)" }}>
-                  {formatPoints(entry.totalPoints)}
-                </span>
-                <div
-                  className="pblock"
-                  style={{ height: heights[place], ...(place === 1 ? { background: "var(--orange)", color: "var(--on-neon)" } : {}) }}
-                >
-                  <span className="sr">Place </span>
-                  {place}
-                </div>
+        <div className="steps3" style={columns}>
+          {podium.map(({ entry, place }) => (
+            <div key={entry.userId} className="col">
+              <Av look={info(entry.userId).look} size={place === 1 ? 80 : 60} face={place === 1 ? "wow" : undefined} />
+              <span className="nm">{info(entry.userId).name}</span>
+              <span className="num small" style={place === 1 ? { color: "var(--orange-text)" } : { color: "var(--text-muted)" }}>
+                {formatPoints(entry.totalPoints)}
+              </span>
+              <div
+                className={`pblock pblock--${place}`}
+                style={{ height: heights[place], ...(place === 1 ? { background: "var(--orange)", color: "var(--on-neon)" } : {}) }}
+              >
+                <span className="sr">Place </span>
+                {place}
               </div>
-            ) : (
-              <div key={place} className="col" />
-            ),
-          )}
+            </div>
+          ))}
         </div>
         {fastest ? (
           <p className="row small muted" style={{ gap: 8, justifyContent: "center" }}>

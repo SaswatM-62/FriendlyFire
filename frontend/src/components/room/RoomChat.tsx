@@ -32,12 +32,15 @@ export function ChatPanel({ lines, onSend, onClose }: { lines: ChatLine[]; onSen
   const log = useRef<HTMLOListElement>(null);
   const [text, setText] = useState("");
   const last = lines[lines.length - 1];
+  // A chat box that just opened (a new screen, the phone sheet) starts at the newest line.
+  const opened = useRef(false);
 
   useEffect(() => {
     const el = log.current;
     if (!el || !last) return;
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
-    if (nearBottom || (last.kind === "msg" && last.userId === meId)) el.scrollTop = el.scrollHeight;
+    if (!opened.current || nearBottom || (last.kind === "msg" && last.userId === meId)) el.scrollTop = el.scrollHeight;
+    opened.current = true;
   }, [last, meId]);
 
   const send = (event: FormEvent) => {

@@ -3,7 +3,7 @@ import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiProvider } from "@/components/providers/ApiProvider";
 import { SoundProvider } from "@/components/providers/SoundProvider";
-import { RoomLive } from "@/components/room/RoomLive";
+import { REFRESH_GRACE_MS, RoomLive } from "@/components/room/RoomLive";
 import { ToastProvider } from "@/components/ui/Toasts";
 import type { RoomTransportFactory } from "@/lib/realtime";
 import { FAKE_PLAYERS, ME_ID } from "@/mocks/data";
@@ -12,11 +12,13 @@ import { server } from "@/test/server";
 
 const p = FAKE_PLAYERS;
 let transport: RoomTransportFactory | null = null;
+// The room the Gateway answers with when the page loads it again over REST.
+let current: FakeRoom | null = null;
 
 vi.mock("@/components/providers/AppProviders", () => ({ useRoomTransport: () => transport }));
 
 function hostedRoom() {
-  return new FakeRoom({
+  current = new FakeRoom({
     code: "TEST22",
     hostUserId: ME_ID,
     meId: ME_ID,
@@ -24,17 +26,34 @@ function hostedRoom() {
     settings: { questionCount: 2, secondsPerQuestion: 10 },
     random: () => 0,
   });
+  return current;
+}
+
+function renderLive(room: FakeRoom, initial = room.snapshot) {
+  return render(
+    <ToastProvider>
+      <ApiProvider>
+        <SoundProvider>
+          <RoomLive code="TEST22" meId={ME_ID} initial={initial} />
+        </SoundProvider>
+      </ApiProvider>
+    </ToastProvider>,
+  );
 }
 
 describe("RoomLive", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // No chat yet when the room opens.
-    server.use(http.get("*/api/rooms/:code/chat", () => HttpResponse.json({ messages: [] })));
+    server.use(
+      http.get("*/api/rooms/:code/chat", () => HttpResponse.json({ messages: [] })),
+      http.get("*/api/rooms/:code", () => HttpResponse.json(current?.snapshot)),
+    );
   });
   afterEach(() => {
     vi.useRealTimers();
     transport = null;
+    current = null;
   });
 
   it("plays a whole quiz through to the final standings, with the chat alongside, then goes back to the lobby", async () => {
@@ -176,5 +195,69 @@ describe("RoomLive", () => {
     await act(async () => vi.advanceTimersByTime(300));
 
     expect(joins).not.toHaveBeenCalled();
+  });
+
+  it("shows who joined between the page's load and the live connection, once", async () => {
+    const room = hostedRoom();
+    const loaded = structuredClone(room.snapshot);
+    // Riley joins before this page is subscribed, so their join event never arrives here.
+    room.addPlayer(fakePlayer(p.riley));
+    transport = (_code, handlers) => room.connect(handlers);
+    render(
+      <ToastProvider>
+        <ApiProvider>
+          <SoundProvider>
+            <RoomLive code="TEST22" meId={ME_ID} initial={loaded} />
+          </SoundProvider>
+        </ApiProvider>
+      </ToastProvider>,
+    );
+    await act(async () => vi.advanceTimersByTime(300));
+
+    expect(screen.getByRole("region", { name: "Players" })).toHaveTextContent("Riley");
+    const chat = screen.getByRole("region", { name: "Room chat" });
+    expect(within(chat).getAllByText("Riley joined the room")).toHaveLength(1);
+    // A join after the connection opened still gets its own line.
+    await act(async () => room.addPlayer(fakePlayer(p.casey)));
+    expect(within(chat).getAllByText("Casey joined the room")).toHaveLength(1);
+    expect(within(chat).getAllByText("Riley joined the room")).toHaveLength(1);
+  });
+
+  it("doesn't announce a lobby refresh, but does announce a real drop", async () => {
+    const room = hostedRoom();
+    transport = (_code, handlers) => room.connect(handlers);
+    renderLive(room);
+    await act(async () => vi.advanceTimersByTime(300));
+    const chat = screen.getByRole("region", { name: "Room chat" });
+
+    // Maya refreshes: gone for 2 seconds, then back.
+    await act(async () => room.dropPlayer(p.maya.userId));
+    await act(async () => vi.advanceTimersByTime(2_000));
+    await act(async () => room.addPlayer(fakePlayer(p.maya)));
+    await act(async () => vi.advanceTimersByTime(REFRESH_GRACE_MS));
+    expect(within(chat).queryByText("Maya disconnected")).not.toBeInTheDocument();
+    expect(within(chat).queryByText("Maya is back")).not.toBeInTheDocument();
+
+    // Sam really drops: the line shows once the grace is over, and so does the return.
+    await act(async () => room.dropPlayer(p.sam.userId));
+    expect(within(chat).queryByText("Sam disconnected")).not.toBeInTheDocument();
+    await act(async () => vi.advanceTimersByTime(REFRESH_GRACE_MS + 100));
+    expect(within(chat).getByText("Sam disconnected")).toBeInTheDocument();
+    await act(async () => room.addPlayer(fakePlayer(p.sam)));
+    expect(within(chat).getByText("Sam is back")).toBeInTheDocument();
+  });
+
+  it("welcomes you back when you return to a quiz you're playing in", async () => {
+    const room = hostedRoom();
+    await act(async () => room.handle("start", {}, ME_ID));
+    await act(async () => vi.advanceTimersByTime(FAKE_TIMING.preparingMs + FAKE_TIMING.startingMs + 100));
+    expect(room.snapshot.phase).toBe("QUESTION");
+    transport = (_code, handlers) => room.connect(handlers);
+    renderLive(room, structuredClone(room.snapshot));
+    await act(async () => vi.advanceTimersByTime(300));
+
+    const chat = screen.getByRole("region", { name: "Room chat" });
+    expect(within(chat).getByText("You're back in the room")).toBeInTheDocument();
+    expect(within(chat).queryByText("You joined the room")).not.toBeInTheDocument();
   });
 });

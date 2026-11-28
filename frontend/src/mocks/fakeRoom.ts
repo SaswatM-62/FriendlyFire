@@ -379,6 +379,14 @@ export class FakeRoom {
 
   // ---------- lobby ----------
 
+  /** Another player's connection drops; addPlayer with them again brings them back. */
+  dropPlayer(userId: string) {
+    const player = this.player(userId);
+    if (!player) return;
+    player.status = "DISCONNECTED";
+    this.emit("PLAYER_DISCONNECTED", userId);
+  }
+
   addPlayer(player: Player) {
     if (this.player(player.userId)) {
       this.player(player.userId)!.status = "CONNECTED";

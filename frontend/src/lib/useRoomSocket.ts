@@ -26,6 +26,11 @@ interface Options {
   /** For effects only (toasts, sounds), after the snapshot is replaced. */
   onEvent?: (event: RoomEvent, previous: RoomSnapshot | null) => void;
   onError?: (error: RealtimeError) => void;
+  /**
+   * The first time the connection opens: events from before the subscription never
+   * arrive, so catch up on the room over REST.
+   */
+  onOpened?: () => void;
   /** After a dropped connection comes back: rejoin the room over REST (FF-309). */
   onReconnected?: () => void;
 }
@@ -75,6 +80,7 @@ export function useRoomSocket(roomCode: string, options: Options): RoomSocket {
         setConnection(state);
         if (state === "open") {
           if (wasOpen) callbacks.current.onReconnected?.();
+          else callbacks.current.onOpened?.();
           wasOpen = true;
         }
         if (state !== "open") setRttMs(null);
