@@ -21,7 +21,7 @@ import { RoomMessage } from "@/components/room/RoomMessages";
 import { PausedScreen, VoteScreen } from "@/components/room/VoteScreens";
 import { ConfirmDialog } from "@/components/ui/Dialog";
 import { Spinner } from "@/components/ui/States";
-import { CHAT_KEEP, chatLinesFor, type ChatLine, withHistory } from "@/lib/chat";
+import { CHAT_KEEP, chatLinesFor, type ChatLine, type NewChatLine, withHistory } from "@/lib/chat";
 import { useToast } from "@/components/ui/Toasts";
 import type { RealtimeError, RoomEvent, RoomSnapshot } from "@/lib/api-types";
 import { msUntil } from "@/lib/clock";
@@ -56,8 +56,13 @@ function stageStatus(s: RoomSnapshot, showLobby: boolean): string {
 /** "You opened the room" when you made it, otherwise "You joined the room". */
 function firstLine(s: RoomSnapshot, meId: string): ChatLine {
   const opened = s.hostUserId === meId && s.phase === "LOBBY" && s.players.length <= 1;
-  return { id: "c0", kind: "sys", text: opened ? "You opened the room" : "You joined the room" };
+  // Already on the quiz's scoreboard: back after a drop or a closed tab, not new here.
+  const back = s.phase !== "LOBBY" && s.scoreboard.some((e) => e.userId === meId);
+  return { id: "c0", kind: "sys", text: opened ? "You opened the room" : back ? "You're back in the room" : "You joined the room" };
 }
+
+/** A lobby drop shorter than this (a refresh) isn't announced, and neither is the return. */
+export const REFRESH_GRACE_MS = 5_000;
 
 /** Effects for an event: a sound or a toast. The screen itself always comes from the snapshot. */
 function useEventEffects(meId: string) {
@@ -127,6 +132,19 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
   // load once on open and again after a rejoin (FF-315).
   const [chat, setChat] = useState<ChatLine[]>(() => [firstLine(initial, meId)]);
   const nextLine = useRef(1);
+  const addLines = useCallback((lines: NewChatLine[]) => {
+    setChat((all) => [...all, ...lines.map((line): ChatLine => ({ ...line, id: `c${nextLine.current++}` }))].slice(-CHAT_KEEP));
+  }, []);
+  // Who's been in the room as far as the chat knows, so a join seen both in the REST
+  // catch-up and as its event gets one line.
+  const known = useRef(new Set(initial.players.map((p) => p.userId)));
+  const events = useRef(0);
+  // "X disconnected" lines held back in the lobby, in case X is only refreshing.
+  const drops = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const held = drops.current;
+    return () => held.forEach((timer) => clearTimeout(timer));
+  }, []);
   const phone = usePhone();
   const [chatOpen, setChatOpen] = useState(false);
   const [unread, setUnread] = useState(0);
@@ -144,14 +162,39 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
       if (event.type === "ROOM_CLOSED") setClosed(true);
       if (event.type === "QUIZ_START_FAILED") setStartFailed(event.message ?? "The quiz couldn't start. Try again.");
       if (event.type === "QUIZ_PREPARING") setStartFailed(null);
-      const lines = chatLinesFor(event, previous, meId);
+      events.current += 1;
+      let lines = chatLinesFor(event, previous, meId);
+      const subject = event.subjectUserId;
+      if (subject && event.type === "PLAYER_JOINED") {
+        if (known.current.has(subject)) lines = [];
+        known.current.add(subject);
+      }
+      if (subject && (event.type === "PLAYER_LEFT" || event.type === "PLAYER_KICKED")) known.current.delete(subject);
+      if (subject && drops.current.has(subject) && ["PLAYER_RECONNECTED", "PLAYER_LEFT", "PLAYER_KICKED"].includes(event.type)) {
+        clearTimeout(drops.current.get(subject));
+        drops.current.delete(subject);
+        // Back within the grace: neither the drop nor the return is news.
+        if (event.type === "PLAYER_RECONNECTED") lines = [];
+      }
+      if (subject && event.type === "PLAYER_DISCONNECTED" && event.snapshot.phase === "LOBBY" && lines.length > 0) {
+        const held = lines;
+        lines = [];
+        clearTimeout(drops.current.get(subject));
+        drops.current.set(
+          subject,
+          setTimeout(() => {
+            drops.current.delete(subject);
+            addLines(held);
+          }, REFRESH_GRACE_MS),
+        );
+      }
       if (lines.length > 0) {
-        setChat((all) => [...all, ...lines.map((line): ChatLine => ({ ...line, id: `c${nextLine.current++}` }))].slice(-CHAT_KEEP));
+        addLines(lines);
         if (event.type === "CHAT_MESSAGE" && event.chat?.userId !== meId && !chatVisible.current) setUnread((n) => n + 1);
       }
       onEffects(event, previous);
     },
-    [onEffects, meId],
+    [onEffects, meId, addLines],
   );
 
   const onError = useCallback(
@@ -175,13 +218,26 @@ export function RoomLive({ code, meId, initial }: { code: string; meId: string; 
     loadChat("before");
   }, [loadChat]);
 
+  // Connected: whoever joined between the page's load and the subscription only shows up
+  // here, so load the room once more and say who joined. The REST snapshot replaces the
+  // shown one unless an event (which is newer) came in meanwhile.
+  const onOpened = useCallback(() => {
+    const seen = events.current;
+    api.getRoom(code, { quiet: true }).then((fresh) => {
+      const joined = fresh.players.filter((p) => p.userId !== meId && !known.current.has(p.userId));
+      joined.forEach((p) => known.current.add(p.userId));
+      addLines(joined.map((p): NewChatLine => ({ kind: "sys", text: `${p.displayName} joined the room` })));
+      if (events.current === seen) setBase(fresh);
+    }, () => {});
+  }, [api, code, meId, addLines]);
+
   // Back after a dropped connection: rejoin over REST, then the new snapshot takes over (FF-309).
   const onReconnected = useCallback(() => {
     api.joinRoom(code, { quiet: true }).then(setBase, () => {});
     loadChat("after");
   }, [api, code, loadChat]);
 
-  const socket = useRoomSocket(code, { enabled: !left, transport, initialSnapshot: base, onEvent, onError, onReconnected });
+  const socket = useRoomSocket(code, { enabled: !left, transport, initialSnapshot: base, onEvent, onError, onOpened, onReconnected });
   const snapshot = socket.snapshot ?? base;
 
   // Connected, but the room says we dropped (a refresh, where the old tab's drop can be

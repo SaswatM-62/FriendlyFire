@@ -117,7 +117,7 @@ class QuestionTemplate:
     # Instead of last_n, which must then be None: one version of the question per window,
     # e.g. (5, 10, None) for the last 5 matches, the last 10 and every stored match, in
     # each scope. {scope} then says how many matches too ("in their last 5 matches with
-    # other room players"), and {last_n} can't be used. A quiz asks one version at most.
+    # friends"), and {last_n} can't be used. A quiz asks one version at most.
     windows: tuple[int | None, ...] = ()
     # Count a match without a numbers.<key> stat as 0 instead of missing (see Stats).
     absent_is_zero: bool = False
@@ -386,7 +386,7 @@ TEMPLATES = (
     QuestionTemplate(
         id="highest-acs-v1",
         question="This player averages {value} combat score per round {scope}, the highest "
-        "in this group. Who is this player?",
+        "in this group. Who carries the scoreboard?",
         explanation="{name}: {value} ACS ({numerator} combat score over {denominator} rounds).",
         stats=("numbers.combat_score", "numbers.rounds_played", "labels.queue_id"),
         rule="pooled_ratio",
@@ -422,7 +422,7 @@ TEMPLATES = (
     QuestionTemplate(
         id="recent-first-bloods-v1",
         question="Over their last {last_n} matches, this player drew first blood "
-        "{value} {time|times}, the most in this group. Who is this player?",
+        "{value} {time|times}, the most in this group. Who's first into the fight?",
         explanation=(
             "{name} opened {value} {round|rounds} with the first kill in their last {last_n} "
             "matches."
@@ -464,7 +464,7 @@ TEMPLATES = (
     QuestionTemplate(
         id="max-round-kills-v1",
         question="One of you got {value} {kill|kills} in a single round {scope}, and nobody "
-        "else here has matched it. Who is this player?",
+        "else here has matched it. Who took over a round?",
         explanation="{name}, playing {agent_name}: {value} {kill|kills} in one round.",
         stats=("numbers.max_round_kills", "labels.agent", "labels.queue_id"),
         rule="max_in_match",

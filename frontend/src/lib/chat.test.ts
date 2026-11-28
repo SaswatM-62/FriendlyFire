@@ -14,6 +14,17 @@ const event = (type: RoomEvent["type"], snapshot: RoomSnapshot, extra: Partial<R
 });
 
 describe("chatLinesFor", () => {
+  it("says everyone locked in when the reveal came early, time's up when someone ran out", () => {
+    const answered = (status: "CONNECTED" | "DISCONNECTED", answeredCurrentQuestion: boolean) => ({ status, answeredCurrentQuestion });
+    const all = lobbySnapshot({ phase: "REVEAL" }, [fakePlayer(p.alex, answered("CONNECTED", true)), fakePlayer(p.maya, answered("CONNECTED", true))]);
+    expect(chatLinesFor(event("QUESTION_REVEALED", all), null, ME_ID)).toEqual([{ kind: "sys", text: "Everyone locked in" }]);
+    // Someone who dropped doesn't hold up the early reveal, so they don't count here either.
+    const dropped = lobbySnapshot({ phase: "REVEAL" }, [fakePlayer(p.alex, answered("CONNECTED", true)), fakePlayer(p.maya, answered("DISCONNECTED", false))]);
+    expect(chatLinesFor(event("QUESTION_REVEALED", dropped), null, ME_ID)).toEqual([{ kind: "sys", text: "Everyone locked in" }]);
+    const late = lobbySnapshot({ phase: "REVEAL" }, [fakePlayer(p.alex, answered("CONNECTED", true)), fakePlayer(p.maya, answered("CONNECTED", false))]);
+    expect(chatLinesFor(event("QUESTION_REVEALED", late), null, ME_ID)).toEqual([{ kind: "sys", text: "Time's up" }]);
+  });
+
   it("passes chat messages through, with the sender's name and the message ID", () => {
     const chat = { messageId: "m1", userId: p.maya.userId, displayName: "Maya", text: "gg", sentAt: new Date().toISOString() };
     expect(chatLinesFor(event("CHAT_MESSAGE", lobbySnapshot(), { chat }), null, ME_ID)).toEqual([

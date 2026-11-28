@@ -84,8 +84,9 @@ def ask(
 
 
 def said(question: Question) -> str:
-    """The explanation's first sentence, about the answer (the runner-up's comes next)."""
-    return question.explanation.split(" Next closest: ")[0]
+    """The explanation's first sentence, about the answer (then the runner-up or "Nobody else")."""
+    first = question.explanation.split(" Next closest: ")[0]
+    return first.removesuffix(" Nobody else here did it.")
 
 
 def option_ids(question: Question) -> list[str]:
@@ -188,6 +189,30 @@ def test_average_is_per_match() -> None:
     [question] = ask(performance, stats, ALICE, BOB)
     assert question.correct_option_id == ALICE
     assert question.explanation.startswith("Alice: 200")
+
+
+@pytest.mark.parametrize(
+    ("rule", "fields"),
+    [
+        ("average", {"stat": "numbers.ninja_defuses"}),
+        ("pooled_ratio", {"numerator": ("numbers.ninja_defuses",), "denominator": ("kills",)}),
+    ],
+)
+def test_a_runner_up_at_zero_reads_nobody_else(rule: str, fields: dict[str, object]) -> None:
+    rare = template(rule=rule, explanation="{name}: {value}.", **fields)
+    stats = [match(ALICE, "1", ninja_defuses=2), match(BOB, "2", ninja_defuses=0)]
+    [question] = ask(rare, stats, ALICE, BOB)
+    assert question.explanation.endswith(". Nobody else here did it.")
+    assert "Next closest" not in question.explanation
+
+
+def test_a_winner_at_zero_still_names_the_runner_up() -> None:
+    # For "lowest" questions 0 is the answer, and the runner-up's number says how close it was.
+    fewest = template(rule="count", stat="numbers.ninja_defuses", direction="lowest")
+    fewest = replace(fewest, explanation="{name}: {value}.")
+    stats = [match(ALICE, "1", ninja_defuses=0), match(BOB, "2", ninja_defuses=3)]
+    [question] = ask(fewest, stats, ALICE, BOB)
+    assert question.explanation == "Alice: 0. Next closest: Bob, 3."
 
 
 def test_one_question_per_agent_with_known_zero_counts() -> None:
@@ -647,7 +672,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         (
             "recent-first-bloods-v1",
             "Over their last 5 matches, this player drew first blood 10 times, the most in this "
-            "group. Who is this player?",
+            "group. Who's first into the fight?",
             "Alice opened 10 rounds with the first kill in their last 5 matches. Next closest: Bob "
             "opened 5 rounds with the first kill in their last 5 matches.",
         ),
@@ -667,8 +692,8 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
         ),
         (
             "max-round-kills-v1",
-            "One of you got 4 kills in a single round {scope}, and nobody else here has "
-            "matched it. Who is this player?",
+            "One of you got 4 kills in a single round {scope}, and nobody else here has matched "
+            "it. Who took over a round?",
             "Alice, playing Jett: 4 kills in one round. Next closest: Bob, playing Sage: 2 kills "
             "in one round.",
         ),
@@ -683,8 +708,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
             "ninja-defuses-v1",
             "Someone here defused the spike 10 times with enemies still alive in the last 30 "
             "days. Which of you has that unique distinction?",
-            "Alice: 10 ninja defuses in the last 30 days. Next closest: Bob, 0 ninja defuses in "
-            "the last 30 days.",
+            "Alice: 10 ninja defuses in the last 30 days. Nobody else here did it.",
         ),
         (
             "clutch-win-rate-v1",
@@ -698,8 +722,7 @@ def test_ff409_fall_deaths_uses_a_blunder_closer() -> None:
             "fall-deaths-v1",
             "In the last 30 days, this player fell to their death 10 times, more than anyone "
             "else here. Who does this unfortunate stat belong to?",
-            "Alice recorded 10 fall deaths in the last 30 days. Next closest: Bob recorded 0 fall "
-            "deaths in the last 30 days.",
+            "Alice recorded 10 fall deaths in the last 30 days. Nobody else here did it.",
         ),
         (
             "pistol-round-kills-v1",
@@ -848,7 +871,7 @@ def test_windows_make_one_version_per_window_and_scope() -> None:
     assert sorted(texts) == sorted(
         [
             "18 kills in their last 2 matches?",
-            "18 kills in their last 2 matches without other room players?",
+            "18 kills in their last 2 matches without friends here?",
             f"27 kills {_SCOPE_TEXT['all']}?",
             f"27 kills {_SCOPE_TEXT['solo']}?",
         ]

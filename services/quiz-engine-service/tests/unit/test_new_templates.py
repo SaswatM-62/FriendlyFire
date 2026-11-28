@@ -176,7 +176,7 @@ def test_every_key_exists_in_the_stats_catalogue(t: QuestionTemplate) -> None:
 # 2. Behavior, through the real QuestionGenerator
 # --------------------------------------------------------------------------------------
 
-ALL = "in the available Competitive and Unrated match history"
+ALL = "in their recent matches"
 
 
 def game(
@@ -343,12 +343,11 @@ def test_utility_assists_is_skipped_when_someone_has_fewer_than_ten_matches() ->
         (
             "solo",
             [
-                "17 assists without damaging the victim in their last 5 matches without other "
-                "room players",
-                "35 assists without damaging the victim in their last 10 matches without "
-                "other room players",
-                "35 assists without damaging the victim in available matches played without "
-                "other room players",
+                "17 assists without damaging the victim in their last 5 matches without friends "
+                "here",
+                "35 assists without damaging the victim in their last 10 matches without friends "
+                "here",
+                "35 assists without damaging the victim when playing without friends here",
             ],
         ),
         ("shared", []),
@@ -357,7 +356,7 @@ def test_utility_assists_is_skipped_when_someone_has_fewer_than_ten_matches() ->
 def test_utility_assists_asks_the_last_5_the_last_10_and_all_matches_in_each_scope(
     scope: str, texts: list[str]
 ) -> None:
-    # The players only have solo matches, so there's no "with other room players" version.
+    # The players only have solo matches, so there's no "with friends" version.
     found = questions(BY_ID["utility-assists-v1"], _utility_stats(), scope)
     shown = sorted(q.text.split("earned ", 1)[1].split(", the most")[0] for q in found)
     assert shown == sorted(texts)
@@ -532,8 +531,7 @@ def test_kills_on_enemy_mvp_says_one_time_not_one_times() -> None:
         ALICE,
         "This player took down the other team's MVP 1 time in their last 10 matches, "
         "the most in this group. Who hunts the star player?",
-        "Alice killed the opposing MVP 1 time. Next closest: Bob killed the opposing MVP 0 times. "
-        "Cara tied.",
+        "Alice killed the opposing MVP 1 time. Nobody else here did it.",
     )
 
 

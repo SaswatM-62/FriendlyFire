@@ -20,6 +20,12 @@ export type ChatLine = NewChatLine & { id: string };
 /** The most lines the chat keeps; older ones scroll away for good. */
 export const CHAT_KEEP = 200;
 
+/** Every connected player answered, so the reveal came early (Room, FF-418). */
+function everyoneAnswered(s: RoomSnapshot): boolean {
+  const connected = s.players.filter((p) => p.status === "CONNECTED");
+  return connected.length > 0 && connected.every((p) => p.answeredCurrentQuestion);
+}
+
 /**
  * The chat lines for one room event: the message itself on CHAT_MESSAGE, and a short
  * system line for joins, leaves, questions, votes and the result (from events the room
@@ -56,7 +62,7 @@ export function chatLinesFor(event: RoomEvent, previous: RoomSnapshot | null, me
     case "QUESTION_STARTED":
       return sys(`Question ${s.roundNumber} started`);
     case "QUESTION_REVEALED":
-      return sys("Time's up");
+      return sys(everyoneAnswered(s) ? "Everyone locked in" : "Time's up");
     case "VOTE_RESOLVED": {
       const about = nameOf(previous?.activeVote?.aboutUserId ?? event.subjectUserId);
       if (s.phase === "PAUSED") return sys("Vote: wait 1 min");

@@ -47,7 +47,8 @@ export function QuestionScreen({ rejections }: Props) {
   const now = useNow(250);
   const question = snapshot.currentQuestion!;
   const limitMs = snapshot.settings.secondsPerQuestion * 1000;
-  const leftMs = now === 0 ? limitMs : msUntil(snapshot.phaseDeadline, now, clockOffsetMs);
+  // Capped at the limit: a slightly-off clock estimate would otherwise show "21" first.
+  const leftMs = now === 0 ? limitMs : Math.min(limitMs, msUntil(snapshot.phaseDeadline, now, clockOffsetMs));
   const [locked, setLocked] = useState<{ optionId: string; rejections: number } | null>(null);
 
   // A rejection after we locked in unlocks the tiles again (Architecture 3.1, Answering).

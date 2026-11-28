@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { GetReady } from "@/components/room/Countdown";
@@ -147,6 +147,14 @@ describe("QuestionScreen", () => {
     const tiles = [...container.querySelectorAll(".tile")].map((t) => t.className.replace("tile", "").trim());
     expect(tiles).toEqual(["tile--dim", "tile--locked", "tile--dim", "tile--dim"]);
     expect(screen.getByRole("button", { name: /Maya/ })).toHaveTextContent("Locked in");
+  });
+
+  it("never shows more seconds than the question has, even with the clock a little off", async () => {
+    // 20 seconds a question, but this browser's clock puts the deadline 20.6 s away.
+    renderRoom(<QuestionScreen rejections={0} />, questionSnapshot({ phaseDeadline: new Date(Date.now() + 20_600).toISOString() }));
+    await act(async () => {});
+
+    expect(screen.getByRole("timer")).toHaveAccessibleName("20 seconds left");
   });
 
   it("says time's up when you didn't lock in", () => {
@@ -308,6 +316,37 @@ describe("the end of the quiz", () => {
       ]),
       ...over,
     });
+
+  const places = (container: HTMLElement) => [...container.querySelectorAll(".steps3 .col")].map((c) => [c.querySelector(".nm")?.textContent, c.querySelector(".pblock")?.textContent]);
+
+  it("stands two players side by side, without an empty third place", () => {
+    const two = board([
+      [p.maya.userId, "Maya", 7420, 0],
+      [p.sam.userId, "Sam", 6980, 0],
+    ]);
+    const { container } = renderRoom(<PodiumScreen chat={null} onBackToLobby={() => {}} />, finished({ scoreboard: two }));
+
+    expect(places(container)).toEqual([
+      ["Sam", "Place 2"],
+      ["Maya", "Place 1"],
+    ]);
+    expect(container.querySelector<HTMLElement>(".steps3")?.style.gridTemplateColumns).toBe("repeat(2, minmax(0, 1fr))");
+  });
+
+  it("numbers each block by rank, so a tie shows the same place twice", () => {
+    const tied = board([
+      [p.maya.userId, "Maya", 912, 0],
+      [p.sam.userId, "Sam", 0, 0],
+      [p.alex.userId, "Alex", 0, 0],
+    ]).map((e, i) => ({ ...e, rank: i === 0 ? 1 : 2 }));
+    const { container } = renderRoom(<PodiumScreen chat={null} onBackToLobby={() => {}} />, finished({ scoreboard: tied }));
+
+    expect(places(container)).toEqual([
+      ["Sam", "Place 2"],
+      ["Maya", "Place 1"],
+      ["Alex", "Place 2"],
+    ]);
+  });
 
   it("crowns the winner, lists the standings, and goes back to the lobby", async () => {
     const backToLobby = vi.fn();

@@ -472,9 +472,9 @@
 .c .qcard h1{font-size:19px!important;line-height:25px!important}
 .c .sb li{height:33px}
 .c .result{padding:12px 14px}
-.c .steps3 .col:nth-child(1) .pblock{height:84px!important}
-.c .steps3 .col:nth-child(2) .pblock{height:118px!important}
-.c .steps3 .col:nth-child(3) .pblock{height:60px!important}
+.c .steps3 .pblock--1{height:118px!important}
+.c .steps3 .pblock--2{height:84px!important}
+.c .steps3 .pblock--3{height:60px!important}
 .c .st li{height:42px}
 .c .stage{padding:16px}
 .c .bannerc{flex-wrap:wrap;gap:12px}

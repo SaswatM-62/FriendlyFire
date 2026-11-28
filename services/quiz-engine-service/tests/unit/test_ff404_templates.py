@@ -28,7 +28,7 @@ PACK = (
     "round-winning-kills-v1",
 )
 BY_ID = {t.id: t for t in TEMPLATES}
-ALL = "in the available Competitive and Unrated match history"
+ALL = "in their recent matches"
 
 
 def row(uid: str, n: int, spec: dict[str, Any]) -> PlayerMatchStats:
