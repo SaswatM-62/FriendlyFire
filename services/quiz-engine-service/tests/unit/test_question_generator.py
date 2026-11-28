@@ -188,9 +188,9 @@ def test_every_question_has_exactly_one_correct_option_among_its_options(
             for r in stats
         }
         selected = stats
-        if "without other room players" in question.text:
+        if "without friends here" in question.text:
             selected = [r for r in stats if len(members[r.match_id]) == 1]
-        elif "with other room players" in question.text:
+        elif "with friends" in question.text:
             selected = [r for r in stats if len(members[r.match_id]) >= 2]
         scores = {}
         for uid in compared:
@@ -224,8 +224,8 @@ def test_nonempty_quiz_has_three_templates_and_mixes_shared_and_solo() -> None:
     questions = QuestionGenerator([KILLS, ACS, WINS]).generate(players(), history(), 5, 42)
     assert len(questions) == 3
     assert all(q.correct_option_id == "a" for q in questions)
-    assert any("with other room players" in q.text for q in questions)
-    assert any("without other room players" in q.text for q in questions)
+    assert any("with friends" in q.text for q in questions)
+    assert any("without friends here" in q.text for q in questions)
 
 
 def test_every_question_names_its_template() -> None:
@@ -452,8 +452,8 @@ def test_fifty_templates_finish_in_under_three_seconds() -> None:
     assert elapsed < 3
     assert len(questions) == 50
     assert len(set(template_ids(questions))) == 50
-    assert any("with other room players" in q.text for q in questions)
-    assert any("without other room players" in q.text for q in questions)
+    assert any("with friends" in q.text for q in questions)
+    assert any("without friends here" in q.text for q in questions)
 
 
 def test_reuse_still_rejects_repeated_facts() -> None:
@@ -494,8 +494,8 @@ def test_scope_repair_keeps_templates_and_facts_unique(seed: int) -> None:
     questions = QuestionGenerator([KILLS, ACS]).generate(players(), history(), 2, seed)
     assert len(questions) == 2
     assert len(set(template_ids(questions))) == 2
-    assert any("with other room players" in q.text for q in questions)
-    assert any("without other room players" in q.text for q in questions)
+    assert any("with friends" in q.text for q in questions)
+    assert any("without friends here" in q.text for q in questions)
 
 
 def test_new_template_precedes_reused_ones_when_history_is_partly_used() -> None:
@@ -510,8 +510,8 @@ def test_scope_repair_on_reused_templates_keeps_age_order_and_unique_templates()
     questions = QuestionGenerator([KILLS, ACS]).generate(
         players(), history(), 2, 42, asked_template_ids=asked
     )
-    assert any("with other room players" in q.text for q in questions)
-    assert any("without other room players" in q.text for q in questions)
+    assert any("with friends" in q.text for q in questions)
+    assert any("without friends here" in q.text for q in questions)
     assert template_ids(questions) == [ACS.id, KILLS.id]
 
 

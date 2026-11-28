@@ -28,7 +28,7 @@ PACK = (
     "most-sniper-kills-v1",
 )
 BY_ID = {t.id: t for t in TEMPLATES}
-ALL = "in the available Competitive and Unrated match history"
+ALL = "in their recent matches"
 
 
 def row(uid: str, n: int, spec: dict[str, Any]) -> PlayerMatchStats:
@@ -265,15 +265,14 @@ def test_a_missing_stat_skips_the_question(case: Case) -> None:
             "defuses",
             f"This player has defused the spike 1 time {ALL}, more than anyone else here. "
             "Who does the team trust with the defuse?",
-            "Alice: 1 defuse. Next closest: Bob, 0 defuses. Cara tied.",
+            "Alice: 1 defuse. Nobody else here did it.",
         ),
         (
             "most-sniper-kills-v1",
             "sniper_kills",
             f"Behind a scope, this player has picked up 1 kill {ALL}, more than anyone else "
             "here. Who's the group's sniper?",
-            "Alice: 1 kill with sniper rifles. Next closest: Bob, 0 kills with sniper rifles. Cara "
-            "tied.",
+            "Alice: 1 kill with sniper rifles. Nobody else here did it.",
         ),
     ],
 )

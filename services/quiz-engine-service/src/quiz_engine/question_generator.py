@@ -28,16 +28,18 @@ from friendlyfire.quiz.v1.quiz_service_pb2 import (
 
 from quiz_engine.templates import TEMPLATES, Direction, QuestionTemplate, Scope
 
+# A match is shared when at least 2 room players were in it, on either team (PM
+# wording, 2026-11-28: "queued with friends", friends being the other room players).
 _SCOPE_TEXT: dict[Scope, str] = {
-    "all": "in the available Competitive and Unrated match history",
-    "shared": "in available matches played with other room players",
-    "solo": "in available matches played without other room players",
+    "all": "in their recent matches",
+    "shared": "when queued with friends",
+    "solo": "when playing without friends here",
 }
 # {scope} for one of a template's windows, after "in their last N matches".
 _WINDOW_SCOPE_TEXT: dict[Scope, str] = {
     "all": "",
-    "shared": " with other room players",
-    "solo": " without other room players",
+    "shared": " with friends",
+    "solo": " without friends here",
 }
 _SCALARS = ("kills", "deaths", "assists")
 _PLACEHOLDERS = (
@@ -368,6 +370,11 @@ def _versions(template: QuestionTemplate) -> list[QuestionTemplate]:
     return [replace(template, last_n=n) for n in template.windows]
 
 
+def _nobody_else(template: QuestionTemplate, runner_up: Fraction) -> bool:
+    """True when the runner-up never did the thing the question asks about at all."""
+    return template.direction == "highest" and runner_up == 0
+
+
 def _scope_text(template: QuestionTemplate, scope: Scope) -> str:
     """{scope}: which matches count, and for a version of a windowed template how many."""
     if template.windows and template.last_n is not None:
@@ -668,10 +675,14 @@ class QuestionGenerator:
         closest = template.explanation
         if closest.startswith("{name}: "):
             closest = "{name}, " + closest.removeprefix("{name}: ")
-        explanation = f"{explain(winner, template.explanation)} Next closest: "
-        explanation += explain(seconds[0], closest)
-        if len(seconds) > 1:
-            explanation += f" {_join([names[uid] for uid in seconds[1:]])} tied."
+        explanation = explain(winner, template.explanation)
+        if _nobody_else(template, runner_up):
+            # "Next closest: Kim, top combat score in the lobby 0 times" says nothing.
+            explanation += " Nobody else here did it."
+        else:
+            explanation += " Next closest: " + explain(seconds[0], closest)
+            if len(seconds) > 1:
+                explanation += f" {_join([names[uid] for uid in seconds[1:]])} tied."
         question = Question(
             # Follows the template and the visible question and answer, so it stays
             # the same after a match sync.
